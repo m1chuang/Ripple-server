@@ -64,6 +64,18 @@ router.route('/moment')
 
         })
     });
+router.route('/like')
+    .post(function(req, res) {
+        MomentCtr.init(req, res,function(err, device){
+
+            res.json({
+                server_channel_id:'abcd',
+                device: device
+            });
+        })
+    });
+
+
 
 router.route('/test')
     .post(function(req, res){

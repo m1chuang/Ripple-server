@@ -8,7 +8,8 @@ var MomentSchema   = new Schema({
     status: String,
     complete: Boolean,
     date:  { type: Date, default: Date.now },
-    location: { type: [Number], index: '2d'}
+    location: { type: [Number], index: '2d'},
+    liked
 });
 MomentSchema.index({location: '2dsphere'});
 module.exports = mongoose.model('Moment', MomentSchema);

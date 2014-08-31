@@ -13,33 +13,8 @@ exports.subscribe_server= function(moment_id, req, res, cb) {
         console.log(CHALK.blue('Subscribing to server: '+ moment_id));
         PUBNUB.publish({
             channel   : moment_id+'_server',
-            message   : {'tt':'tt'},
+            message   : {'message':'Hello'},
             callback  : function(e) { console.log( "SUCCESS!", e );},
             error     : function(e) { console.log( "FAILED! RETRY PUBLISH!", e ); }
         });
-        /*
-        pubnub.subscribe({
-            channel: 'server'+moment_id,
-            callback: function() {
-                console.log('Message received: ');
-            },
-            connect: function() {
-                console.log('connection received.');
-            },
-            disconnect: function () {
-                console.log('DISCONNECTED');
-            },
-            error: function(error) {
-                console.log(clientChannel, "ERROR:", error);
-             },
-            reconnect: function() {
-                console.log('Reconnecting');
-                numPrivateChannels += 1;
-            },
-
-        });
-
-
-        */
-
 }

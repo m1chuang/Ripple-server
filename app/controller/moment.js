@@ -69,5 +69,11 @@ exports.near = function(moment,req, res, cb) {
             return cb(err, moment)
         }
     );
+
+}
+
+exports.like = function(req, res, cb){
+
+
 }
 
