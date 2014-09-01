@@ -9,29 +9,31 @@ var async = require('async');
 var time = require('moment');
 var uuid = require('node-uuid');
 
-exports.init = function(req, res, next)
+
+
+exports.init = function( params, next )
 {
-    console.log(CHALK.red('In MOMENT.init'));
-    DEVICE.findOne({ device_id: req.body.device_id },
-        function(err,device)
+    console.log( CHALK.red('In MOMENT.init') );
+    DEVICE.findOne( { device_id: params['device_id'] },
+        function( err, device )
         {
-            if (!device)
+            if( !device )
             {
-                console.error(device);
-                return cb(err,device)
+                console.error( device );
+                return cb( err, device )
             }
             else
             {
                 var moment_id = uuid.v4();
 
-                PUBNUB.subscribe_server(moment_id, req, res,
-                    function(message)
+                PUBNUB.subscribe_server( moment_id, req, res,
+                    function( message )
                     {
-                        console.log(message);
+                        console.log( message );
                     }
                 );
 
-                S3.upload(req.body.image,{key:moment_id});
+                S3.upload( params['image'], { key:moment_id } );
 
                 var moment = new MOMENT(
                 {
@@ -40,15 +42,15 @@ exports.init = function(req, res, next)
                     complete :      false,
                     date :          time(),
                     status :        '',
-                    location :      [req.body.lat, req.body.lon]
+                    location :      [params['lat'], params['lon']]
                 });
 
-                device.moments.set(0,moment);
+                device.moments.set( 0, moment );
 
                 device.save(
-                    function(err, device)
+                    function( err, device )
                     {
-                        next(err,device)
+                        next( err,device )
                     }
                 );
             }
@@ -56,33 +58,33 @@ exports.init = function(req, res, next)
     );
 }
 
-exports.login = function(req, res, next)
+exports.login = function( params, next )
 {
-    console.log(CHALK.red('In MOMENT.login'));
+    console.log( CHALK.red('In MOMENT.login') );
 
-    DEVICE.findOne({ device_id: req.body.device_id },
+    DEVICE.findOne( { device_id: params['device_id'] },
         function(err,device)
         {
-            if (!device)
+            if( !device )
             {
-                console.error(device);
-                next(err,device);
+                console.error( device );
+                next( err, device );
             }
             else
             {
                 var moment = device.moments[0];
-                moment.status = req.body.status;
+                moment.status = params['status'];
                 moment.complete = true;
 
                 device.save(
-                    function(err, device)
+                    function( err, device )
                     {
                         //console.log(CHALK.blue('login save moment to device'));
                         //console.log(device);
-                        MOMENT.create([device.moments[0]],
-                            function(err)
+                        MOMENT.create( [device.moments[0]],
+                            function( err )
                             {
-                                next(err,device);
+                                next( err, device );
                             });
 
                     }
@@ -94,11 +96,12 @@ exports.login = function(req, res, next)
 }
 
 
-exports.near = function(device,req, res, next)
+exports.near = function( device, params, next )
 {
-    console.log(CHALK.red('In MOMENT.near'));
-    console.log(device);
+    console.log( CHALK.red('In MOMENT.near'));
+    console.log( device);
     var my_moment = device.moments[0];
+
     MOMENT.find(
     {
         location :
@@ -107,14 +110,14 @@ exports.near = function(device,req, res, next)
             $maxDistance : 50
         }
     })
-    .skip(req.body.offset)
-    .limit(req.body.limit)
+    .skip( params['offset'] )
+    .limit( params['limit'] )
     .exec(
-        function (err, nearby_moments)
+        function ( err, nearby_moments )
         {
-            console.log(CHALK.blue('Near by moments'));
-            async.map(nearby_moments, AsyncMomentFactory.generate_explore.bind( AsyncMomentFactory ),
-                function(err, explore_list)
+            console.log( CHALK.blue('Near by moments') );
+            async.map( nearby_moments, AsyncMomentFactory.generate_explore.bind( AsyncMomentFactory ),
+                function( err, explore_list )
                 {
                     //console.log(CHALK.blue('Explore list: '));
                     //console.log(explore_list);
@@ -128,7 +131,7 @@ exports.near = function(device,req, res, next)
                         {
                             //console.log(CHALK.blue('Explore list inserted to moment'));
                             //console.log(device);
-                            next(err, device);
+                            next( err, device );
                         }
                     );
 
@@ -145,20 +148,22 @@ exports.like = function(params, res, next)
     next(null, 'You not liked');
 }
 */
-exports.like = function(params, next)
+exports.like = function( params, next )
 {
-    console.log(CHALK.red('In MOMENT.like'));
-    DEVICE.findOne({ device_id: params['device_id'] },
-        function(err,device)
+    console.log( CHALK.red( 'In MOMENT.like' ) );
+
+    DEVICE.findOne( { device_id: params['device_id'] },
+        function( err, device )
         {
-            MomentAction.like(params['like_mid'], device.moments[0].mid,
-                function(my_moment)
+            MomentAction.like( params['like_mid'], device.moments[0].mid,
+                function( my_moment )
                 {
-                    MomentAction.checkMatch(params['like_mid'], my_moment,
-                        function(im_liked)
+                    MomentAction.checkMatch( params['like_mid'], my_moment,
+                        function( im_liked )
                         {
-                            if (im_liked){
-                                MomentAction.create_channel(my_moment)
+                            if( im_liked )
+                            {
+                                MomentAction.create_channel( my_moment )
                             }
                         }
                     );
@@ -171,30 +176,32 @@ exports.like = function(params, next)
 
 var MomentAction =
 {
-    like : function(target_mid, my_mid, next)
+    like : function( target_mid, my_mid, next )
     {
-        MOMENT.findOne({mid:my_mid},
-            function(err, my_moment)
+        MOMENT.findOne( {mid:my_mid},
+            function( err, my_moment )
             {
-                console.log(my_moment.explore[0]);
-                var target_in_me = my_moment.explore.id(target_mid);
-                target_in_me.like = true
-                MOMENT.findOne({mid:target_mid},
+                console.log( my_moment.explore[0] );
+                var target_in_me = my_moment.explore.id( target_mid );
+                target_in_me.like = true;
+
+                MOMENT.findOne( {mid:target_mid},
                     function(err, target)
                     {
-                        var me_in_target = target.explore.id(my_mid);
-                        if(me_in_target.like)
+                        var me_in_target = target.explore.id( my_mid );
+
+                        if( me_in_target.like )
                         {
                             create_channel( me_in_target, target_in_me,
-                                function(err, chat_channel)
+                                function( err, chat_channel )
                                 {
-                                    next(null, chat_channel);
+                                    next( null, chat_channel );
                                 }
                             );
                         }
                         else
                         {
-                            next(null, null);
+                            next( null, null );
                         }
 
                     }
@@ -207,7 +214,7 @@ var MomentAction =
 
 }
 
-var create_channel = function(me_in_target, target_in_me)
+var create_channel = function( me_in_target, target_in_me )
     {
 
         var chat_channel_id = uuid.v4();
@@ -218,12 +225,12 @@ var create_channel = function(me_in_target, target_in_me)
         target_in_me.chat_channel = chat_channel_id;
 
         me_in_target.save(
-            function(err, target)
+            function( err, target )
             {
                 target_in_me.save(
-                    function(err, target_in_me)
+                    function( err, target_in_me )
                     {
-                        next(null, target_in_me.chat_channel);
+                        next( null, target_in_me.chat_channel );
                     }
                 );
             }
@@ -232,7 +239,7 @@ var create_channel = function(me_in_target, target_in_me)
 
 var AsyncMomentFactory =
 {
-    generate_explore : function(item, next)
+    generate_explore : function( item, next )
     {
         var explore_item = new EXPLORE(
         {
@@ -241,6 +248,6 @@ var AsyncMomentFactory =
             status: item.status,
             like : false,
         });
-        next(null, explore_item);
+        next( null, explore_item );
     },
 };
