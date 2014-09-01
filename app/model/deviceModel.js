@@ -1,13 +1,13 @@
 
 var mongoose        = require('mongoose');
-var Moment    = require(__dirname +'/momentModel');
+var MOMENT    = require(__dirname +'/momentModel');
 var Schema          = mongoose.Schema;
 
 var DeviceSchema   = new Schema({
     device_id: String,
     token: String,
-    moments: [Moment.schema],
-    friends: [Moment.schema]
+    moments: [MOMENT.schema],
+    friends: [MOMENT.schema]
 
 });
 

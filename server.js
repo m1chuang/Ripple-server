@@ -52,9 +52,10 @@ router.route('/moment')
         })
     })
     .put(function(req, res) {
-        MomentCtr.login(req, res,function(err, moment){
-
-            MomentCtr.near(moment,req, res,function(err, list){
+        MomentCtr.login(req, res,function(err, device){
+            console.log('login');
+            console.log(device);
+            MomentCtr.near(device,req, res,function(err, list){
 
                 res.json({
                     explore_list: list,
@@ -64,6 +65,7 @@ router.route('/moment')
 
         })
     });
+
 router.route('/like')
     .post(function(req, res) {
         MomentCtr.init(req, res,function(err, device){
