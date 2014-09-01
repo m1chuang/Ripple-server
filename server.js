@@ -28,12 +28,15 @@ var router = express.Router();
 
 
 router.route('/device')
-    .post(function(req, res) {
+    .post(function(req, res)
+    {
         console.log(req.body);
-        DeviceCtr.findOrCreate(req, res,function(err, device){
+        DeviceCtr.findOrCreate(req, res,function(err, device)
+        {
 
             console.log(device);
-            res.json({
+            res.json(
+            {
                 device: device
             });
 
@@ -42,37 +45,74 @@ router.route('/device')
 
 
 router.route('/moment')
-    .post(function(req, res) {
-        MomentCtr.init(req, res,function(err, device){
-
-            res.json({
-                server_channel_id:'abcd',
+    /**
+    Get update on explore list, etc
+    **/
+    .get(function(req, res)
+    {
+        MomentCtr.init(req, res,function(err, device)
+        {
+            res.json(
+            {
                 device: device
             });
         })
     })
-    .put(function(req, res) {
-        MomentCtr.login(req, res,function(err, device){
-            console.log('login');
-            console.log(device);
-            MomentCtr.near(device,req, res,function(err, list){
+    /**
+    Initiate a moment, request when photo taken
+    **/
+    .post(function(req, res)
+    {
+        MomentCtr.init(req, res,
+            function(err, device)
+            {
 
-                res.json({
-                    explore_list: list,
-                    friend_list: []
+                res.json(
+                {
+                    server_channel_id:'abcd',
+                    device: device
                 });
-            });
+            }
+        );
+    })
+    /**
+    Complete a moment and login
+    **/
+    .put(function(req, res)
+    {
+        MomentCtr.login(req, res,
+            function(err, device)
+            {
+                console.log('login');
+                console.log(device);
+                MomentCtr.near(device,req, res,
+                    function(err, list)
+                    {
 
-        })
+                        res.json(
+                        {
+                            explore_list: list,
+                            friend_list: []
+                        });
+                    }
+                );
+
+            }
+        );
     });
 
 router.route('/like')
-    .post(function(req, res) {
-        MomentCtr.init(req, res,function(err, device){
-
-            res.json({
-                server_channel_id:'abcd',
-                device: device
+    .post(function(req, res)
+    {
+        var params = {
+            like_mid : req.body.like_mid,
+            device_id : req.body.device_id
+        }
+        MomentCtr.like(params,function(err, chat_channel)
+        {
+            res.json(
+            {
+                server_channel_id : chat_channel,
             });
         })
     });
@@ -80,9 +120,11 @@ router.route('/like')
 
 
 router.route('/test')
-    .post(function(req, res){
+    .post(function(req, res)
+    {
         var message = { "some" : "data" };
-        pubnub.publish({
+        pubnub.publish(
+        {
             channel   : 'my_channel',
             message   : message,
             callback  : function(e) { console.log( "SUCCESS!", e ); },

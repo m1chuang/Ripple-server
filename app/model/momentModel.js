@@ -3,7 +3,8 @@ var Schema       = mongoose.Schema;
 var EXPLORE    = require(__dirname +'/momentModel');
 
 
-var MomentSchema   = new Schema({
+var MomentSchema   = new Schema(
+{
     mid: String,
     image_url: String,
     status: String,
@@ -12,5 +13,7 @@ var MomentSchema   = new Schema({
     location: { type: [Number], index: '2d'},
     explore : [EXPLORE.schema]
 });
+
+
 MomentSchema.index({location: '2dsphere'});
 module.exports = mongoose.model('Moment', MomentSchema);
