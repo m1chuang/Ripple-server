@@ -9,14 +9,14 @@ var PUBNUB = require('pubnub').init(
 });
 
 
-exports.subscribe_server= function( moment_id, req, res, cb )
+exports.subscribe_server= function( params, cb )
 {
-        console.log(CHALK.blue('Subscribing to server: '+ moment_id));
+        console.log( CHALK.blue( 'Subscribing to server: '+ params['mid'] ) );
         PUBNUB.publish(
         {
-            channel   : moment_id+'_server',
-            message   : {'message':'Hello'},
-            callback  : function(e) { console.log( "SUCCESS!", e );},
+            channel   : params['mid']+'_server',
+            message   : { 'message':'Hello' },
+            callback  : function(e) { console.log( "SUCCESS!", e ); },
             error     : function(e) { console.log( "FAILED! RETRY PUBLISH!", e ); }
         });
 }

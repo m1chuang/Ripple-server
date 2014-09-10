@@ -4,7 +4,7 @@ var Moment = require('../model/momentModel');
 exports.findOrCreate = function( params, cb )
 {
         //Get device, create one if device does not exist
-        Device.findOne({ device_id: params['device_id'] },
+        Device.findOne( { device_id: params['device_id'] },
             function( err, device )
             {
                 if ( !device )

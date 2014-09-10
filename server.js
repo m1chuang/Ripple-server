@@ -72,12 +72,12 @@ router.route('/moment')
     {
         var params =
         {
-            device_id : req.body.device_id
-            image   :   req.body.image
+            my_device_id : req.body.device_id,
+            image   :   req.body.image,
             lat : req.body.lat,
             lon : req.body.lon
         }
-        MomentCtr.init(req, res,
+        MomentCtr.init( params,
             function(err, device)
             {
                 res.json(
@@ -100,21 +100,17 @@ router.route('/moment')
             skip : req.body.skip,
             offset : req.body.offset
         }
-        MomentCtr.login(req, res,
-            function(err, device)
+        MomentCtr.login( params,
+            function(err, obj)
             {
                 console.log('login');
-                console.log(device);
-                MomentCtr.near(device,req, res,
-                    function(err, list)
-                    {
-                        res.json(
-                        {
-                            explore_list: list,
-                            friend_list: []
-                        });
-                    }
-                );
+                console.log(obj);
+                res.json(
+                {
+                    explore_list: obj,
+                    friend_list: []
+                });
+
 
             }
         );
@@ -126,14 +122,14 @@ router.route('/like')
         var params =
         {
             like_mid : req.body.like_mid,
-            device_id : req.body.device_id
+            my_device_id : req.body.device_id
         }
         MomentCtr.like(params,
-            function(err, chat_channel)
+            function(err, device)
             {
                 res.json(
                 {
-                    server_channel_id : chat_channel,
+                    status : device,
                 });
             }
         );
