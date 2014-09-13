@@ -31,9 +31,10 @@ var router = express.Router();
 
 
 router.route('/device')
-   /**
-    Request when APP is open
-    **/
+
+   /*
+    *   Request when APP is open
+    */
     .post(function(req, res)
     {
         console.log(req.body);
@@ -55,17 +56,36 @@ router.route('/device')
     });
 
 
+
 router.route('/moment')
-    /**
-    Get update on explore list, etc
-    **/
+
+    /*
+    *   Get update on explore list, etc
+    */
     .get(function(req, res)
     {
+        var params =
+        {
+            my_device_id : req.body.device_id,
+            skip : req.body.skip,
+            offset : req.body.offset
+        }
 
+        MomentCtr.getExplore( params,
+            function( explore_list )
+            {
+                res.json(
+                {
+                    explore: explore_list
+                });
+            });
     })
-    /**
-    Initiate a moment, request when photo taken
-    **/
+
+    /*
+    *   Initiate a moment, request when photo taken
+    *   TODO:
+            finish return value
+    */
     .post(function(req, res)
     {
         var params =
@@ -80,23 +100,25 @@ router.route('/moment')
             {
                 res.json(
                 {
-
                     device: device
                 });
-            }
-        );
+
+            });
     })
-    /**
-    Complete a moment and login
-    **/
+
+    /*
+    *   Complete a moment and login
+        TODO:
+            finish return value
+    */
     .put(function(req, res)
     {
         var params =
         {
             device_id : req.body.device_id,
             status : req.body.status,
-            skip : req.body.skip,
-            offset : req.body.offset
+            skip : 0,
+            offset : 20
         }
         MomentCtr.login( params,
             function(err, obj)
@@ -110,9 +132,9 @@ router.route('/moment')
                 });
 
 
-            }
-        );
+            });
     });
+
 
 router.route('/like')
     .post(function(req, res)
@@ -129,8 +151,8 @@ router.route('/like')
                 {
                     status : device,
                 });
-            }
-        );
+
+            });
     });
 
 

@@ -1,11 +1,11 @@
-var mongoose     = require('mongoose');
+var mongoose     = require( 'mongoose' );
 var Schema       = mongoose.Schema;
-var EXPLORE    = require(__dirname +'/momentModel');
-var RELATION    = require(__dirname +'/momentModel');
-var CONNECTION    = require(__dirname +'/connectionModel');
+var EXPLORE    = require( __dirname +'/momentModel' );
+var RELATION    = require( __dirname +'/momentModel' );
+var CONNECTION    = require( __dirname +'/connectionModel' );
 
-var async = require('async');
-var CHALK =  require('chalk');
+var async = require( 'async' );
+var CHALK =  require( 'chalk' );
 
 var MomentSchema   = new Schema(
 {
@@ -15,13 +15,13 @@ var MomentSchema   = new Schema(
     status: String,
     complete: Boolean,
     date:  { type: Date, default: Date.now },
-    location: { type: [Number], index: '2d'},
+    location: { type: [Number], index: '2d' },
     explore : [EXPLORE.schema],
     like_relation: [RELATION.schema],
     connection: [CONNECTION.schema]
 });
 
-MomentSchema.index({location: '2dsphere'});
+MomentSchema.index( { location: '2dsphere' } );
 
 
 var AsyncMomentFactory =
@@ -46,9 +46,6 @@ var AsyncMomentFactory =
 
 
 
-
-
-
 MomentSchema.methods.refreshExplore = function( nearby_moments, next)
 {
     if( !nearby_moments )
@@ -64,8 +61,7 @@ MomentSchema.methods.refreshExplore = function( nearby_moments, next)
                 console.log( explore_list );
                 next( err, explore_list );
 
-            }
-        );
+            });
     }
 
 }
@@ -73,7 +69,7 @@ MomentSchema.methods.refreshExplore = function( nearby_moments, next)
 
 MomentSchema.methods.getNear = function( params, next )
 {
-    return this.model('Moment').find(
+    return this.model( 'Moment' ).find(
     {
         'location' :
         {
@@ -86,13 +82,12 @@ MomentSchema.methods.getNear = function( params, next )
     .skip( params['offset'] )
     .limit( params['limit'] )
     .exec(
-        function ( err, nearby_moments )
+        function( err, nearby_moments )
         {
             //console.log( CHALK.blue('In getNear, nearby_moments: ') );
             //console.log(  nearby_moments );
             next( err, nearby_moments );
-        }
-    );
+        });
 }
 
 
@@ -123,23 +118,22 @@ MomentSchema.methods.addConnection = function( params, next )
             }
 
         },
-        function(err, num, obj)
+        function( err, num, obj )
         {
             console.log(obj);
-            next(err,obj);
-        }
-    );
+            next( err, obj );
+        });
 }
 
 
 MomentSchema.statics.addRemoteConnection = function( params, next )
 {
-    this.model('Moment').findOne(
+    this.model( 'Moment' ).findOne(
 
         {
            'mid' : params['target_mid'],
         },
-        function(err, mo)
+        function( err, mo )
         {
             mo.update(
                 {
@@ -154,25 +148,31 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
                     }
 
                 },
-                function(err,obj)
+                function( err, obj )
                 {
-                    next(err,obj);
-                }
-            );
+                    PUBNUB.notifyRemote(
+                    {
+                        relation : 'like',
+                        remote_mid : params['target_mid'],
+                        target_mid : params['owner_mid'],
+                        'channel_id' : params['channel']
+                    });
 
-        }
-    );
+                    next( err, obj );
+                });
+
+        });
 
 }
 
 
 MomentSchema.statics.addRemoteRelation = function( target_mid, owner_mid, next )
 {
-    this.model('Moment').findOne(
+    this.model( 'Moment' ).findOne(
         {
            'mid' : target_mid,
         },
-        function(err, mo)
+        function( err, mo )
         {
             mo.update(
                 {
@@ -185,19 +185,17 @@ MomentSchema.statics.addRemoteRelation = function( target_mid, owner_mid, next )
                         }
                     }
                 },
-                function(err,obj)
+                function( err, obj )
                 {
-                    next(err,obj);
-                }
-            );
-        }
-    );
+                    next( err, obj );
+                });
+        });
 }
 
 
 MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
 {
-    this.model('Moment').findOne(
+    this.model( 'Moment' ).findOne(
 
         {
            'device_id' : owner_did,
@@ -216,7 +214,7 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
 
         }
     ,
-    function(err, obj)
+    function( err, obj )
     {
         //console.log('obj');
         //console.log(obj.like_relation);

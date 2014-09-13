@@ -18,15 +18,13 @@ exports.findOrCreate = function( params, cb )
                         function( err, device )
                         {
                             return cb( err, device )
-                        }
-                    );
+                        });
+
                 }
                 else
                 {
                     return cb( err, device )
                 }
-            }
-        );
-
+            });
 }
 

@@ -12,7 +12,6 @@ var DeviceSchema   = new Schema(
     moments: [MOMENT.schema],
     friends: [{device_id:String, friend_channel_id:String}]
 
-
 });
 
 

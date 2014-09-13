@@ -63,8 +63,15 @@ var psAction =
     }
 }
 
+/*
+*   Notify an establishment of a connection
+*/
+exports.notifyRemote = function()
+{
+    return 1
+}
 
-exports.subscribe_server= function( params, cb )
+exports.subscribe_server = function( params, cb )
 {
         console.log( CHALK.blue( 'Subscribing to server: '+ params['mid'] ) );
         PUBNUB.publish(
@@ -84,7 +91,7 @@ exports.createConnection = function( type, next )
 
 }
 
-exports.grant= function( channel, message, cb )
+exports.grant = function( channel, message, cb )
 {
         console.log(' heree');
         console.log( CHALK.blue( 'Subscribing to server: '+ channel ) );

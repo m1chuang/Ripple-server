@@ -49,11 +49,10 @@ exports.init = function( params, next )
                     function( err, device )
                     {
                         next( err,device )
-                    }
-                );
+                    });
             }
-        }
-    );
+
+        });
 }
 
 
@@ -102,23 +101,26 @@ exports.login = function( params, next )
                                     {
 
                                         next( err, obj1 );
-                                    }
-                                );
-                            }
-                        );
+                                    });
 
-                    }
-                );
 
+                            });
+
+
+                    });
 
 
             }
-        }
-    );
+
+        });
+
 }
 
 
+exports.getExplore = function( params, next )
+{
 
+}
 
 
 /*
@@ -129,16 +131,16 @@ exports.login = function( params, next )
 exports.like = function( params, next )
 {
     MOMENT.getRelation( params['like_mid'], params['my_device_id'],
-        function(err,obj)
+        function( err, obj )
         {
             if( obj.like_relation.length != 0 )
             {
                 console.log('found');
 
                 PUBNUB.createConnection( 'like',
-                    function(channel_id)
+                    function( channel_id )
                     {
-                        obj.addConnection( 'like', function(){});
+                        obj.addConnection( 'like', function(){} );
 
                         MOMENT.addRemoteConnection(
                             {
@@ -149,20 +151,19 @@ exports.like = function( params, next )
                             },
                             function(){}
                         );
-                    }
-                );
 
-
+                    });
 
             }
             else
             {
-                MOMENT.addRemoteRelation(params['like_mid'], obj.mid, function(){});
-                console.log('not found');
-            }
-            next( err, obj);
-        })
+                MOMENT.addRemoteRelation( params['like_mid'], obj.mid, function(){} );
+                console.log( 'not found' );
 
+            }
+            next( err, obj );
+
+        });
 
 }
 
