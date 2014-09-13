@@ -3,6 +3,7 @@ var app     = express();
 var bodyParser  = require('body-parser');
 var mongoose   = require('mongoose');
 
+/*
 var pubnub = require("pubnub").init(
 {
     publish_key   : "demo",//pub-c-afb09cf5-004d-43c6-9074-8bcd52c4e331",
@@ -10,11 +11,12 @@ var pubnub = require("pubnub").init(
     secret_key    : "sec-c-YWY2ZjQyOTgtMjEzNy00YjdmLWIzMzMtZGZiOWQ3MDc0M2Vj",
     origin:"pubsub.pubnub.com"
 });
-
+*/
 
 
 mongoose.connect('mongodb://neshorange:Nesh6502@ds063919.mongolab.com:63919/glimpse'); // connect to our database
 
+var Pubnub   = require(__dirname +'/app/controller/pubnub');
 var DeviceCtr     = require(__dirname +'/app/controller/device');
 var MomentCtr     = require(__dirname +'/app/controller/moment');
 
@@ -29,12 +31,14 @@ var router = express.Router();
 
 
 router.route('/device')
+   /**
+    Request when APP is open
+    **/
     .post(function(req, res)
     {
         console.log(req.body);
         var params =
         {
-            like_mid : req.body.like_mid,
             device_id : req.body.device_id
         }
         DeviceCtr.findOrCreate(params,
@@ -57,13 +61,7 @@ router.route('/moment')
     **/
     .get(function(req, res)
     {
-        MomentCtr.init(req, res,function(err, device)
-        {
-            res.json(
-            {
-                device: device
-            });
-        })
+
     })
     /**
     Initiate a moment, request when photo taken
@@ -82,7 +80,7 @@ router.route('/moment')
             {
                 res.json(
                 {
-                    server_channel_id:'abcd',
+
                     device: device
                 });
             }
@@ -137,22 +135,27 @@ router.route('/like')
 
 
 
-router.route('/test')
+router.route('/pub')
     .post(function(req, res)
     {
-        var message = { "some" : "data" };
-        pubnub.publish(
-        {
-            channel   : 'my_channel',
-            message   : message,
-            callback  : function(e) { console.log( "SUCCESS!", e ); },
-            error     : function(e) { console.log( "FAILED! RETRY PUBLISH!", e ); }
-        });
+        console.log( "pubb");
+        Pubnub.pub(req.body.channel, 'hi');
     });
 
 
+router.route('/grant')
+    .post(function(req, res)
+    {
+        console.log( "pubb");
+        Pubnub.grant(req.body.channel, 'hi');
+    });
 
-
+router.route('/sub')
+    .post(function(req, res)
+    {
+        console.log( "pubb");
+        Pubnub.subTest(req.body.channel, 'hi');
+    });
 
 
 

@@ -97,14 +97,12 @@ MomentSchema.methods.getNear = function( params, next )
 
 
 
-MomentSchema.methods.addConnection = function( type, next )
+MomentSchema.methods.addConnection = function( params, next )
 {
-    console.log(this.like_relation[0]);
+
     var target_mid = this.like_relation[0].target_mid;
-    console.log(target_mid);
     var owner_mo = this;
-    this.like_relation.pull(5
-            );
+
     this.update(
         {
             $addToSet :
@@ -112,7 +110,7 @@ MomentSchema.methods.addConnection = function( type, next )
                 connection :
                 {
                     'target_mid' : target_mid,
-                    'channel_id' : 'uokeuokuuu',
+                    'channel_id' : params['channel'],
                     'type' : type
                 }
             },
@@ -134,12 +132,12 @@ MomentSchema.methods.addConnection = function( type, next )
 }
 
 
-MomentSchema.statics.addRemoteConnection = function( target_mid, owner_mid, type, next )
+MomentSchema.statics.addRemoteConnection = function( params, next )
 {
     this.model('Moment').findOne(
 
         {
-           'mid' : target_mid,
+           'mid' : params['target_mid'],
         },
         function(err, mo)
         {
@@ -149,8 +147,8 @@ MomentSchema.statics.addRemoteConnection = function( target_mid, owner_mid, type
                     {
                         connection :
                         {
-                            'target_mid' : owner_mid,
-                            'channel_id' : 'uokeuokuuu',
+                            'target_mid' : params['owner_mid'],
+                            'channel_id' : params['channel'],
                             'type' : type
                         }
                     }

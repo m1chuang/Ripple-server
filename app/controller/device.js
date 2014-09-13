@@ -11,7 +11,7 @@ exports.findOrCreate = function( params, cb )
                 {
                     var device = new Device(
                     {
-                        device_id : params['device_id']
+                        server_channel : server_channel_id
                     });
 
                     device.save(

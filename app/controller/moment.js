@@ -11,7 +11,9 @@ var time = require('moment');
 var uuid = require('node-uuid');
 
 
-
+/*
+*   Upload photo and create a temporary moment
+*/
 exports.init = function( params, next )
 {
     console.log( CHALK.red('In MOMENT.init') );
@@ -26,15 +28,9 @@ exports.init = function( params, next )
             else
             {
                 var moment_id = uuid.v4();
+
                 params['mid']=moment_id;
-                /*
-                PUBNUB.subscribe_server( params,
-                    function( message )
-                    {
-                        console.log( message );
-                    }
-                );
-*/
+
                 S3.upload( params['image'], { key:moment_id } );
                 var moment = new MOMENT(
                 {
@@ -63,7 +59,9 @@ exports.init = function( params, next )
 
 
 
-
+/*
+*   Finalize the temporary moment
+*/
 exports.login = function( params, next )
 {
     console.log( CHALK.red('In MOMENT.login') );
@@ -91,16 +89,19 @@ exports.login = function( params, next )
                 });
 
                 moment.getNear( params,
-                    function(err,obj)
+                    function( err, obj )
                     {
-                        moment.refreshExplore(obj,
-                            function(err, explore_list){
+
+                        moment.refreshExplore( obj,
+                            function( err, explore_list)
+                            {
 
                                 moment.explore = explore_list;
                                 MOMENT.create( moment,
-                                    function(err,obj1)
+                                    function( err, obj1 )
                                     {
-                                        next( err, obj1);
+
+                                        next( err, obj1 );
                                     }
                                 );
                             }
@@ -120,22 +121,38 @@ exports.login = function( params, next )
 
 
 
-
+/*
+*   Check if a like relation with the target is already place in your relations
+*   if yes, create the connection. Otherwise, place a like relation in the target's relations
+*/
 
 exports.like = function( params, next )
 {
-
-
     MOMENT.getRelation( params['like_mid'], params['my_device_id'],
         function(err,obj)
         {
             if( obj.like_relation.length != 0 )
             {
                 console.log('found');
-                //todo generate channel
-                obj.addConnection( 'like', function(){});
-                MOMENT.addRemoteConnection(params['like_mid'], obj.mid, 'like', function(){});
-                //todo pubnub message
+
+                PUBNUB.createConnection( 'like',
+                    function(channel_id)
+                    {
+                        obj.addConnection( 'like', function(){});
+
+                        MOMENT.addRemoteConnection(
+                            {
+                                target_mid : params['like_mid'],
+                                owner_mid : obj.mid,
+                                type : 'like',
+                                channel : channel_id
+                            },
+                            function(){}
+                        );
+                    }
+                );
+
+
 
             }
             else
