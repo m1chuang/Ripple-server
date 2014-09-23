@@ -5,14 +5,14 @@ var MOMENT    = require(__dirname +'/momentModel');
 var Schema          = mongoose.Schema;
 
 var DeviceSchema   = new Schema(
-{
-    device_id: String,
-    token: String,
-    server_channel: String,
-    moments: [MOMENT.schema],
-    friends: [{device_id:String, friend_channel_id:String}]
+    {
+        device_id: String,
+        token: String,
+        server_channel: String,
+        moments: [MOMENT.schema],
+        friends: [{device_id:String, friend_channel_id:String}]
 
-});
+    });
 
 
 DeviceSchema.methods.getCurrentMoment = function(next)

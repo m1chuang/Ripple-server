@@ -104,16 +104,17 @@ MomentSchema.methods.addConnection = function( params, next )
             {
                 connection :
                 {
-                    'target_mid' : target_mid,
-                    'channel_id' : params['channel'],
-                    'type' : type
+                    'target_mid'    : params['target_mid'],
+                    'channel_id'    : params['channel_id'],
+                    'auth_key'      : params['auth_key'],
+                    'type'          : params['type']
                 }
             },
             $pull:
             {
                 like_relation:
                 {
-                    'target_mid' : target_mid
+                    'target_mid' : params['target_mid']
                 }
             }
 
@@ -143,6 +144,7 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
                         {
                             'target_mid' : params['owner_mid'],
                             'channel_id' : params['channel'],
+                            'auth_key' : params['auth_key'],
                             'type' : type
                         }
                     }
@@ -152,10 +154,14 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
                 {
                     PUBNUB.notifyRemote(
                     {
-                        relation : 'like',
-                        remote_mid : params['target_mid'],
-                        target_mid : params['owner_mid'],
-                        'channel_id' : params['channel']
+                        relation            : 'like',
+                        remote_mid          : params['target_mid'],
+                        target_mid          : params['owner_mid'],
+                        chat_channel_id     : params['channel'],
+                        server_channel_id   : mo.device_id,
+
+                        //using server master key
+                        //auth_key : params['auth_key']
                     });
 
                     next( err, obj );

@@ -3,17 +3,6 @@ var app     = express();
 var bodyParser  = require('body-parser');
 var mongoose   = require('mongoose');
 
-/*
-var pubnub = require("pubnub").init(
-{
-    publish_key   : "demo",//pub-c-afb09cf5-004d-43c6-9074-8bcd52c4e331",
-    subscribe_key : "demo",//"sub-c-0b0398ea-30da-11e4-b3c3-02ee2ddab7fe",
-    secret_key    : "sec-c-YWY2ZjQyOTgtMjEzNy00YjdmLWIzMzMtZGZiOWQ3MDc0M2Vj",
-    origin:"pubsub.pubnub.com"
-});
-*/
-
-
 mongoose.connect('mongodb://neshorange:Nesh6502@ds063919.mongolab.com:63919/glimpse'); // connect to our database
 
 var Pubnub   = require(__dirname +'/app/controller/pubnub');
@@ -47,9 +36,9 @@ router.route('/device')
             {
                 console.log(device);
                 res.json(
-                {
-                    device: device
-                });
+                    {
+                        device: device
+                    });
 
             }
         )
@@ -61,6 +50,8 @@ router.route('/moment')
 
     /*
     *   Get update on explore list, etc
+        TODO:
+            finish getExplore
     */
     .get(function(req, res)
     {
@@ -75,9 +66,9 @@ router.route('/moment')
             function( explore_list )
             {
                 res.json(
-                {
-                    explore: explore_list
-                });
+                    {
+                        explore: explore_list
+                    });
             });
     })
 
@@ -99,9 +90,9 @@ router.route('/moment')
             function(err, device)
             {
                 res.json(
-                {
-                    device: device
-                });
+                    {
+                        device: device
+                    });
 
             });
     })
@@ -121,15 +112,15 @@ router.route('/moment')
             offset : 20
         }
         MomentCtr.login( params,
-            function(err, obj)
+            function( err, explore_list, device )
             {
                 console.log('login');
-                console.log(obj);
+                console.log(explore_list);
                 res.json(
-                {
-                    explore_list: obj,
-                    friend_list: []
-                });
+                    {
+                        explore_list: explore_list,
+                        friend_list: []
+                    });
 
 
             });
@@ -144,13 +135,14 @@ router.route('/like')
             like_mid : req.body.like_mid,
             my_device_id : req.body.device_id
         }
+
         MomentCtr.like(params,
             function(err, device)
             {
                 res.json(
-                {
-                    status : device,
-                });
+                    {
+                        status : device,
+                    });
 
             });
     });

@@ -100,7 +100,7 @@ exports.login = function( params, next )
                                     function( err, obj1 )
                                     {
 
-                                        next( err, obj1 );
+                                        next( err, obj1, device );
                                     });
 
 
@@ -131,25 +131,33 @@ exports.getExplore = function( params, next )
 exports.like = function( params, next )
 {
     MOMENT.getRelation( params['like_mid'], params['my_device_id'],
-        function( err, obj )
+        function( err, my_moment )
         {
-            if( obj.like_relation.length != 0 )
+            if( my_moment.like_relation.length != 0 )
             {
                 console.log('found');
 
-                PUBNUB.createConnection( 'like',
-                    function( channel_id )
+                PUBNUB.createConversation(
+                    function( channel_id, initator_auth_key, target_auth_key )
                     {
-                        obj.addConnection( 'like', function(){} );
+
+                        my_moment.addConnection(
+                            {
+                                type       : 'like',
+                                channel_id : channel_id:,
+                                auth_key   : initator_auth_key
+                            },
+                            function( err, obj){} );
 
                         MOMENT.addRemoteConnection(
                             {
-                                target_mid : params['like_mid'],
-                                owner_mid : obj.mid,
-                                type : 'like',
-                                channel : channel_id
+                                target_mid  : params['like_mid'],
+                                owner_mid   : my_moment.mid,
+                                type        : 'like',
+                                channel     : channel_id,
+                                auth_key    : target_auth_key
                             },
-                            function(){}
+                            function( err, obj ){}
                         );
 
                     });
@@ -161,6 +169,7 @@ exports.like = function( params, next )
                 console.log( 'not found' );
 
             }
+
             next( err, obj );
 
         });
