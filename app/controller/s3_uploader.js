@@ -19,21 +19,21 @@ exports.upload = function( fileData, fileInfo, cb )
 
     console.log( buf );
     s3.putObject(
-    {
-        Bucket: 'glimpsing',
-        Key: fileInfo['key']+'.jpg',
-        Body: buf,
-        ACL: 'public-read',
-        ContentType:'image/png',
-        ContentEncoding: 'base64'
+        {
+            Bucket: 'glimpsing',
+            Key: fileInfo['key']+'.jpg',
+            Body: buf,
+            ACL: 'public-read',
+            ContentType:'image/png',
+            ContentEncoding: 'base64'
 
-    },
-    function( resp )
-    {
-        console.log( arguments );
-        console.log( chalk.blue('Successfully uploaded.') );
+        },
+        function( resp )
+        {
+            console.log( arguments );
+            console.log( chalk.blue('Successfully uploaded.') );
 
-    });
+        });
 
 
 }

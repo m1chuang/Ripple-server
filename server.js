@@ -3,7 +3,7 @@ var app     = express();
 var bodyParser  = require('body-parser');
 var mongoose   = require('mongoose');
 
-mongoose.connect('mongodb://neshorange:Nesh6502@ds063919.mongolab.com:63919/glimpse'); // connect to our database
+mongoose.connect('mongodb://neshorange:Nesh6502@ds039850.mongolab.com:39850/glimpse-test'); // connect to our database
 
 var Pubnub   = require(__dirname +'/app/controller/pubnub');
 var DeviceCtr     = require(__dirname +'/app/controller/device');
@@ -12,7 +12,7 @@ var MomentCtr     = require(__dirname +'/app/controller/moment');
 
 app.use(bodyParser());
 
-var port = process.env.PORT || 8000;
+var port = process.env.PORT || 5050;
 
 var router = express.Router();
 
@@ -24,21 +24,24 @@ router.route('/device')
    /*
     *   Request when APP is open
     */
-    .post(function(req, res)
+    .post( function( req, res )
     {
-        console.log(req.body);
+
         var params =
         {
             device_id : req.body.device_id
         }
-        DeviceCtr.findOrCreate(params,
-            function(err, device)
+        console.log('params');
+        console.log(params);
+        DeviceCtr.findOrCreate( params,
+            function( err, device, status )
             {
+                console.log('out device');
                 console.log(device);
                 res.json(
                     {
-                        device: device
-                    });
+                        server_auth_key: device.server_auth_key
+                    }, status);
 
             }
         )
@@ -53,7 +56,7 @@ router.route('/moment')
         TODO:
             finish getExplore
     */
-    .get(function(req, res)
+    .get( function( req, res )
     {
         var params =
         {
@@ -77,7 +80,7 @@ router.route('/moment')
     *   TODO:
             finish return value
     */
-    .post(function(req, res)
+    .post( function( req, res )
     {
         var params =
         {
@@ -87,7 +90,7 @@ router.route('/moment')
             lon : req.body.lon
         }
         MomentCtr.init( params,
-            function(err, device)
+            function onInit( err, device )
             {
                 res.json(
                     {
@@ -102,17 +105,17 @@ router.route('/moment')
         TODO:
             finish return value
     */
-    .put(function(req, res)
+    .put( function( req, res )
     {
         var params =
         {
-            device_id : req.body.device_id,
+            my_device_id : req.body.device_id,
             status : req.body.status,
             skip : 0,
             offset : 20
         }
         MomentCtr.login( params,
-            function( err, explore_list, device )
+            function onLogin( err, explore_list, device )
             {
                 console.log('login');
                 console.log(explore_list);
@@ -128,7 +131,7 @@ router.route('/moment')
 
 
 router.route('/like')
-    .post(function(req, res)
+    .post( function( req, res )
     {
         var params =
         {
@@ -136,8 +139,8 @@ router.route('/like')
             my_device_id : req.body.device_id
         }
 
-        MomentCtr.like(params,
-            function(err, device)
+        MomentCtr.like( params,
+            function onLike( err, device )
             {
                 res.json(
                     {
@@ -150,25 +153,30 @@ router.route('/like')
 
 
 router.route('/pub')
-    .post(function(req, res)
+    .post( function( req, res )
     {
         console.log( "pubb");
-        Pubnub.pub(req.body.channel, 'hi');
+        Pubnub.pub( req.body.channel, 'hi' );
     });
 
 
 router.route('/grant')
-    .post(function(req, res)
+    .post( function( req, res )
     {
         console.log( "pubb");
-        Pubnub.grant(req.body.channel, 'hi');
+        Pubnub.grant( req.body.channel, 'hi' );
     });
 
 router.route('/sub')
-    .post(function(req, res)
+    .post( function(req, res)
     {
         console.log( "pubb");
-        Pubnub.subTest(req.body.channel, 'hi');
+        Pubnub.subscribe(req.body.channel, req.body.key,function(info){
+                  res.json(
+                    {
+                        status : info,
+                    });
+        });
     });
 
 

@@ -8,7 +8,7 @@ var DeviceSchema   = new Schema(
     {
         device_id: String,
         token: String,
-        server_channel: String,
+        server_auth_key: String,
         moments: [MOMENT.schema],
         friends: [{device_id:String, friend_channel_id:String}]
 

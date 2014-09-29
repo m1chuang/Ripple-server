@@ -28,7 +28,7 @@ var pnMessage =
 }
 
 /*
-*   Notify an client
+*   Notify a client
 */
 exports.notifyRemote = function( params, next)
 {
@@ -45,9 +45,9 @@ exports.notifyRemote = function( params, next)
 }
 
 
-exports.createServerConnection = function( device_id, next )
+exports.createServerConnection = function( device_id, server_auth_key, next )
 {
-    var client_auth_key = uuid.v4();
+    var client_auth_key = server_auth_key;
     PUBNUB.grant(
         {
             channel     : device_id,
@@ -56,8 +56,16 @@ exports.createServerConnection = function( device_id, next )
             callback    : function(e) { console.log( 'SUCCESS!', e ); },
             error       : function(e) { console.log( 'FAILED! RETRY PUBLISH!', e ); }
         });
-
-    next();
+    PUBNUB.grant(
+        {
+            channel     : device_id,
+            auth_key    : server_master_key,
+            read        : true,
+            write       : true,
+            callback    : function(e) { console.log( 'SUCCESS!', e ); },
+            error       : function(e) { console.log( 'FAILED! RETRY PUBLISH!', e ); }
+        });
+    next(client_auth_key);
 }
 
 exports.createConversation = function( next )
@@ -111,7 +119,24 @@ exports.createConversation = function( next )
 
 
 
+exports.subscribe = function( channel, auth_key, cb )
+{
+        console.log('SUBBING');
+        PUBNUB.subscribe({
+            channel: channel,
+            auth_key: auth_key,
+            connect: function(info){
+                console.log('connected');
+                cb(info);
+            },
+            callback: function(info){
+                console.log(info);
+                console.log('MESSAGE RECEIVED!!!');
 
+            },
+            error       : function(e) { console.log( 'FAILED! RETRY SUB!', e ); cb();}
+        })
+}
 
 
 

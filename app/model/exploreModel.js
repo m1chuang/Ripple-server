@@ -9,6 +9,5 @@ var exploreSchema = new Schema(
     status: String,
     like : false,
     connect : false,
-    chat_channel: String
 })
 

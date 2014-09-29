@@ -1,5 +1,7 @@
 var Device     = require('../model/deviceModel');
 var Moment = require('../model/momentModel');
+var uuid = require('node-uuid');
+var PUBNUB = require('../controller/pubnub');
 
 exports.findOrCreate = function( params, next )
 {
@@ -7,8 +9,14 @@ exports.findOrCreate = function( params, next )
         Device.findOne( { device_id: params['device_id'] },
             function( err, device )
             {
+
+
+                console.log('db search finish');
+                console.log(err);
+                console.log(device);
                 if ( !device )
                 {
+                    console.log('no existing');
                     //var server_channel_id = uuid.v4();
                     var server_auth_key = uuid.v4();
 
@@ -19,20 +27,21 @@ exports.findOrCreate = function( params, next )
                             //server_channel : server_channel_id,
                             server_auth_key : server_auth_key
                         });
-
-                    PUBNUB.createServerConnection( params['device_id'],
+                    console.log(device);
+                    PUBNUB.createServerConnection( params['device_id'], server_auth_key,
                         function()
                         {
                             device.save(
                                 function( err, device )
                                 {
-                                    next( err, device )
+                                    next( err, device, 201 );
                                 });
                         });
                 }
                 else
                 {
-                    next( err, device )
+                    console.log('exist');
+                    next( err, device, 200 );
                 }
             });
 }

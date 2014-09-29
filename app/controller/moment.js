@@ -10,7 +10,6 @@ var async = require('async');
 var time = require('moment');
 var uuid = require('node-uuid');
 
-
 /*
 *   Upload photo and create a temporary moment
 */
@@ -18,7 +17,7 @@ exports.init = function( params, next )
 {
     console.log( CHALK.red('In MOMENT.init') );
     DEVICE.findOne( { device_id: params['my_device_id'] },
-        function( err, device )
+        function onFind( err, device )
         {
             if( !device )
             {
@@ -28,9 +27,7 @@ exports.init = function( params, next )
             else
             {
                 var moment_id = uuid.v4();
-
                 params['mid']=moment_id;
-
                 S3.upload( params['image'], { key:moment_id } );
                 var moment = new MOMENT(
                 {
@@ -44,19 +41,14 @@ exports.init = function( params, next )
                 });
 
                 device.moments.set( 0, moment );
-
                 device.save(
-                    function( err, device )
+                    function onDeviceSave( err, device )
                     {
                         next( err,device )
                     });
             }
-
         });
 }
-
-
-
 
 /*
 *   Finalize the temporary moment
@@ -66,15 +58,17 @@ exports.login = function( params, next )
     console.log( CHALK.red('In MOMENT.login') );
 
     DEVICE.findOne( { device_id: params['my_device_id'] },
-        function(err,device)
+        function onFind(err,device)
         {
             if( !device )
             {
+                console.log('not found');
                 console.error( device );
                 next( err, device );
             }
             else
             {
+                console.log('found');
                 var temp_moment = device.moments[0];
                 var moment = new MOMENT(
                 {
@@ -88,32 +82,21 @@ exports.login = function( params, next )
                 });
 
                 moment.getNear( params,
-                    function( err, obj )
+                    function prepareExploreList( err, obj )
                     {
-
-                        moment.refreshExplore( obj,
-                            function( err, explore_list)
+                        moment.createExplore( obj,
+                            function saveExploreList( err, explore_list)
                             {
-
                                 moment.explore = explore_list;
                                 MOMENT.create( moment,
-                                    function( err, obj1 )
+                                    function onMomentCreate( err, obj1 )
                                     {
-
                                         next( err, obj1, device );
                                     });
-
-
                             });
-
-
                     });
-
-
             }
-
         });
-
 }
 
 
@@ -127,24 +110,22 @@ exports.getExplore = function( params, next )
 *   Check if a like relation with the target is already place in your relations
 *   if yes, create the connection. Otherwise, place a like relation in the target's relations
 */
-
 exports.like = function( params, next )
 {
     MOMENT.getRelation( params['like_mid'], params['my_device_id'],
-        function( err, my_moment )
+        function connectOrCreate( err, my_moment )
         {
             if( my_moment.like_relation.length != 0 )
             {
                 console.log('found');
-
                 PUBNUB.createConversation(
-                    function( channel_id, initator_auth_key, target_auth_key )
+                    function addConnections( channel_id, initator_auth_key, target_auth_key )
                     {
 
                         my_moment.addConnection(
                             {
                                 type       : 'like',
-                                channel_id : channel_id:,
+                                channel_id : channel_id,
                                 auth_key   : initator_auth_key
                             },
                             function( err, obj){} );
@@ -157,22 +138,16 @@ exports.like = function( params, next )
                                 channel     : channel_id,
                                 auth_key    : target_auth_key
                             },
-                            function( err, obj ){}
-                        );
-
+                            function( err, obj ){});
                     });
-
             }
             else
             {
                 MOMENT.addRemoteRelation( params['like_mid'], obj.mid, function(){} );
                 console.log( 'not found' );
-
             }
 
             next( err, obj );
-
         });
-
 }
 
