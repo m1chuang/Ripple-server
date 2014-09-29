@@ -119,7 +119,7 @@ exports.createConversation = function( next )
 
 
 
-exports.subscribe = function( channel, auth_key, cb )
+exports.testSubscribe = function( channel, auth_key, cb )
 {
         console.log('SUBBING');
         PUBNUB.subscribe({
@@ -127,12 +127,18 @@ exports.subscribe = function( channel, auth_key, cb )
             auth_key: auth_key,
             connect: function(info){
                 console.log('connected');
+                PUBNUB.publish({channel: channel , message : '777',
+                        callback : function(response) {
+                            //assert.deepEqual(response[0],1);
+                        }
+                    });
                 cb(info);
             },
             callback: function(info){
                 console.log(info);
                 console.log('MESSAGE RECEIVED!!!');
-
+                PUBNUB.unsubscribe({channel : channel});
+                    done();
             },
             error       : function(e) { console.log( 'FAILED! RETRY SUB!', e ); cb();}
         })

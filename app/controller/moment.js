@@ -50,6 +50,7 @@ exports.init = function( params, next )
         });
 }
 
+
 /*
 *   Finalize the temporary moment
 */
@@ -70,6 +71,7 @@ exports.login = function( params, next )
             {
                 console.log('found');
                 var temp_moment = device.moments[0];
+                console.log(device);
                 var moment = new MOMENT(
                 {
                      mid :           temp_moment.mid,
