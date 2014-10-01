@@ -1,4 +1,5 @@
 var CHALK = require('chalk');
+var uuid = require('node-uuid');
 
 var PUBNUB = require('pubnub').init(
     {
@@ -32,7 +33,9 @@ var pnMessage =
 */
 exports.notifyRemote = function( params, next)
 {
-     PUBNUB.publish(
+    console.log('pnMessage');
+    console.log(pnMessage[ params['type'] ]);
+    PUBNUB.publish(
         {
             channel   : params['channel_id'],
             auth_key  : server_master_key,

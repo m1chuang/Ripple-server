@@ -38,10 +38,10 @@ router.route('/device')
             {
                 console.log('out device');
                 console.log(device);
-                res.json(
+                res.status(status).json(
                     {
                         server_auth_key: device.server_auth_key
-                    }, status);
+                    });
 
             }
         )

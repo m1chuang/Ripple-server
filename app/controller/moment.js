@@ -32,13 +32,14 @@ exports.init = function( params, next )
                 var moment = new MOMENT(
                 {
                      mid :           moment_id,
-                     device_id :     params['device_id'],
+                     device_id :     params['my_device_id'],
                      image_url :     'https://s3-us-west-2.amazonaws.com/glimpsing/'+moment_id,
                      complete :      false,
                      date :          time(),
                      status :        '',
                      location :      [params['lon'], params['lat']],
-                     explore:        []
+                     explore:        [],
+                     like_relation  : []
                 });
 
                 params['offset'] = 0;
@@ -54,11 +55,12 @@ exports.init = function( params, next )
                                 device.save(
                                     function onDeviceSave( err, device )
                                     {
-                                        next( err,device )
+                                        //next( err,device )
                                     });
 
                             });
                     });
+                next(err,204);
 
             }
         });
@@ -85,6 +87,7 @@ exports.login = function( params, next )
             {
                 console.log('found');
                 var temp_moment = device.moments[0];
+                console.log(temp_moment);
                 console.log(device);
                 var moment = new MOMENT(
                 {
@@ -94,6 +97,7 @@ exports.login = function( params, next )
                      complete :      true,
                      date :          temp_moment.time,
                      explore :       temp_moment.explore,
+                     like_relation : [],
                      status :        params['status'],
                      location :      temp_moment.location
                 });
@@ -124,7 +128,8 @@ exports.like = function( params, next )
     MOMENT.getRelation( params['like_mid'], params['my_device_id'],
         function connectOrCreate( err, my_moment )
         {
-            if( my_moment.like_relation.length != 0 )
+            console.log(my_moment);
+            if( my_moment != null && my_moment.like_relation.length != 0 )
             {
                 console.log('found');
                 PUBNUB.createConversation(
@@ -137,7 +142,7 @@ exports.like = function( params, next )
                                 channel_id : channel_id,
                                 auth_key   : initator_auth_key
                             },
-                            function( err, obj){} );
+                            function( err, my_moment){} );
 
                         MOMENT.addRemoteConnection(
                             {
@@ -147,16 +152,16 @@ exports.like = function( params, next )
                                 channel     : channel_id,
                                 auth_key    : target_auth_key
                             },
-                            function( err, obj ){});
+                            function( err, my_moment ){});
                     });
             }
             else
             {
-                MOMENT.addRemoteRelation( params['like_mid'], obj.mid, function(){} );
+                MOMENT.addRemoteRelation( params['like_mid'], my_moment.mid, function(){} );
                 console.log( 'not found' );
             }
 
-            next( err, obj );
+            next( err, my_moment );
         });
 }
 

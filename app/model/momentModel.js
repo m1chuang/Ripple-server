@@ -3,7 +3,7 @@ var Schema       = mongoose.Schema;
 var EXPLORE    = require( __dirname +'/momentModel' );
 var RELATION    = require( __dirname +'/momentModel' );
 var CONNECTION    = require( __dirname +'/connectionModel' );
-
+var PUBNUB = require('../controller/pubnub');
 var async = require( 'async' );
 var CHALK =  require( 'chalk' );
 
@@ -56,9 +56,9 @@ MomentSchema.methods.createExplore = function( nearby_moments, next)
         async.map( nearby_moments, AsyncMomentFactory.generate_explore.bind( AsyncMomentFactory ),
             function onExploreGenerate( err, explore_list )
             {
-                console.log( CHALK.blue('-explore_list: ') );
-                console.log( explore_list );
-                console.log( this );
+                //console.log( CHALK.blue('-explore_list: ') );
+                //console.log( explore_list );
+                //console.log( this );
                 next( err, explore_list );
             });
     }
@@ -81,8 +81,8 @@ MomentSchema.methods.getNear = function( params, next )
             function( err, nearby_moments )
             {
                 if (err) throw err;
-                console.log( CHALK.blue('-nearby_moments: ') );
-                console.log(  nearby_moments );                
+                //console.log( CHALK.blue('-nearby_moments: ') );
+                //console.log(  nearby_moments );                
                 next( err, nearby_moments );
             });
 }
@@ -90,6 +90,9 @@ MomentSchema.methods.getNear = function( params, next )
 MomentSchema.methods.addConnection = function( params, next )
 {
 
+    console.log( CHALK.blue('addConnection: ') );     
+    //console.log( this.like_relation[0].target_mid );     
+    //console.log( this.like_relation );     
     var target_mid = this.like_relation[0].target_mid;
     var owner_mo = this;
     this.update(
@@ -98,24 +101,26 @@ MomentSchema.methods.addConnection = function( params, next )
             {
                 connection :
                 {
-                    'target_mid'    : params['target_mid'],
+                    'target_mid'    : target_mid,
                     'channel_id'    : params['channel_id'],
                     'auth_key'      : params['auth_key'],
                     'type'          : params['type']
                 }
             },
-            $pull:
+            $pull :
             {
                 like_relation:
                 {
-                    'target_mid' : params['target_mid']
+                    'target_mid' : target_mid
                 }
             }
 
         },
         function onUpdate( err, num, obj )
         {
-            console.log(obj);
+            //console.log( CHALK.blue('-addconncetion: ') );
+            //console.log(obj);
+            //console.log(err);
             next( err, obj );
         });
 }
@@ -137,7 +142,14 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
                             'target_mid'    : params['owner_mid'],
                             'channel_id'    : params['channel'],
                             'auth_key'      : params['auth_key'],
-                            'type'          : type
+                            'type'          : params['type']
+                        }
+                    },                    
+                    $pull :
+                    {
+                        like_relation:
+                        {
+                            'target_mid' : params['owner_mid']
                         }
                     }
                 },
@@ -145,7 +157,7 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
                 {
                     PUBNUB.notifyRemote(
                         {
-                            relation            : 'like',
+                            type            : 'like',
                             remote_mid          : params['target_mid'],
                             target_mid          : params['owner_mid'],
                             chat_channel_id     : params['channel'],
@@ -153,8 +165,9 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
 
                             //using server master key
                             //auth_key : params['auth_key']
-                        });
-
+                        },function(){});
+                    console.log( CHALK.blue('-addRemoteconncetion: ') );
+                    //console.log(err);
                     next( err, obj );
                 });
         });
@@ -207,8 +220,9 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
         },
         function( err, obj )
         {
-            //console.log('obj');
-            //console.log(obj.like_relation);
+            console.log(err)
+            console.log('obj');
+            console.log(obj);
             next( err, obj );
         });
 }
