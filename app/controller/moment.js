@@ -37,15 +37,29 @@ exports.init = function( params, next )
                      complete :      false,
                      date :          time(),
                      status :        '',
-                     location :      [params['lat'], params['lon']]
+                     location :      [params['lon'], params['lat']],
+                     explore:        []
                 });
 
-                device.moments.set( 0, moment );
-                device.save(
-                    function onDeviceSave( err, device )
-                    {
-                        next( err,device )
+                params['offset'] = 0;
+                params['limit'] = 20;
+                moment.getNear( params,
+                    function prepareExploreList( err, obj )
+                    {                                                
+                        moment.createExplore( obj,
+                            function saveExploreList( err, explore_list)
+                            {
+                                moment.explore = explore_list;
+                                device.moments.set( 0, moment );                                                                
+                                device.save(
+                                    function onDeviceSave( err, device )
+                                    {
+                                        next( err,device )
+                                    });
+
+                            });
                     });
+
             }
         });
 }
@@ -79,24 +93,17 @@ exports.login = function( params, next )
                      image_url :     temp_moment.image_url,
                      complete :      true,
                      date :          temp_moment.time,
+                     explore :       temp_moment.explore,
                      status :        params['status'],
                      location :      temp_moment.location
                 });
-
-                moment.getNear( params,
-                    function prepareExploreList( err, obj )
+                console.log(moment);
+                MOMENT.create( moment,
+                    function onMomentCreate( err, obj1 )
                     {
-                        moment.createExplore( obj,
-                            function saveExploreList( err, explore_list)
-                            {
-                                moment.explore = explore_list;
-                                MOMENT.create( moment,
-                                    function onMomentCreate( err, obj1 )
-                                    {
-                                        next( err, obj1, device );
-                                    });
-                            });
+                        next( err, obj1, device );
                     });
+
             }
         });
 }

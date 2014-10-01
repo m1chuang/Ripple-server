@@ -12,7 +12,7 @@ var MomentCtr     = require(__dirname +'/app/controller/moment');
 
 app.use(bodyParser());
 
-var port = process.env.PORT || 5050;
+var port = process.env.PORT || 8000;
 
 var router = express.Router();
 

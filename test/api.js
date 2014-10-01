@@ -9,6 +9,7 @@ var PUBNUB = require('../app/controller/pubnub');
 //mongoose.models = {};
 //mongoose.modelSchemas = {};
 
+
 describe('Routing', function() {
 
     request = request('http://localhost:5050/api');
@@ -33,6 +34,25 @@ describe('Routing', function() {
 
     describe('Device', function()
     {
+        before(function(done)
+        {
+            var dummy = ['alex', 'doris', 'albee', 'katie'];
+            for(i = 0; i < 4; i ++){
+                request
+                .post('/device')
+                .send(
+                    {
+                        device_id : dummy[i]
+                    })
+                .end(function(err, res) {
+                      if (err) throw err;
+                });
+            }
+            done();
+        });
+
+
+
         it('should return 201 if the device is not found and has successfully created device in db and pubnub connection. ',
             function(done)
             {
@@ -58,6 +78,7 @@ describe('Routing', function() {
                     done();
                 });
              });
+
 
         it('should return 200 if the device is found',
             function(done)
@@ -93,6 +114,44 @@ describe('Routing', function() {
             skip : 0,
             offset : 20
         }];
+
+        before(function(done)
+        {
+            var dummy = ['alex', 'doris', 'albee', 'katie'];
+            for(i = 0; i < 4; i ++){
+                request
+                .post('/moment')
+                .send(
+                    {
+                        device_id : dummy[i],
+                        image   :   'data:image/gif;base64,R0lGODlhDwAPAKECAAAAzMzM/////wAAAC',
+                        lat : 1,
+                        lon : 1
+                    })
+                .end(function(err, res)
+                    {
+
+                        if (err){ throw err };
+
+                        request
+                        .put('/moment')
+                        .send(
+                            {
+                                device_id : dummy[i],
+                                status : 'hello I am '+dummy[i],
+                                skip : 0,
+                                offset : 20
+                            })
+                        .end(function(err, res) {
+                              if (err){ throw err};
+                        });
+
+                    });
+            }
+            done();
+
+        });
+
 
         it('Initialize moment, should be store in device.moments',
             function(done)

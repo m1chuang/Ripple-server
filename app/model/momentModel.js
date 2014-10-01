@@ -22,6 +22,7 @@ var MomentSchema   = new Schema(
     });
 
 MomentSchema.index( { location: '2dsphere' } );
+
 var AsyncMomentFactory =
 {
     generate_explore : function( item, next )
@@ -44,17 +45,20 @@ var AsyncMomentFactory =
 
 MomentSchema.methods.createExplore = function( nearby_moments, next)
 {
+    console.log( CHALK.blue('In createExplore:') );
     if( !nearby_moments )
     {
         next();
     }
     else
     {
+
         async.map( nearby_moments, AsyncMomentFactory.generate_explore.bind( AsyncMomentFactory ),
             function onExploreGenerate( err, explore_list )
             {
-                console.log( CHALK.blue('In refreshExplore, explore_list: ') );
+                console.log( CHALK.blue('-explore_list: ') );
                 console.log( explore_list );
+                console.log( this );
                 next( err, explore_list );
             });
     }
@@ -62,21 +66,23 @@ MomentSchema.methods.createExplore = function( nearby_moments, next)
 
 MomentSchema.methods.getNear = function( params, next )
 {
-    return this.model( 'Moment' ).find(
+    console.log( CHALK.blue('In getNear: ') );        
+    this.model( 'Moment' ).find(
         {
             'location' :
             {
-                $near : this.location,
+                $nearSphere : this.location,                        
                 $maxDistance : 50,
-            }
+            },
         })
         .skip( params['offset'] )
         .limit( params['limit'] )
         .exec(
             function( err, nearby_moments )
             {
-                //console.log( CHALK.blue('In getNear, nearby_moments: ') );
-                //console.log(  nearby_moments );
+                if (err) throw err;
+                console.log( CHALK.blue('-nearby_moments: ') );
+                console.log(  nearby_moments );                
                 next( err, nearby_moments );
             });
 }
