@@ -44,6 +44,7 @@ exports.init = function( params, next )
 
                 params['offset'] = 0;
                 params['limit'] = 20;
+                params['my_mid'] = moment_id;
                 moment.getNear( params,
                     function prepareExploreList( err, obj )
                     {                                                
@@ -86,9 +87,8 @@ exports.login = function( params, next )
             else
             {
                 console.log('found');
-                var temp_moment = device.moments[0];
-                console.log(temp_moment);
-                console.log(device);
+                var temp_moment = device.moments[0];                
+                
                 var moment = new MOMENT(
                 {
                      mid :           temp_moment.mid,
@@ -101,7 +101,7 @@ exports.login = function( params, next )
                      status :        params['status'],
                      location :      temp_moment.location
                 });
-                console.log(moment);
+                
                 MOMENT.create( moment,
                     function onMomentCreate( err, obj1 )
                     {
@@ -113,12 +113,68 @@ exports.login = function( params, next )
 }
 
 
-exports.getExplore = function( params, next )
+exports.getNewExplore = function( params, next )
 {
+    console.log( CHALK.red('In MOMENT.getNewExplore') );
 
+    DEVICE.findOne( { device_id: params['my_device_id'] },
+        function onFind(err,device)
+        {
+            if( !device )
+            {
+                console.log('not found');
+                console.error( device );
+                next( err, device );
+            }
+            else
+            {
+                var moment = device.moments[0];
+                params['location'] = moment.location;
+                params['my_mid'] = moment.mid;
+                console.error( params );
+
+                moment.getNearWithRelation( params,
+                    function prepareExploreList( err, obj )
+                    {                                                
+                        moment.createExplore( obj,
+                            function saveExploreList( err, explore_list)
+                            {
+                                moment.explore = explore_list;
+                                console.log('moment');
+                                //console.log(moment);
+                                console.log(explore_list);
+                                console.log('tt');
+                                next( err,explore_list )
+                                device.moments.set( 0, moment );                                                                
+                                device.save(
+                                    function onDeviceSave( err, device )
+                                    {
+                                        
+                                    });
+
+                            });
+                    });
+            }
+        });
 }
 
 
+exports.getPageExplore = function( params, next )
+{
+    console.log( CHALK.red('In MOMENT.getPageExplore') );
+    console.log(params);
+    DEVICE.findOne( 
+        { 
+            'device_id': params['my_device_id'] 
+        },
+        
+        function( err, device )
+        {
+            console.log(device.moments[0].explore );
+            if (err) throw err;                    
+            next( err, device.moments[0].explore);
+        });
+}
 /*
 *   Check if a like relation with the target is already place in your relations
 *   if yes, create the connection. Otherwise, place a like relation in the target's relations
@@ -129,7 +185,8 @@ exports.like = function( params, next )
         function connectOrCreate( err, my_moment )
         {
             console.log(my_moment);
-            if( my_moment != null && my_moment.like_relation.length != 0 )
+            console.log(my_moment.like_relation);
+            if( my_moment != null && my_moment.like_relation != undefined && my_moment.like_relation.length != 0 )
             {
                 console.log('found');
                 PUBNUB.createConversation(

@@ -7,6 +7,12 @@ var PUBNUB = require('../controller/pubnub');
 var async = require( 'async' );
 var CHALK =  require( 'chalk' );
 
+var relationList = new Schema(
+{
+    target_mid : String,
+    type    : String,    
+});
+
 var MomentSchema   = new Schema(
     {
         mid             : String,
@@ -17,9 +23,12 @@ var MomentSchema   = new Schema(
         date            : { type: Date, default: Date.now },
         location        : { type: [Number], index: '2d' },
         explore         : [EXPLORE.schema],
-        like_relation   : [RELATION.schema],
-        connection      : [CONNECTION.schema]
+        liked_relation  : [RELATION.schema],
+        connection      : [CONNECTION.schema],
+        //relation_history: [relationList],
+        current         : String
     });
+
 
 MomentSchema.index( { location: '2dsphere' } );
 
@@ -27,6 +36,9 @@ var AsyncMomentFactory =
 {
     generate_explore : function( item, next )
     {
+        console.log('item');
+        console.log(item);
+        console.log((item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false);
         var explore_item =
             {
                 mid         : item.mid,
@@ -34,8 +46,8 @@ var AsyncMomentFactory =
                 image_url   : item.image_url,
                 location    : item.location,
                 status      : item.status,
-                like        : false,
-                connect     : false,
+                like        : (item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false,
+                connect     : (item.connection != undefined&&item.connection.length > 0)? true:false,
                 chat_channel: String
             }
 
@@ -74,6 +86,14 @@ MomentSchema.methods.getNear = function( params, next )
                 $nearSphere : this.location,                        
                 $maxDistance : 50,
             },
+
+        },
+        {            
+            status: 1,            
+            mid : 1,
+            image_url : 1,
+            
+        
         })
         .skip( params['offset'] )
         .limit( params['limit'] )
@@ -81,19 +101,91 @@ MomentSchema.methods.getNear = function( params, next )
             function( err, nearby_moments )
             {
                 if (err) throw err;
-                //console.log( CHALK.blue('-nearby_moments: ') );
-                //console.log(  nearby_moments );                
+                console.log( CHALK.blue('-nearby_moments: ') );
+                console.log(  nearby_moments );                
                 next( err, nearby_moments );
             });
+}
+
+MomentSchema.methods.getNearWithRelation = function( params, next )
+{
+    console.log( CHALK.blue('In getNear: ') );        
+    mongoose.model( 'Moment' ).find(
+        {
+            'location' :
+            {
+                $nearSphere : params['location'],                        
+                $maxDistance : 50,
+            },
+
+        },
+        {            
+            status: 1,            
+            mid : 1,
+            image_url : 1,
+            liked_relation:
+            {
+                $elemMatch :
+                {
+                    target_mid : params['my_mid'],                    
+                }
+            },
+            connection:
+            {
+                $elemMatch :
+                {
+                    target_mid : params['my_mid'],                    
+                }
+            },
+        
+        })
+        .skip( params['offset'] )
+        .limit( params['limit'] )
+        .exec(
+            function( err, nearby_moments )
+            {
+                if (err) throw err;
+                console.log( CHALK.blue('-nearby_moments: ') );
+                console.log(  nearby_moments );                
+                next( err, nearby_moments );
+            });
+}
+
+
+MomentSchema.statics.updateExplore = function( my_mid, next )
+{
+    this.model( 'Moment' ).findOne(
+        {
+           'mid' : my_mid,
+        },
+        function onFind( err, mo )
+        {
+            mo.update(
+                {
+                    $set :
+                    {
+                        liked_relation :
+                        {
+                            'target_mid'    : owner_mid,
+                            'connect'       : false,
+                        }
+                    }
+                },
+                function onUpdate( err, obj )
+                {
+                    next( err, obj );
+                });
+        });
 }
 
 MomentSchema.methods.addConnection = function( params, next )
 {
 
     console.log( CHALK.blue('addConnection: ') );     
-    //console.log( this.like_relation[0].target_mid );     
-    //console.log( this.like_relation );     
-    var target_mid = this.like_relation[0].target_mid;
+    //console.log( this.liked_relation[0].target_mid );    
+    //console.log( this.liked_relation );  
+    console.log( this);     
+    var target_mid = this.liked_relation[0].target_mid;
     var owner_mo = this;
     this.update(
         {
@@ -105,14 +197,25 @@ MomentSchema.methods.addConnection = function( params, next )
                     'channel_id'    : params['channel_id'],
                     'auth_key'      : params['auth_key'],
                     'type'          : params['type']
-                }
+                },
+                /*
+                relation_history :
+                {
+                    'target_mid'    : target_mid,
+                    'type'          : 'connect'
+                }*/
             },
             $pull :
             {
-                like_relation:
+                liked_relation:
                 {
                     'target_mid' : target_mid
-                }
+                }/*,
+                relation_history :
+                {
+                    'target_mid'    : params['owner_mid'],
+                    'type'          : params['type']
+                }*/
             }
 
         },
@@ -147,7 +250,7 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
                     },                    
                     $pull :
                     {
-                        like_relation:
+                        liked_relation:
                         {
                             'target_mid' : params['owner_mid']
                         }
@@ -186,7 +289,7 @@ MomentSchema.statics.addRemoteRelation = function( target_mid, owner_mid, next )
                 {
                     $addToSet :
                     {
-                        like_relation :
+                        liked_relation :
                         {
                             'target_mid'    : owner_mid,
                             'connect'       : false,
@@ -207,7 +310,7 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
            'device_id' : owner_did,
         },
         {
-            like_relation:
+            liked_relation:
             {
                 $elemMatch :
                 {

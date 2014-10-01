@@ -10,7 +10,11 @@ var DeviceCtr     = require(__dirname +'/app/controller/device');
 var MomentCtr     = require(__dirname +'/app/controller/moment');
 
 
-app.use(bodyParser());
+//app.use(bodyParser());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 
 var port = process.env.PORT || 8000;
 
@@ -49,25 +53,26 @@ router.route('/device')
 
 
 
-router.route('/moment')
+router.route('/moment/explore')
 
     /*
     *   Get update on explore list, etc
         TODO:
             finish getExplore
     */
-    .get( function( req, res )
+    .post( function( req, res )
     {
         var params =
         {
-            my_device_id : req.body.device_id,
+            my_device_id :req.body.device_id,
             skip : req.body.skip,
             offset : req.body.offset
         }
 
-        MomentCtr.getExplore( params,
-            function( explore_list )
+        MomentCtr.getNewExplore( params,
+            function( err, explore_list )
             {
+                console.log(explore_list);
                 res.json(
                     {
                         explore: explore_list
@@ -75,6 +80,33 @@ router.route('/moment')
             });
     })
 
+router.route('/moment/explore/:page')
+
+    /*
+    *   Get pagination on explore list            
+    */
+    .post( function( req, res )
+    {
+        var params =
+        {
+            my_device_id :req.body.device_id,
+            skip : 10*req.params.page,
+            offset : 10
+        }
+
+        MomentCtr.getPageExplore( params,
+            function( err, explore_list )
+            {
+                console.log(explore_list);
+                res.json(
+                    {
+                        explore: explore_list
+                    });
+            });
+    })
+
+
+router.route('/moment/')
     /*
     *   Initiate a moment, request when photo taken
     *   TODO:
