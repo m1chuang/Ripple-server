@@ -93,7 +93,7 @@ exports.login = function( params, next )
                      device_id :     temp_moment.device_id,
                      image_url :     temp_moment.image_url,
                      complete :      true,
-                     date :          temp_moment.time,
+                     date :          temp_moment.date,
                      explore :       temp_moment.explore,
                      like_relation : [],
                      status :        params['status'],

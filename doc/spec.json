@@ -1,0 +1,348 @@
+{
+    "swagger": 2,
+    "info": {
+        "version": "1.0.0",
+        "title": "Glimpse..or Piece of Me"
+    },
+    "host": "petstore-api.herokuapp.com",
+    "basePath": "/",
+    "paths": {
+        "/device": {
+            "post": {
+                "description": "Register new device or log in existing device. Moment_token will be use to get current Moment data",
+                "parameters": [
+                    {
+                        "name": "device_id",
+                        "in": "body",
+                        "description": "Unique id from client app",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Existing device found and logged in.",
+                        "schema": {
+                            "$ref": "#/definitions/loginDevice"
+                        }
+                    },
+                    "201": {
+                        "description": "New device created.",
+                        "schema": {
+                            "$ref": "#/definitions/newDevice"
+                        }
+                    }
+                }
+            }
+        },
+        "/moment": {
+            "post": {
+                "description": "Upload photo and initiate a Moment",
+                "parameters": [
+                    {
+                        "name": "device_id",
+                        "in": "body",
+                        "description": "Unique id from client app",
+                        "required": true
+                    },
+                    {
+                        "name": "image",
+                        "in": "body",
+                        "description": "image data",
+                        "required": true
+                    },
+                    {
+                        "name": "lot",
+                        "in": "body",
+                        "description": "Lattitude",
+                        "required": true
+                    },
+                    {
+                        "name": "lon",
+                        "in": "body",
+                        "description": "Lontitude",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Moment are initiated.",
+                        "schema": {
+                            "$ref": "#/definitions/MomentPost"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Completes posting a Moment get the data to start using the app",
+                "parameters": [
+                    {
+                        "name": "device_id",
+                        "in": "body",
+                        "description": "Unique id from client app",
+                        "required": true
+                    },
+                    {
+                        "name": "status",
+                        "in": "body",
+                        "description": "Words to attach with the creatd moment",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Moment posted",
+                        "schema": {
+                            "$ref": "#/definitions/MomentPut",
+                            "example": null
+                        }
+                    }
+                }
+            }
+        },
+        "/moment/explore": {
+            "post": {
+                "description": "Get the updated explore list.",
+                "parameters": [
+                    {
+                        "name": "device_id",
+                        "in": "path",
+                        "description": "Unique id from client app",
+                        "required": true
+                    },
+                    {
+                        "name": "skip",
+                        "in": "path",
+                        "description": "Starting index of the paginated list",
+                        "required": true
+                    },
+                    {
+                        "name": "offset",
+                        "in": "path",
+                        "description": "Number of element in hte paginated list",
+                        "required": true
+                    },
+                    {
+                        "name": "moment_token",
+                        "in": "path",
+                        "description": "Authentication token to access this Moment",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sends the paginated explore list.",
+                        "schema": {
+                            "$ref": "#/definitions/exploreGet"
+                        }
+                    }
+                }
+            }
+        },
+        "/moment/explore/:page": {
+            "post": {
+                "description": "Get the paginated stored explore list (not updated).",
+                "parameters": [
+                    {
+                        "name": "device_id",
+                        "in": "path",
+                        "description": "Unique id from client app",
+                        "required": true
+                    },
+                    {
+                        "name": "skip",
+                        "in": "path",
+                        "description": "Starting index of the paginated list",
+                        "required": true
+                    },
+                    {
+                        "name": "offset",
+                        "in": "path",
+                        "description": "Number of element in hte paginated list",
+                        "required": true
+                    },
+                    {
+                        "name": "moment_token",
+                        "in": "path",
+                        "description": "Authentication token to access this Moment",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sends the paginated explore list.",
+                        "schema": {
+                            "$ref": "#/definitions/exploreGet"
+                        }
+                    }
+                }
+            }
+        },
+        "/moment/friend": {
+            "post": {
+                "description": "Get the friend list.",
+                "parameters": [
+                    {
+                        "name": "device_id",
+                        "in": "path",
+                        "description": "Unique id from client app",
+                        "required": true
+                    },
+                    {
+                        "name": "moment_token",
+                        "in": "path",
+                        "description": "Authentication token to access this Moment",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sends the paginated explore list.",
+                        "schema": {
+                            "$ref": "#/definitions/friendGet"
+                        }
+                    }
+                }
+            }
+        },
+        "/like": {
+            "post": {
+                "description": "Like a Moment",
+                "parameters": [
+                    {
+                        "name": "device_id",
+                        "in": "path",
+                        "description": "Unique id from client app",
+                        "required": true
+                    },
+                    {
+                        "name": "like_mid",
+                        "in": "path",
+                        "description": "Target id",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sends the pet with pet Id"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "newDevice": {
+            "properties": {
+                "auth_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "loginDevice": {
+            "properties": {
+                "auth_key": {
+                    "type": "string"
+                },
+                "moment_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "MomentPut": {
+            "properties": {
+                "moment_token": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "explore": {
+                    "type": "array",
+                    "items": {
+                        "type": "exploreModel"
+                    }
+                },
+                "friends": {
+                    "type": "array",
+                    "items": {
+                        "type": "friendModel"
+                    }
+                }
+            }
+        },
+        "MomentGet": {
+            "properties": {
+                "moment_token": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "explore": {
+                    "type": "array",
+                    "items": {
+                        "type": "exploreModel"
+                    }
+                }
+            }
+        },
+        "MomentPost": {
+            "properties": {
+                "moment_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "exploreModel": {
+            "properties": {
+                "mid": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "2d index"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "like": {
+                    "type": "boolean"
+                },
+                "connect": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "friendModel": {
+            "properties": {
+                "mid": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "friendGet": {
+            "properties": {
+                "friends": {
+                    "type": "array",
+                    "items": {
+                        "type": "friendModel"
+                    }
+                }
+            }
+        },
+        "exploreGet": {
+            "properties": {
+                "explore": {
+                    "type": "array",
+                    "items": {
+                        "type": "exploreModel"
+                    }
+                }
+            }
+        }
+    }
+}

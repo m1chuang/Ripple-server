@@ -287,7 +287,7 @@ MomentSchema.statics.addRemoteRelation = function( target_mid, owner_mid, next )
 
 MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
 {
-    this.model( 'Moment' ).findOne(
+    this.model( 'Moment' ).find(
         {
            'device_id' : owner_did,
         },
@@ -302,14 +302,18 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
             },
             connection : 1,
             mid : 1
-        },
-        function( err, obj )
-        {
-            console.log(err);
-            console.log('obj');
-            console.log(obj);
-            next( err, obj );
-        });
+        }).sort(
+            {"date": -1}
+        ).limit(1)
+        .exec(
+            function( err, obj )
+            {
+                console.log(err);
+                console.log('obj');
+                console.log(obj);
+                next( err, obj );
+            }
+        );
 }
 
 module.exports = mongoose.model( 'Moment', MomentSchema );
