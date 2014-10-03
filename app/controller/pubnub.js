@@ -132,7 +132,7 @@ exports.testSubscribe = function( channel, auth_key, cb )
                 console.log('connected');
                 PUBNUB.publish({channel: channel , message : '777',
                         callback : function(response) {
-                            //assert.deepEqual(response[0],1);
+
                         }
                     });
                 cb(info);

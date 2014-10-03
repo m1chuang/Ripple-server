@@ -10,14 +10,9 @@ exports.findOrCreate = function( params, next )
             function( err, device )
             {
 
-
-                console.log('db search finish');
-                console.log(err);
-                console.log(device);
                 if ( !device )
                 {
                     console.log('no existing');
-                    //var server_channel_id = uuid.v4();
                     var server_auth_key = uuid.v4();
 
                     var device = new Device(

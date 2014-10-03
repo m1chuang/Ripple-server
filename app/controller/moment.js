@@ -21,7 +21,6 @@ exports.init = function( params, next )
         {
             if( !device )
             {
-                console.error( device );
                 next( err, device );
             }
             else
@@ -56,13 +55,13 @@ exports.init = function( params, next )
                                 device.save(
                                     function onDeviceSave( err, device )
                                     {
+                                        //no need to wait
                                         //next( err,device )
                                     });
-
                             });
                     });
-                next(err,204);
 
+                next(err,204);
             }
         });
 }
@@ -81,7 +80,6 @@ exports.login = function( params, next )
             if( !device )
             {
                 console.log('not found');
-                console.error( device );
                 next( err, device );
             }
             else
@@ -107,7 +105,6 @@ exports.login = function( params, next )
                     {
                         next( err, obj1, device );
                     });
-
             }
         });
 }
@@ -123,7 +120,6 @@ exports.getNewExplore = function( params, next )
             if( !device )
             {
                 console.log('not found');
-                console.error( device );
                 next( err, device );
             }
             else
@@ -131,7 +127,6 @@ exports.getNewExplore = function( params, next )
                 var moment = device.moments[0];
                 params['location'] = moment.location;
                 params['my_mid'] = moment.mid;
-                console.error( params );
 
                 moment.getNearWithRelation( params,
                     function prepareExploreList( err, obj )
@@ -143,7 +138,6 @@ exports.getNewExplore = function( params, next )
                                 console.log('moment');
                                 //console.log(moment);
                                 console.log(explore_list);
-                                console.log('tt');
                                 next( err,explore_list )
                                 device.moments.set( 0, moment );                                                                
                                 device.save(
@@ -162,19 +156,18 @@ exports.getNewExplore = function( params, next )
 exports.getPageExplore = function( params, next )
 {
     console.log( CHALK.red('In MOMENT.getPageExplore') );
-    console.log(params);
+
     DEVICE.findOne( 
         { 
             'device_id': params['my_device_id'] 
         },
-        
         function( err, device )
-        {
-            console.log(device.moments[0].explore );
+        {  
             if (err) throw err;                    
             next( err, device.moments[0].explore);
         });
 }
+
 /*
 *   Check if a like relation with the target is already place in your relations
 *   if yes, create the connection. Otherwise, place a like relation in the target's relations
@@ -184,15 +177,13 @@ exports.like = function( params, next )
     MOMENT.getRelation( params['like_mid'], params['my_device_id'],
         function connectOrCreate( err, my_moment )
         {
-            console.log(my_moment);
-            console.log(my_moment.like_relation);
+            
             if( my_moment != null && my_moment.like_relation != undefined && my_moment.like_relation.length != 0 )
             {
                 console.log('found');
                 PUBNUB.createConversation(
                     function addConnections( channel_id, initator_auth_key, target_auth_key )
                     {
-
                         my_moment.addConnection(
                             {
                                 type       : 'like',

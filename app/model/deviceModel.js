@@ -19,9 +19,8 @@ DeviceSchema.methods.getCurrentMoment = function(next)
 {
     return this.moments[0]
 }
-//DeviceSchema.index({'moments.location': '2d'});
-DeviceSchema.index({'moments.mid':1});
 
+DeviceSchema.index({'moments.mid':1});
 DeviceSchema.index({'moments.mid':1, 'moments.explore.mid':1});
 DeviceSchema.index({'device_id':1});
 

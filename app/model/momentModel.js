@@ -36,9 +36,6 @@ var AsyncMomentFactory =
 {
     generate_explore : function( item, next )
     {
-        console.log('item');
-        console.log(item);
-        console.log((item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false);
         var explore_item =
             {
                 mid         : item.mid,
@@ -182,8 +179,6 @@ MomentSchema.methods.addConnection = function( params, next )
 {
 
     console.log( CHALK.blue('addConnection: ') );     
-    //console.log( this.liked_relation[0].target_mid );    
-    //console.log( this.liked_relation );  
     console.log( this);     
     var target_mid = this.liked_relation[0].target_mid;
     var owner_mo = this;
@@ -197,27 +192,15 @@ MomentSchema.methods.addConnection = function( params, next )
                     'channel_id'    : params['channel_id'],
                     'auth_key'      : params['auth_key'],
                     'type'          : params['type']
-                },
-                /*
-                relation_history :
-                {
-                    'target_mid'    : target_mid,
-                    'type'          : 'connect'
-                }*/
+                }
             },
             $pull :
             {
                 liked_relation:
                 {
                     'target_mid' : target_mid
-                }/*,
-                relation_history :
-                {
-                    'target_mid'    : params['owner_mid'],
-                    'type'          : params['type']
-                }*/
+                }
             }
-
         },
         function onUpdate( err, num, obj )
         {
@@ -265,7 +248,6 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
                             target_mid          : params['owner_mid'],
                             chat_channel_id     : params['channel'],
                             server_channel_id   : mo.device_id,
-
                             //using server master key
                             //auth_key : params['auth_key']
                         },function(){});
@@ -323,7 +305,7 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
         },
         function( err, obj )
         {
-            console.log(err)
+            console.log(err);
             console.log('obj');
             console.log(obj);
             next( err, obj );

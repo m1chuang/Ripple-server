@@ -9,19 +9,13 @@ var Pubnub   = require(__dirname +'/app/controller/pubnub');
 var DeviceCtr     = require(__dirname +'/app/controller/device');
 var MomentCtr     = require(__dirname +'/app/controller/moment');
 
-
-//app.use(bodyParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 
 var port = process.env.PORT || 8000;
-
 var router = express.Router();
-
-
-
 
 router.route('/device')
 
@@ -35,8 +29,7 @@ router.route('/device')
         {
             device_id : req.body.device_id
         }
-        console.log('params');
-        console.log(params);
+
         DeviceCtr.findOrCreate( params,
             function( err, device, status )
             {
@@ -46,7 +39,6 @@ router.route('/device')
                     {
                         server_auth_key: device.server_auth_key
                     });
-
             }
         )
     });
@@ -110,7 +102,7 @@ router.route('/moment/')
     /*
     *   Initiate a moment, request when photo taken
     *   TODO:
-            finish return value
+            posting multiple moment, determine active one
     */
     .post( function( req, res )
     {
@@ -121,12 +113,13 @@ router.route('/moment/')
             lat : req.body.lat,
             lon : req.body.lon
         }
+
         MomentCtr.init( params,
             function onInit( err, device )
             {
                 res.json(
                     {
-                        device: device
+                        status: device
                     });
 
             });
@@ -146,6 +139,7 @@ router.route('/moment/')
             skip : 0,
             offset : 20
         }
+
         MomentCtr.login( params,
             function onLogin( err, explore_list, device )
             {
@@ -153,8 +147,8 @@ router.route('/moment/')
                 console.log(explore_list);
                 res.json(
                     {
-                        explore_list: explore_list,
-                        friend_list: []
+                        explore: explore_list,
+                        //friend_list: []
                     });
 
 
