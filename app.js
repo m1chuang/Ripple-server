@@ -2,7 +2,7 @@ var express = require('express');
 var app     = express();
 var bodyParser  = require('body-parser');
 var mongoose   = require('mongoose');
-var S3 = require('../controller/s3_uploader');
+var S3 = require('./app/controller/s3_uploader');
 
 mongoose.connect('mongodb://neshorange:Nesh6502@ds039850.mongolab.com:39850/glimpse-test');
 
@@ -203,7 +203,7 @@ router.route('/sub')
     });
 
 router.route('/test')
-    .get( function()
+    .get( function(req, res)
     {
         res.json(
             {
@@ -211,7 +211,7 @@ router.route('/test')
                 lname : 'info'
             });
     })
-    .post( function()
+    .post( function(req, res)
     {
         res.json(
         {
@@ -221,7 +221,7 @@ router.route('/test')
     })
 
 router.route('/image')
-    .post( function()
+    .post( function(req, res)
     {
         S3.upload( req.body.image, { key:req.body.key } );
         res.json(
