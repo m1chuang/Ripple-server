@@ -3,7 +3,7 @@ var app     = express();
 var bodyParser  = require('body-parser');
 var mongoose   = require('mongoose');
 
-mongoose.connect('mongodb://neshorange:Nesh6502@ds039850.mongolab.com:39850/glimpse-test'); // connect to our database
+mongoose.connect('mongodb://neshorange:Nesh6502@ds039850.mongolab.com:39850/glimpse-test');
 
 var Pubnub   = require(__dirname +'/app/controller/pubnub');
 var DeviceCtr     = require(__dirname +'/app/controller/device');
@@ -18,7 +18,6 @@ var port = process.env.PORT || 8000;
 var router = express.Router();
 
 router.route('/device')
-
    /*
     *   Request when APP is open
     */
@@ -43,10 +42,7 @@ router.route('/device')
         )
     });
 
-
-
 router.route('/moment/explore')
-
     /*
     *   Get update on explore list, etc
         TODO:
@@ -70,12 +66,11 @@ router.route('/moment/explore')
                         explore: explore_list
                     });
             });
-    })
+    });
 
 router.route('/moment/explore/:page')
-
     /*
-    *   Get pagination on explore list            
+    *   Get pagination on explore list
     */
     .post( function( req, res )
     {
@@ -95,7 +90,7 @@ router.route('/moment/explore/:page')
                         explore: explore_list
                     });
             });
-    })
+    });
 
 
 router.route('/moment/')
@@ -141,14 +136,15 @@ router.route('/moment/')
         }
 
         MomentCtr.login( params,
-            function onLogin( err, explore_list, device )
+            function onLogin( err, mo, device )
             {
-                console.log('login');
-                console.log(explore_list);
+                //console.log('login');
+                // console.log(device.moments[0]);
+                //console.log(device);
                 res.json(
                     {
-                        explore: explore_list,
-                        //friend_list: []
+                        explore: mo.explore,
+                        friends: device.friends
                     });
 
 
@@ -205,6 +201,23 @@ router.route('/sub')
         });
     });
 
+router.route('/test')
+    .get( function()
+    {
+        res.json(
+            {
+                fname : 'info',
+                lname : 'info'
+            });
+    })
+    .post( function()
+    {
+        res.json(
+        {
+            fname: req.body.fname,
+            lname: req.body.lname,
+        })
+    })
 
 
 
