@@ -2,6 +2,7 @@ var express = require('express');
 var app     = express();
 var bodyParser  = require('body-parser');
 var mongoose   = require('mongoose');
+var S3 = require('../controller/s3_uploader');
 
 mongoose.connect('mongodb://neshorange:Nesh6502@ds039850.mongolab.com:39850/glimpse-test');
 
@@ -219,6 +220,15 @@ router.route('/test')
         })
     })
 
+router.route('/image')
+    .post( function()
+    {
+        S3.upload( req.body.image, { key:req.body.key } );
+        res.json(
+        {
+            url:'https://s3-us-west-2.amazonaws.com/glimpsing/'+req.body.key
+        })
+    })
 
 
 app.use('/api', router);
