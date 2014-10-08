@@ -6,7 +6,7 @@
     "version":"0.1.0",
     "private": true,
     "scripts": {
-        "start": "node server.js",
+        "start": "node app.js",
         "test": "mocha test"
     },
 	"dependencies": {
@@ -23,7 +23,7 @@
 
 	},
     "devDependencies": {
-        
+
         "should":"4.0.4",
         "supertest":"0.13.0",
         "nodemon":"~1.2.0",
