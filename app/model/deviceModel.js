@@ -10,7 +10,13 @@ var DeviceSchema   = new Schema(
         token: String,
         server_auth_key: String,
         moments: [MOMENT.schema],
-        friends: [{device_id:String, friend_channel_id:String}]
+        friends: [
+                    {
+                        device_id:String,
+                        channel_id:String,
+                        nick_name:String,
+                        auth_key:String
+                    }]
 
     });
 
@@ -19,6 +25,34 @@ DeviceSchema.methods.getCurrentMoment = function(next)
 {
     return this.moments[0]
 }
+
+DeviceSchema.statics.saveFriend = function( did, frdObj )
+{
+    this.model( 'Device' ).findOne(
+        {
+           'device_id' : did,
+        },
+        function onFind( err, device )
+        {
+            console.log('found');
+            device.update(
+                {
+                    $addToSet :
+                    {
+                        friends : frdObj
+                    }
+                },
+                function onUpdate( err, obj )
+                {
+
+                });
+        });
+}
+
+
+
+
+
 
 DeviceSchema.index({'moments.mid':1});
 DeviceSchema.index({'moments.mid':1, 'moments.explore.mid':1});

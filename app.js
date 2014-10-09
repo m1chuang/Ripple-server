@@ -163,11 +163,12 @@ router.route('/like')
         }
 
         MomentCtr.like( params,
-            function onLike( err, device )
+            function onLike( err, success, connection )
             {
                 res.json(
                     {
-                        status : device,
+                        success : success,
+                        connection : connection
                     });
 
             });
