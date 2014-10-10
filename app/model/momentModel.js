@@ -61,7 +61,6 @@ MomentSchema.methods.createExplore = function( nearby_moments, next)
     }
     else
     {
-
         async.map( nearby_moments, AsyncMomentFactory.generate_explore.bind( AsyncMomentFactory ),
             function onExploreGenerate( err, explore_list )
             {
@@ -83,14 +82,11 @@ MomentSchema.methods.getNear = function( params, next )
                 $nearSphere : this.location,
                 $maxDistance : 50,
             },
-
         },
         {
             status: 1,
             mid : 1,
             image_url : 1,
-
-
         })
         .skip( params['offset'] )
         .limit( params['limit'] )
@@ -148,7 +144,7 @@ MomentSchema.methods.getNearWithRelation = function( params, next )
             });
 }
 
-MomentSchema.statics.getDevice = function( mid , next)
+MomentSchema.statics.getDeviceId = function( mid , next)
 {
     this.model( 'Moment' ).findOne(
         {
@@ -297,8 +293,6 @@ MomentSchema.statics.addRemoteRelation = function( target_mid, owner_mid, next )
         });
 }
 
-
-
 MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
 {
     this.model( 'Moment' ).find(
@@ -314,7 +308,13 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
                     connect : false
                 }
             },
-            connection : 1,
+            connection:
+            {
+                $elemMatch :
+                {
+                    target_mid : target_mid,
+                }
+            },
             mid : 1
         }).sort(
             {"date": -1}

@@ -24,9 +24,8 @@ exports.upload = function( fileData, fileInfo, cb )
             Key: fileInfo['key']+'.jpg',
             Body: buf,
             ACL: 'public-read',
-            ContentType:'image/png',
+            ContentType:'image/jpg',
             ContentEncoding: 'base64'
-
         },
         function( resp )
         {

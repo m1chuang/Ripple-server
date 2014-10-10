@@ -32,7 +32,7 @@ exports.init = function( params, next )
                 {
                      mid :           moment_id,
                      device_id :     params['my_device_id'],
-                     image_url :     'https://s3-us-west-2.amazonaws.com/glimpsing/'+moment_id,
+                     image_url :     'https://s3-us-west-2.amazonaws.com/glimpsing/'+moment_id+'.jpg',
                      complete :      false,
                      date :          time(),
                      status :        '',
@@ -181,7 +181,7 @@ exports.like = function( params, next )
             if( my_moment != null && my_moment.liked_relation != undefined && my_moment.liked_relation.length != 0 )
             {
                 console.log('found');
-                MOMENT.getDevice( params['like_mid'],
+                MOMENT.getDeviceId( params['like_mid'],
                     function ( err, target_did, d)
                     {
                         PUBNUB.createConversation(
@@ -192,14 +192,14 @@ exports.like = function( params, next )
                                             channel_id : channel_id,
                                             auth_key   : initator_auth_key
                                         }
-                                next( err, true, my_connection );
+                                next( err, 0, my_connection );
 
                                 my_moment.addConnection( my_connection,
                                     function( err, my_moment)
                                     {
                                         DEVICE.saveFriend( params['my_device_id'],
                                             {
-                                                device_id: target_did,
+                                                //device_id: target_did,
                                                 nick_name: '',
                                                 channel_id : channel_id,
                                                 auth_key   : initator_auth_key
@@ -218,7 +218,7 @@ exports.like = function( params, next )
                                     {
                                         DEVICE.saveFriend( target_did,
                                             {
-                                                device_id: params['my_device_id'],
+                                                //device_id: params['my_device_id'],
                                                 nick_name: '',
                                                 channel_id : channel_id,
                                                 auth_key   : target_auth_key
@@ -227,10 +227,15 @@ exports.like = function( params, next )
                             })
                     });
             }
+            else if( my_moment != null && my_moment.connection != undefined && my_moment.connection.length != 0 )
+            {
+                next( err, 1, {});
+            }
             else
             {
+
                 MOMENT.addRemoteRelation( params['like_mid'], my_moment.mid, function(){} );
-                next( err, false, {});
+                next( err, 2, {});
                 console.log( 'not found' );
             }
 

@@ -54,8 +54,6 @@ router.route('/moment/explore')
         var params =
         {
             my_device_id :req.body.device_id,
-            skip : req.body.skip,
-            offset : req.body.offset
         }
 
         MomentCtr.getNewExplore( params,
@@ -152,27 +150,35 @@ router.route('/moment/')
             });
     });
 
-
+/*
+*   status code:
+        0: succsefully become friends
+        1: already friends
+        2: waiting to be liked
+*/
 router.route('/like')
     .post( function( req, res )
     {
         var params =
         {
-            like_mid : req.body.like_mid,
+            like_mid : req.body.target_mid,
             my_device_id : req.body.device_id
         }
 
         MomentCtr.like( params,
-            function onLike( err, success, connection )
+            function onLike( err, status, connection )
             {
                 res.json(
                     {
-                        success : success,
+                        status : status,
                         connection : connection
                     });
 
             });
     });
+
+
+
 
 
 

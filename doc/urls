@@ -1,0 +1,94 @@
+url/api/device
+POST
+    params:
+    {
+        device_id:string
+    }
+    return:
+    {
+        server_auth_key:string
+    }
+
+url/api/moment
+POST
+    params:
+    {
+        device_id:string
+        image:  string
+        lat:    stirng
+        lon:    string
+    }
+    return:
+    {
+        status:string
+    }
+
+PUT
+
+    params:
+    {
+        device_id:string
+        status: string
+    }
+    return:
+    {
+        explore:
+            [
+                {
+                    "connect":  boolean,
+                    "like":     boolean,
+                    "status":   string,
+                    "image_url": string,
+                    "mid":  string
+                }
+            ]
+        friends:
+            [
+                {
+                    "nick_name": string,
+                    "channel_id": string
+                    "auth_key": string
+                }
+            ]
+    }
+
+url/api/like
+POST
+    params:
+    {
+        device_id:string
+        target_mid: string
+    }
+    return:
+    {
+        status: int
+            0: succsefully become friends
+            1: already friends
+            2: waiting to be liked
+        connection: //if status is 0
+            {
+                type       : 'like',
+                channel_id : string,
+                auth_key :string
+            }
+    }
+
+url/api/moment/explore
+POST
+    params:
+    {
+        device_id: string,
+    }
+    return:
+    {
+       explore:
+            [
+                {
+                    "connect":  boolean,
+                    "like":     boolean,
+                    "status":   string,
+                    "image_url": string,
+                    "mid":  string
+                }
+            ]
+    }
