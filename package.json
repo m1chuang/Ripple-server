@@ -1,37 +1,37 @@
 {
-	"name": "glimpse-api",
-	"main": "app.js",
-    "description": "a short description about the project",
-    "repository":"https://neshorange@bitbucket.org/neshorange/glimpse.git",
-    "version":"0.1.0",
-    "private": true,
-    "scripts": {
-        "start": "node app.js",
-        "test": "mocha test"
-    },
-	"dependencies": {
-		"express": "~4.8.3",
-		"mongoose":"~3.6.13",
-		"body-parser": "~1.6.3",
-        "pubnub" :"3.6.7",
-        "async":"0.9.0",
-        "chalk":"0.5.1",
-        "node-uuid":"1.4.1",
-        "mongoose":"3.6.20",
-        "moment":"2.8.2",
-        "aws-sdk":"2.0.15"
-
-	},
-    "devDependencies": {
-
-        "should":"4.0.4",
-        "supertest":"0.13.0",
-        "nodemon":"~1.2.0",
-        "mocha":"1.21.4",
-        "grunt":"0.4.5",
-        "grunt-mocha-test":"0.12.0",
-        "grunt-nodemon":"0.3.0",
-        "grunt-contrib-watch":"0.6.1",
-        "grunt-concurrent":"1.0.0"
-    }
+  "name": "glimpse-api",
+  "main": "app.js",
+  "description": "a short description about the project",
+  "repository": "https://neshorange@bitbucket.org/neshorange/glimpse.git",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node app.js",
+    "test": "mocha test"
+  },
+  "dependencies": {
+    "express": "~4.8.3",
+    "mongoose": "3.6.20",
+    "body-parser": "~1.6.3",
+    "pubnub": "3.6.7",
+    "async": "0.9.0",
+    "chalk": "0.5.1",
+    "node-uuid": "1.4.1",
+    "moment": "2.8.2",
+    "aws-sdk": "2.0.15",
+    "knox": "^0.9.1",
+    "connect-busboy": "0.0.2",
+    "busboy": "^0.2.9"
+  },
+  "devDependencies": {
+    "should": "4.0.4",
+    "supertest": "0.13.0",
+    "nodemon": "~1.2.0",
+    "mocha": "1.21.4",
+    "grunt": "0.4.5",
+    "grunt-mocha-test": "0.12.0",
+    "grunt-nodemon": "0.3.0",
+    "grunt-contrib-watch": "0.6.1",
+    "grunt-concurrent": "1.0.0"
+  }
 }

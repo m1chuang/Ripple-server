@@ -1,6 +1,10 @@
+//var busboy = require('connect-busboy');
 var express = require('express');
 var app     = express();
 var bodyParser  = require('body-parser');
+
+//var awsUpload = require('./app/controller/aws-streaming');
+
 var mongoose   = require('mongoose');
 var S3 = require('./app/controller/s3_uploader');
 
@@ -10,10 +14,18 @@ var Pubnub   = require(__dirname +'/app/controller/pubnub');
 var DeviceCtr     = require(__dirname +'/app/controller/device');
 var MomentCtr     = require(__dirname +'/app/controller/moment');
 
-app.use(bodyParser.json());
+//app.use(bodyParser.json());
+
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+
+
+
+
+//app.use(busboy());
+
+//app.use(express.methodOverride());
 
 var port = process.env.PORT || 8000;
 var router = express.Router();
@@ -24,26 +36,75 @@ router.route('/device')
     */
     .post( function( req, res )
     {
-
         var params =
         {
             device_id : req.body.device_id
-        }
+        };
 
         DeviceCtr.findOrCreate( params,
             function( err, device, status )
             {
-                console.log('out device');
                 console.log(device);
                 res.status(status).json(
                     {
                         server_auth_key: device.server_auth_key
                     });
-            }
-        )
+            });
     });
 
-router.route('/moment/explore')
+router.route('/device/friends')
+    .post( function( req, res)
+    {
+        //@@@ return friend list
+        //show unread updates
+        var params =
+        {
+            my_device_id :req.body.device_id,
+        };
+
+        DeviceCtr.getFriends( params,
+            function( err, friends )
+            {
+                console.log(friends);
+                res.json(
+                    {
+                        friends: friends
+                    });
+            });
+    });
+
+router.route('/device/friends/delete')
+    .post( function( req, res )
+    {
+        var params =
+        {
+            my_device_id : req.body.device_id,
+            target_mid :  req.body.target_id
+        };
+        DeviceCtr.unFriend( params,
+            function( err, status )
+            {
+                res.json(
+                    {
+                        status: status
+                    });
+            })
+
+    });
+
+router.route('/device/friends/add')
+    .post( function( req, res )
+    {
+        var params =
+        {
+            my_device_id : req.body.device_id,
+            target_mid :  req.body.target_id
+        };
+        //@@@ add friend using alternative methonds, ex QR
+
+    });
+
+router.route('/device/explore')
     /*
     *   Get update on explore list, etc
         TODO:
@@ -54,9 +115,9 @@ router.route('/moment/explore')
         var params =
         {
             my_device_id :req.body.device_id,
-        }
+        };
 
-        MomentCtr.getNewExplore( params,
+        DeviceCtr.getNewExplore( params,
             function( err, explore_list )
             {
                 console.log(explore_list);
@@ -67,7 +128,7 @@ router.route('/moment/explore')
             });
     });
 
-router.route('/moment/explore/:page')
+router.route('/device/explore/:page')
     /*
     *   Get pagination on explore list
     */
@@ -78,9 +139,9 @@ router.route('/moment/explore/:page')
             my_device_id :req.body.device_id,
             skip : 10*req.params.page,
             offset : 10
-        }
+        };
 
-        MomentCtr.getPageExplore( params,
+        DeviceCtr.getPageExplore( params,
             function( err, explore_list )
             {
                 console.log(explore_list);
@@ -106,16 +167,15 @@ router.route('/moment/')
             image   :   req.body.image,
             lat : req.body.lat,
             lon : req.body.lon
-        }
+        };
 
         MomentCtr.init( params,
-            function onInit( err, device )
+            function onInit( err, status )
             {
                 res.json(
                     {
-                        status: device
+                        status: status
                     });
-
             });
     })
 
@@ -132,21 +192,16 @@ router.route('/moment/')
             status : req.body.status,
             skip : 0,
             offset : 20
-        }
+        };
 
         MomentCtr.login( params,
-            function onLogin( err, mo, device )
+            function onLogin( err, explore, friends )
             {
-                //console.log('login');
-                // console.log(device.moments[0]);
-                //console.log(device);
                 res.json(
                     {
-                        explore: mo.explore,
-                        friends: device.friends
+                        explore: explore,
+                        friends: friends
                     });
-
-
             });
     });
 
@@ -163,7 +218,7 @@ router.route('/like')
         {
             like_mid : req.body.target_mid,
             my_device_id : req.body.device_id
-        }
+        };
 
         MomentCtr.like( params,
             function onLike( err, status, connection )
@@ -173,7 +228,6 @@ router.route('/like')
                         status : status,
                         connection : connection
                     });
-
             });
     });
 
@@ -235,7 +289,31 @@ router.route('/image')
         {
             url:'https://s3-us-west-2.amazonaws.com/glimpsing/'+req.body.key
         })
-    })
+    });
+
+router.route('/imagem')
+    .post( function(req, res)
+    {
+        //S3.upload( req.body.image, { key:req.body.key } );
+        console.log(req.files);
+
+        var data =  new Buffer( req.body.data, 'binary' )
+        console.log(data);
+            res.json(
+            {
+                url:'url'
+            });
+
+        /*
+        awsUpload(req, function(err, url) {
+            res.json(
+            {
+                url:url
+            });
+        });
+*/
+
+    });
 
 
 app.use('/api', router);

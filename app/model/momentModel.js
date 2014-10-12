@@ -29,7 +29,6 @@ var MomentSchema   = new Schema(
         current         : String
     });
 
-
 MomentSchema.index( { location: '2dsphere' } );
 
 var AsyncMomentFactory =
@@ -68,9 +67,7 @@ MomentSchema.methods.createExplore = function( nearby_moments, next)
                 next( err, explore_list );
             });
     }
-}
-
-
+};
 
 MomentSchema.methods.getNear = function( params, next )
 {
@@ -98,7 +95,7 @@ MomentSchema.methods.getNear = function( params, next )
                 console.log(  nearby_moments );
                 next( err, nearby_moments );
             });
-}
+};
 
 MomentSchema.methods.getNearWithRelation = function( params, next )
 {
@@ -110,7 +107,6 @@ MomentSchema.methods.getNearWithRelation = function( params, next )
                 $nearSphere : params['location'],
                 $maxDistance : 50,
             },
-
         },
         {
             status: 1,
@@ -142,7 +138,7 @@ MomentSchema.methods.getNearWithRelation = function( params, next )
                 console.log(  nearby_moments );
                 next( err, nearby_moments );
             });
-}
+};
 
 MomentSchema.statics.getDeviceId = function( mid , next)
 {
@@ -157,7 +153,7 @@ MomentSchema.statics.getDeviceId = function( mid , next)
             next( err, mo.device_id, 'u');
 
         });
-}
+};
 
 MomentSchema.statics.updateExplore = function( my_mid, next )
 {
@@ -183,11 +179,10 @@ MomentSchema.statics.updateExplore = function( my_mid, next )
                     next( err, obj );
                 });
         });
-}
+};
 
 MomentSchema.methods.addConnection = function( params, next )
 {
-
     console.log( CHALK.blue('addConnection: ') );
     console.log( this);
     var target_mid = this.liked_relation[0].target_mid;
@@ -217,7 +212,7 @@ MomentSchema.methods.addConnection = function( params, next )
             //console.log( CHALK.blue('-addconncetion: ') );
             next( err, obj );
         });
-}
+};
 
 MomentSchema.statics.addRemoteConnection = function( params, next )
 {
@@ -264,8 +259,7 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
                     next( err, obj );
                 });
         });
-}
-
+};
 
 MomentSchema.statics.addRemoteRelation = function( target_mid, owner_mid, next )
 {
@@ -291,7 +285,7 @@ MomentSchema.statics.addRemoteRelation = function( target_mid, owner_mid, next )
                     next( err, obj );
                 });
         });
-}
+};
 
 MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
 {
@@ -328,6 +322,6 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
                 next( err, obj[0] );
             }
         );
-}
+};
 
 module.exports = mongoose.model( 'Moment', MomentSchema );

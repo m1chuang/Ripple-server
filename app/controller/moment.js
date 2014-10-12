@@ -102,72 +102,30 @@ exports.login = function( params, next )
                 });
 
                 MOMENT.create( moment,
-                    function onMomentCreate( err, obj1 )
+                    function onMomentCreate( err, mo )
                     {
-                        next( err, obj1, device );
+                        async.filter(device.friends, function(friend)
+                        {
+                            return {
+                                    nick_name: friend.nick_name,
+                                    channel_id : friend.channel_id,
+                                    initator_auth_key:friend.initator_auth_key
+                            }
+                        }, function(results)
+                        {
+                            next( err, mo.explore,results );
+                        });
+                        //notify friends@@@
+                        PUBNUB.brodcast(device, 'login');
                     });
             }
         });
 }
 
 
-exports.getNewExplore = function( params, next )
-{
-    console.log( CHALK.red('In MOMENT.getNewExplore') );
-
-    DEVICE.findOne( { device_id: params['my_device_id'] },
-        function onFind(err,device)
-        {
-            if( !device )
-            {
-                console.log('not found');
-                next( err, device );
-            }
-            else
-            {
-                var moment = device.moments[0];
-                params['location'] = moment.location;
-                params['my_mid'] = moment.mid;
-
-                moment.getNearWithRelation( params,
-                    function prepareExploreList( err, obj )
-                    {
-                        moment.createExplore( obj,
-                            function saveExploreList( err, explore_list)
-                            {
-                                moment.explore = explore_list;
-                                console.log('moment');
-                                //console.log(moment);
-                                console.log(explore_list);
-                                next( err,explore_list )
-                                device.moments.set( 0, moment );
-                                device.save(
-                                    function onDeviceSave( err, device )
-                                    {
-
-                                    });
-
-                            });
-                    });
-            }
-        });
-}
 
 
-exports.getPageExplore = function( params, next )
-{
-    console.log( CHALK.red('In MOMENT.getPageExplore') );
 
-    DEVICE.findOne(
-        {
-            'device_id': params['my_device_id']
-        },
-        function( err, device )
-        {
-            if (err) throw err;
-            next( err, device.moments[0].explore);
-        });
-}
 
 /*
 *   Check if a like relation with the target is already place in your relations
@@ -181,30 +139,30 @@ exports.like = function( params, next )
             if( my_moment != null && my_moment.liked_relation != undefined && my_moment.liked_relation.length != 0 )
             {
                 console.log('found');
-                MOMENT.getDeviceId( params['like_mid'],
-                    function ( err, target_did, d)
-                    {
-                        PUBNUB.createConversation(
-                            function addConnections( channel_id, initator_auth_key, target_auth_key )
-                            {
-                                my_connection = {
-                                            type       : 'like',
-                                            channel_id : channel_id,
-                                            auth_key   : initator_auth_key
-                                        }
-                                next( err, 0, my_connection );
 
+                PUBNUB.createConversation(
+                    function addConnections( channel_id, initator_auth_key, target_auth_key )
+                    {
+                        my_connection = {
+                                    type       : 'like',
+                                    channel_id : channel_id,
+                                    auth_key   : initator_auth_key
+                                };
+                        next( err, 0, my_connection );
+                        MOMENT.getDeviceId( params['like_mid'],
+                            function ( err, target_did, d)
+                            {
                                 my_moment.addConnection( my_connection,
                                     function( err, my_moment)
                                     {
                                         DEVICE.saveFriend( params['my_device_id'],
                                             {
-                                                //device_id: target_did,
+                                                device_id: target_did,
                                                 nick_name: '',
                                                 channel_id : channel_id,
                                                 auth_key   : initator_auth_key
                                             });
-                                    } );
+                                    });
 
                                 MOMENT.addRemoteConnection(
                                     {
@@ -218,14 +176,15 @@ exports.like = function( params, next )
                                     {
                                         DEVICE.saveFriend( target_did,
                                             {
-                                                //device_id: params['my_device_id'],
+                                                device_id: params['my_device_id'],
                                                 nick_name: '',
                                                 channel_id : channel_id,
                                                 auth_key   : target_auth_key
                                             });
                                     });
-                            })
-                    });
+                            });
+                    })
+
             }
             else if( my_moment != null && my_moment.connection != undefined && my_moment.connection.length != 0 )
             {
@@ -233,7 +192,6 @@ exports.like = function( params, next )
             }
             else
             {
-
                 MOMENT.addRemoteRelation( params['like_mid'], my_moment.mid, function(){} );
                 next( err, 2, {});
                 console.log( 'not found' );
