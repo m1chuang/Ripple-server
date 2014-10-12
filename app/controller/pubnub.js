@@ -6,7 +6,7 @@ var PUBNUB = require('pubnub').init(
         publish_key   : 'pub-c-48e704f7-5aab-47c1-8794-190690c0bbc9',
         subscribe_key : 'sub-c-b1d55136-3a12-11e4-949a-02ee2ddab7fe',
         secret_key    : 'sec-c-MGZlNTIyN2QtMGUwNy00Mjg0LTk0MDUtMTA0MzA0ZmQzZDk2',
-        origin        : 'gtest.pubnub.com',
+        origin        : 'pubsub.pubnub.com',
         ssl           : true,
     });
 
