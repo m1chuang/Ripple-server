@@ -14,8 +14,7 @@ var Pubnub   = require(__dirname +'/app/controller/pubnub');
 var DeviceCtr     = require(__dirname +'/app/controller/device');
 var MomentCtr     = require(__dirname +'/app/controller/moment');
 
-//app.use(bodyParser.json());
-
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
@@ -248,6 +247,7 @@ router.route('/grant')
     .post( function( req, res )
     {
         console.log( "pubb");
+        console.log( req.body.channel );
         Pubnub.grant( req.body.channel, 'hi' );
     });
 
