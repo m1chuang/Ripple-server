@@ -236,8 +236,8 @@ exports.grant = function( channel, message, cb )
            read    : true,
            write    : true,
            ttl      : 300,
-           callback  : function(m) { console.log( m ); },
-            error     : function(e) { console.log( 'FAILED! RETRY PUBLISH!', e ); }
+           callback  : function(m) { cb(  'SUCCESS!'+m ); },
+            error     : function(e) { cb( 'FAILED! RETRY PUBLISH!'+ e ); }
          });
 
 }

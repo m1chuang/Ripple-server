@@ -248,11 +248,14 @@ router.route('/grant')
     {
         console.log( "pubb");
         console.log( req.body.channel );
-        Pubnub.grant( req.body.channel, 'hi' );
-        res.json(
+        Pubnub.grant( req.body.channel, function(msg)
+        {
+              res.json(
                     {
-                        status : '',
+                        feedback : msg,
                     });
+        });s
+
     });
 
 router.route('/sub')
