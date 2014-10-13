@@ -7,6 +7,7 @@ var exploreSchema = new Schema(
     image_url: String,
     location : { type: [Number], index: '2d'},
     status: String,
+    distance: String,
     like : false,
     connect : false,
 })

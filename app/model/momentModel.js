@@ -25,7 +25,6 @@ var MomentSchema   = new Schema(
         explore         : [EXPLORE.schema],
         liked_relation  : [RELATION.schema],
         connection      : [CONNECTION.schema],
-        //relation_history: [relationList],
         current         : String
     });
 
@@ -41,11 +40,12 @@ var AsyncMomentFactory =
                 device_id   : item.device_id,
                 image_url   : item.image_url,
                 location    : item.location,
+                distance    : item.distance,
                 status      : item.status,
                 like        : (item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false,
                 connect     : (item.connection != undefined&&item.connection.length > 0)? true:false,
                 chat_channel: String
-            }
+            };
 
         next( null, explore_item );
     },
@@ -63,7 +63,6 @@ MomentSchema.methods.createExplore = function( nearby_moments, next)
         async.map( nearby_moments, AsyncMomentFactory.generate_explore.bind( AsyncMomentFactory ),
             function onExploreGenerate( err, explore_list )
             {
-                //console.log( CHALK.blue('-explore_list: ') );
                 next( err, explore_list );
             });
     }
@@ -72,29 +71,24 @@ MomentSchema.methods.createExplore = function( nearby_moments, next)
 MomentSchema.methods.getNear = function( params, next )
 {
     console.log( CHALK.blue('In getNear: ') );
-    this.model( 'Moment' ).find(
-        {
-            'location' :
-            {
-                $nearSphere : this.location,
-                $maxDistance : 50,
-            },
-        },
-        {
-            status: 1,
-            mid : 1,
-            image_url : 1,
-        })
-        .skip( params['offset'] )
-        .limit( params['limit'] )
-        .exec(
-            function( err, nearby_moments )
+    this.model( 'Moment' ).aggregate(
+        {$geoNear : {
+            near: this.location,
+            distanceField: "distance",
+            includeLocs: "location",
+            maxDistance : 2000
+        }},
+        { $limit : params['limit'] },
+        {$project : {'mid' : 1, 'image_url' : 1, 'status': 1, 'device_id' : 1, '_id' : 1, 'distance' : 1}
+    },
+    function( err, nearby_moments )
             {
                 if (err) throw err;
                 console.log( CHALK.blue('-nearby_moments: ') );
                 console.log(  nearby_moments );
                 next( err, nearby_moments );
             });
+
 };
 
 MomentSchema.methods.getNearWithRelation = function( params, next )
@@ -126,7 +120,6 @@ MomentSchema.methods.getNearWithRelation = function( params, next )
                     target_mid : params['my_mid'],
                 }
             },
-
         })
         .skip( params['offset'] )
         .limit( params['limit'] )
@@ -151,7 +144,6 @@ MomentSchema.statics.getDeviceId = function( mid , next)
             console.log( CHALK.blue('-get did: ') );
             console.log(  mo.device_id );
             next( err, mo.device_id, 'u');
-
         });
 };
 
@@ -231,7 +223,7 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
                             'target_mid'    : params['owner_mid'],
                             'channel_id'    : params['channel'],
                             'auth_key'      : params['auth_key'],
-                            'type'          : params['type']
+                            'type'          : params['type'],
                         }
                     },
                     $pull :
@@ -254,6 +246,7 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
                             //using server master key
                             //auth_key : params['auth_key']
                         },function(){});
+
                     console.log( CHALK.blue('-addRemoteconncetion: ') );
                     //console.log(err);
                     next( err, obj );

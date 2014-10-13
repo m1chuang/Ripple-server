@@ -51,6 +51,7 @@ exports.init = function( params, next )
                             function saveExploreList( err, explore_list)
                             {
                                 moment.explore = explore_list;
+                                console.log(explore_list);
                                 device.moments.set( 0, moment );
                                 device.save(
                                     function onDeviceSave( err, device )
@@ -123,7 +124,14 @@ exports.login = function( params, next )
 }
 
 
-
+var calDistance = function (lat1, lon2, lat2, lon2)
+{
+    var R = 6371; // km
+    var d = Math.acos(Math.sin(lat1)*Math.sin(lat2) +
+                  Math.cos(lat1)*Math.cos(lat2) *
+                  Math.cos(lon2-lon1)) * R;
+    return d
+}
 
 
 
@@ -146,7 +154,6 @@ exports.like = function( params, next )
                         my_connection = {
                                     type       : 'like',
                                     channel_id : channel_id,
-                                    auth_key   : initator_auth_key
                                 };
                         next( err, 0, my_connection );
                         MOMENT.getDeviceId( params['like_mid'],
@@ -154,32 +161,41 @@ exports.like = function( params, next )
                             {
                                 my_moment.addConnection( my_connection,
                                     function( err, my_moment)
+                                    {});
+
+                                MOMENT.addRemoteConnection(
                                     {
+                                        target_mid  : params['like_mid'],
+                                        target_did : target_did,
+                                        owner_mid   : my_moment.mid,
+                                        type        : 'like',
+                                        channel     : channel_id,
+                                    },
+                                    function( err, target_moment )
+                                    {
+
+                                        DEVICE.saveFriend( params['target_did'],
+                                            {
+                                                device_id: params['my_device_id'],
+                                                nick_name: '',
+                                                channel_id : params['channel_id'],
+                                                moments : [{
+                                                    image: my_moment.image_url,
+                                                    status: my_moment.status,
+                                                    //distance: my_moment.distance,
+                                                }]
+                                            });
+
                                         DEVICE.saveFriend( params['my_device_id'],
                                             {
                                                 device_id: target_did,
                                                 nick_name: '',
                                                 channel_id : channel_id,
-                                                auth_key   : initator_auth_key
-                                            });
-                                    });
-
-                                MOMENT.addRemoteConnection(
-                                    {
-                                        target_mid  : params['like_mid'],
-                                        owner_mid   : my_moment.mid,
-                                        type        : 'like',
-                                        channel     : channel_id,
-                                        auth_key    : target_auth_key
-                                    },
-                                    function( err, my_moment )
-                                    {
-                                        DEVICE.saveFriend( target_did,
-                                            {
-                                                device_id: params['my_device_id'],
-                                                nick_name: '',
-                                                channel_id : channel_id,
-                                                auth_key   : target_auth_key
+                                                moments: [{
+                                                    image: target_moment.image_url,
+                                                    status: target_moment.status,
+                                                    //distance: target_moment.distance,
+                                                }],
                                             });
                                     });
                             });
