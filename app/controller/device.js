@@ -3,6 +3,7 @@ var MOMENT = require('../model/momentModel');
 var uuid = require('node-uuid');
 var PUBNUB = require('../controller/pubnub');
 var LOGGER = require('../tool/logger');
+var CHALK =  require('chalk');
 
 exports.findOrCreate = function( params, next )
 {
@@ -13,7 +14,7 @@ exports.findOrCreate = function( params, next )
                 if (err) logger.error(err);
                 if ( !device )
                 {
-                    LOGGER.info('Device not found.');
+                    LOGGER.info('Device not found');
                     var server_auth_key = uuid.v4();
 
                     var device = new DEVICE(
@@ -44,15 +45,14 @@ exports.findOrCreate = function( params, next )
 
 exports.getNewExplore = function( params, next )
 {
-    console.log( CHALK.red('In MOMENT.getNewExplore') );
+    LOGGER.info( CHALK.red('In MOMENT.getNewExplore') );
 
     DEVICE.findOne( { device_id: params['my_device_id'] },
         function onFind(err,device)
         {
-            if (err) logger.error(err);
             if( !device )
             {
-                console.log('not found');
+                LOGGER.info("Device id: '"+params['my_device_id']+"' not found");
                 next( err, device );
             }
             else
@@ -68,10 +68,7 @@ exports.getNewExplore = function( params, next )
                             function saveExploreList( err, explore_list)
                             {
                                 moment.explore = explore_list;
-                                console.log('moment');
-                                //console.log(moment);
-                                console.log(explore_list);
-                                next( err,explore_list )
+                                next( err,explore_list );
                                 device.moments.set( 0, moment );
                                 device.save(
                                     function onDeviceSave( err, device )

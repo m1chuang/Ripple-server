@@ -1,7 +1,7 @@
 var MOMENT = require('../model/momentModel');
 var EXPLORE = require('../model/exploreModel');
 var DEVICE = require('../model/deviceModel');
-var S3 = require('../controller/s3_uploader');
+var S3 = require('../controller/uploader');
 var PUBNUB = require('../controller/pubnub');
 
 
@@ -21,12 +21,11 @@ exports.init = function( params, next )
         {
             if( !device )
             {
-                next( err, device );
+                next( err, 404, device );
             }
             else
             {
                 var moment_id = uuid.v4();
-                params['mid']=moment_id;
                 S3.upload( params['image'], { key:moment_id } );
                 var moment = new MOMENT(
                 {
@@ -43,7 +42,6 @@ exports.init = function( params, next )
 
                 params['offset'] = 0;
                 params['limit'] = 20;
-                params['my_mid'] = moment_id;
                 moment.getNear( params,
                     function prepareExploreList( err, obj )
                     {
@@ -55,19 +53,14 @@ exports.init = function( params, next )
                                 device.moments.set( 0, moment );
                                 device.save(
                                     function onDeviceSave( err, device )
-                                    {
-                                        //no need to wait
-                                        console.log(device);
-                                        //next( err,device )
-                                    });
+                                    {});
                             });
                     });
 
-                next(err,204);
+                next( err, 202 );
             }
         });
 }
-
 
 /*
 *   Finalize the temporary moment
@@ -81,14 +74,11 @@ exports.login = function( params, next )
         {
             if( !device )
             {
-                console.log('not found');
-                next( err, device );
+                next( err, 404, null, null );
             }
             else
             {
-                console.log('found');
                 var temp_moment = device.moments[0];
-
                 var moment = new MOMENT(
                 {
                      mid :           temp_moment.mid,
@@ -114,7 +104,7 @@ exports.login = function( params, next )
                             }
                         }, function(results)
                         {
-                            next( err, mo.explore,results );
+                            next( err, 200, mo.explore,results );
                         });
                         //notify friends@@@
                         PUBNUB.brodcast(device, 'login');
@@ -134,7 +124,6 @@ var calDistance = function (lat1, lon2, lat2, lon2)
 }
 
 
-
 /*
 *   Check if a like relation with the target is already place in your relations
 *   if yes, create the connection. Otherwise, place a like relation in the target's relations
@@ -146,8 +135,6 @@ exports.like = function( params, next )
         {
             if( my_moment != null && my_moment.liked_relation != undefined && my_moment.liked_relation.length != 0 )
             {
-                console.log('found');
-
                 PUBNUB.createConversation(
                     function addConnections( channel_id, initator_auth_key, target_auth_key )
                     {
@@ -160,8 +147,7 @@ exports.like = function( params, next )
                             function ( err, target_did, d)
                             {
                                 my_moment.addConnection( my_connection,
-                                    function( err, my_moment)
-                                    {});
+                                    function( err, my_moment){});
 
                                 MOMENT.addRemoteConnection(
                                     {
@@ -173,7 +159,6 @@ exports.like = function( params, next )
                                     },
                                     function( err, target_moment )
                                     {
-
                                         DEVICE.saveFriend( params['target_did'],
                                             {
                                                 device_id: params['my_device_id'],
@@ -199,8 +184,7 @@ exports.like = function( params, next )
                                             });
                                     });
                             });
-                    })
-
+                    });
             }
             else if( my_moment != null && my_moment.connection != undefined && my_moment.connection.length != 0 )
             {
@@ -210,9 +194,7 @@ exports.like = function( params, next )
             {
                 MOMENT.addRemoteRelation( params['like_mid'], my_moment.mid, function(){} );
                 next( err, 2, {});
-                console.log( 'not found' );
             }
-
 
         });
 }

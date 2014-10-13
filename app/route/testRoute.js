@@ -1,4 +1,4 @@
-var S3 = require('./app/controller/s3_uploader');
+var S3 = require('./app/controller/uploader');
 var Pubnub   = require(__dirname +'/app/controller/pubnub');
 var express = require('express');
 var test = express.Router();

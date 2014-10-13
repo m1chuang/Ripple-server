@@ -56,7 +56,7 @@ MomentSchema.methods.createExplore = function( nearby_moments, next)
     console.log( CHALK.blue('In createExplore:') );
     if( !nearby_moments )
     {
-        next();
+        next(null, null);
     }
     else
     {

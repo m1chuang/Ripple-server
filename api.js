@@ -20,7 +20,7 @@ var deviceRoute = require(__dirname +'/app/route/deviceRoute.js');
 var momentRoute = require(__dirname +'/app/route/momentRoute.js');
 var testRoute = require(__dirname +'/app/route/momentRoute.js');
 
-app.use('/api/moment', deviceRoute);
+app.use('/api/moment', momentRoute);
 app.use('/api/device', deviceRoute);
 app.use('/api/test', testRoute);
 

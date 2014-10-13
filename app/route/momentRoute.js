@@ -1,7 +1,8 @@
 var MomentCtr     = require('../controller/moment');
-
+var LOGGER = require('../tool/logger');
 var express = require('express');
 var moment = express.Router();
+
 
 moment.route('/')
     /*
@@ -22,10 +23,8 @@ moment.route('/')
         MomentCtr.init( params,
             function onInit( err, status )
             {
-                res.json(
-                    {
-                        status: status
-                    });
+                if (err) logger.error(err);
+                res.status(status).end();
             });
     })
 
@@ -45,9 +44,10 @@ moment.route('/')
         };
 
         MomentCtr.login( params,
-            function onLogin( err, explore, friends )
+            function onLogin( err, status, explore, friends )
             {
-                res.json(
+                if (err) logger.error(err);
+                res.status(status).json(
                     {
                         explore: explore,
                         friends: friends
@@ -73,6 +73,7 @@ moment.route('/like')
         MomentCtr.like( params,
             function onLike( err, status, connection )
             {
+                if (err) logger.error(err);
                 res.json(
                     {
                         status : status,
