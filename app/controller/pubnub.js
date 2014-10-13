@@ -3,10 +3,9 @@ var uuid = require('node-uuid');
 
 var PUBNUB = require('pubnub').init(
     {
-        publish_key   : 'pub-c-48e704f7-5aab-47c1-8794-190690c0bbc9',
-        subscribe_key : 'sub-c-b1d55136-3a12-11e4-949a-02ee2ddab7fe',
-        secret_key    : 'sec-c-MGZlNTIyN2QtMGUwNy00Mjg0LTk0MDUtMTA0MzA0ZmQzZDk2',
-        origin        : 'pubsub.pubnub.com',
+        subscribe_key   : 'sub-c-b314c43e-3a97-11e4-8947-02ee2ddab7fe',
+        publish_key : 'pub-c-594c8c54-eccd-44d8-9286-3a6d311d4cd6',
+        secret_key    :'sec-c-ZTBjY2U4YmYtNTIyMy00ZjY0LTgxNWUtMDEzMmRjYTIyNDQy',
         ssl           : true,
     });
 
@@ -229,22 +228,18 @@ exports.subscribe_server = function( params, cb )
 exports.grant = function( channel, message, cb )
 {
 
-        console.log( CHALK.blue( 'granting: '+ channel ) );
+
+
         PUBNUB.grant({
            channel : channel,
-           auth_key : 'test',
-           read    : true,
-           callback  : function(e) { console.log( 'SUCCESS!', e ); },
-            error     : function(e) { console.log( 'FAILED! RETRY PUBLISH!', e ); }
-         });
-        PUBNUB.grant({
-           channel : channel,
-           auth_key : 'test0',
+           auth_key : 'testing',
            read    : true,
            write    : true,
-           callback  : function(e) { console.log( 'SUCCESS!', e ); },
+           ttl      : 300,
+           callback  : function(m) { console.log( m ); },
             error     : function(e) { console.log( 'FAILED! RETRY PUBLISH!', e ); }
          });
+
 }
 
 exports.pub = function( channel, message, cb )
@@ -255,7 +250,7 @@ exports.pub = function( channel, message, cb )
         PUBNUB.publish(
         {
             channel   : channel,
-            auth_key : 'test0',
+            auth_key : 'null',
             message   : { 'message':'Hello from glimpse server~~~' },
             callback  : function(e) { console.log( 'SUCCESS!', e ); },
             error     : function(e) { console.log( 'FAILED! RETRY PUBLISH!', e ); }

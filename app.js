@@ -1,10 +1,11 @@
-//var busboy = require('connect-busboy');
+//var Busboy = require('connect-busboy');
 var express = require('express');
 var app     = express();
 var bodyParser  = require('body-parser');
-
+var formidable = require('formidable');
+var util = require('util');
 //var awsUpload = require('./app/controller/aws-streaming');
-
+var busboy = require('connect-busboy');
 var mongoose   = require('mongoose');
 var S3 = require('./app/controller/s3_uploader');
 
@@ -18,8 +19,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
-
-
+app.use(busboy());
 
 
 //app.use(busboy());
@@ -249,6 +249,10 @@ router.route('/grant')
         console.log( "pubb");
         console.log( req.body.channel );
         Pubnub.grant( req.body.channel, 'hi' );
+        res.json(
+                    {
+                        status : '',
+                    });
     });
 
 router.route('/sub')
@@ -285,6 +289,7 @@ router.route('/image')
     .post( function(req, res)
     {
         S3.upload( req.body.image, { key:req.body.key } );
+
         res.json(
         {
             url:'https://s3-us-west-2.amazonaws.com/glimpsing/'+req.body.key
@@ -295,14 +300,26 @@ router.route('/imagem')
     .post( function(req, res)
     {
         //S3.upload( req.body.image, { key:req.body.key } );
-        console.log(req.files);
+    req.busboy.on('file', function(fieldname, file, filename) {
+    console.log('on:file');
+    console.log(file);
+    //console.log(filename);
+    //console.log(fieldname);
+  });
 
-        var data =  new Buffer( req.body.data, 'binary' )
-        console.log(data);
-            res.json(
-            {
-                url:'url'
-            });
+  req.busboy.on('field', function(fieldname, value, valTruncated, keyTruncated) {
+    console.log('on:field');
+  });
+
+  req.busboy.once('end', function() {
+    console.log('once:end');
+    res.send('done');
+  });
+
+  req.pipe(req.busboy);
+            //var data =  new Buffer( req.body.data, 'binary' )
+        //console.log(data);
+
 
         /*
         awsUpload(req, function(err, url) {
