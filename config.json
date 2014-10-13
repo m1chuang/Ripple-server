@@ -1,0 +1,15 @@
+{
+  "database": "mongodb://neshorange:Nesh6502@ds039850.mongolab.com:39850/glimpse-test",
+  "aws": {
+    "accessKeyId": "AKIAJD7KI7ZEE5EDJ3IA",
+    "secretAccessKey": "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",
+    "region": "us-west-2",
+    "test-bucket": "glimpsetest"
+  },
+  "server-master-key": "MGZlNTIyN2QtMGUwNy00Mjg0LTMzA0ZmQzZDk2k0MDUtMTA0",
+  "pubnub": {
+    "subscribe_key": "sub-c-b314c43e-3a97-11e4-8947-02ee2ddab7fe",
+    "publish_key": "pub-c-594c8c54-eccd-44d8-9286-3a6d311d4cd6",
+    "secret_key": "sec-c-ZTBjY2U4YmYtNTIyMy00ZjY0LTgxNWUtMDEzMmRjYTIyNDQy"
+  }
+}

@@ -2,6 +2,7 @@ var DEVICE     = require('../model/deviceModel');
 var MOMENT = require('../model/momentModel');
 var uuid = require('node-uuid');
 var PUBNUB = require('../controller/pubnub');
+var LOGGER = require('../tool/logger');
 
 exports.findOrCreate = function( params, next )
 {
@@ -9,23 +10,24 @@ exports.findOrCreate = function( params, next )
         DEVICE.findOne( { device_id: params['device_id'] },
             function( err, device )
             {
-
+                if (err) logger.error(err);
                 if ( !device )
                 {
-                    console.log('no existing');
+                    LOGGER.info('Device not found.');
                     var server_auth_key = uuid.v4();
 
-                    var device = new Device(
+                    var device = new DEVICE(
                         {
                             device_id: params['device_id'],
                             //server_channel is device id
                             //server_channel : server_channel_id,
                             server_auth_key : server_auth_key
                         });
-                    console.log(device);
+
                     PUBNUB.createServerConnection( params['device_id'], server_auth_key,
                         function()
                         {
+                            LOGGER.log('debug',device);
                             device.save(
                                 function( err, device )
                                 {
@@ -35,7 +37,6 @@ exports.findOrCreate = function( params, next )
                 }
                 else
                 {
-                    console.log('exist');
                     next( err, device, 200 );
                 }
             });
@@ -48,6 +49,7 @@ exports.getNewExplore = function( params, next )
     DEVICE.findOne( { device_id: params['my_device_id'] },
         function onFind(err,device)
         {
+            if (err) logger.error(err);
             if( !device )
             {
                 console.log('not found');
@@ -91,7 +93,7 @@ exports.getPageExplore = function( params, next )
         },
         function( err, device )
         {
-            if (err) throw err;
+            if (err) logger.error(err);
             next( err, device.moments[0].explore);
         });
 }

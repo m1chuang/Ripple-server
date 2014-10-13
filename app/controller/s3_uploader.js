@@ -1,13 +1,14 @@
 var chalk = require('chalk');
 var AWS = require('aws-sdk');
-
+var path = require('path');
+var nconf = require('nconf');
     // For dev purposes only
 
 AWS.config.update(
 {
-    accessKeyId: 'AKIAJD7KI7ZEE5EDJ3IA',
-    secretAccessKey: '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',
-    region: 'us-west-2'
+    accessKeyId: nconf.get('aws:accessKeyId'),
+    secretAccessKey: nconf.get('aws:ecretAccessKey'),
+    region: nconf.get('aws:region'),
 });
 
 
@@ -33,5 +34,32 @@ exports.upload = function( fileData, fileInfo, cb )
 
         });
 
+
+};
+var Uploader = require('s3-streaming-upload').Uploader,
+    upload = null
+
+
+
+exports.s3_test = function (fieldname, file, filename, enconding, next){
+    upload = new Uploader({
+        // credentials to access AWS
+        accessKey:  nconf.get('aws:accessKeyId'),
+        secretKey:  nconf.get('aws:secretAccessKey'),
+        bucket:     nconf.get('aws:test-bucket'),
+        objectName: filename,
+        objectParams: {
+            ACL: 'public-read'
+        },
+        stream:     file
+    });
+
+    upload.on('completed', function (err, res) {
+        console.log('upload completed');
+    });
+
+    upload.on('failed', function (err) {
+        console.log('upload failed with error', err);
+    });
 
 }

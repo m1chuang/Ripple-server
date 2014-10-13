@@ -1,15 +1,15 @@
 var CHALK = require('chalk');
 var uuid = require('node-uuid');
-
+var nconf = require('nconf');
 var PUBNUB = require('pubnub').init(
     {
-        subscribe_key   : 'sub-c-b314c43e-3a97-11e4-8947-02ee2ddab7fe',
-        publish_key : 'pub-c-594c8c54-eccd-44d8-9286-3a6d311d4cd6',
-        secret_key    :'sec-c-ZTBjY2U4YmYtNTIyMy00ZjY0LTgxNWUtMDEzMmRjYTIyNDQy',
-        ssl           : true,
+        subscribe_key   : nconf.get('pubnub:subscribe_key'),
+        publish_key     : nconf.get('pubnub:publish_key'),
+        secret_key      : nconf.get('pubnub:secret_key'),
+        ssl             : true,
     });
 
-var server_master_key = 'MGZlNTIyN2QtMGUwNy00Mjg0LTMzA0ZmQzZDk2k0MDUtMTA0'
+var server_master_key = nconf.get('server-master-key');
 
 var pnMessage =
 {
