@@ -18,7 +18,7 @@ mongoose.connect( nconf.get('database') );
 var port = process.env.PORT || 8000;
 var deviceRoute = require(__dirname +'/app/route/deviceRoute.js');
 var momentRoute = require(__dirname +'/app/route/momentRoute.js');
-var testRoute = require(__dirname +'/app/route/momentRoute.js');
+var testRoute = require(__dirname +'/app/route/testRoute.js');
 
 app.use('/api/moment', momentRoute);
 app.use('/api/device', deviceRoute);

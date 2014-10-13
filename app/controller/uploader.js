@@ -56,6 +56,7 @@ exports.s3_test = function (fieldname, file, filename, enconding, next){
 
     upload.on('completed', function (err, res) {
         console.log('upload completed');
+        next( err, res );
     });
 
     upload.on('failed', function (err) {

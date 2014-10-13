@@ -1,5 +1,5 @@
-var S3 = require('./app/controller/uploader');
-var Pubnub   = require(__dirname +'/app/controller/pubnub');
+var S3 = require('../controller/uploader');
+var Pubnub   = require('../controller/pubnub');
 var express = require('express');
 var test = express.Router();
 
@@ -76,13 +76,22 @@ test.route('/imagem')
         req.busboy.on('file', function(fieldname, file, filename, encoding) {
             console.log('on:file');
 
-            S3.s3_test(fieldname, file, filename, encoding, function() {
+            S3.s3_test(fieldname, file, filename, encoding,
+                function( err, s3_response) {
+                 res.json(
+                        {
+                            url:'https://s3-us-west-1.amazonaws.com/glimpsetest/'+filename,
+                            s3_response:s3_response,
+                            json: 'some value:'+req.body.device_id
+
+                        });
                     });
         });
 
         req.busboy.on('field', function(fieldname, value, valTruncated, keyTruncated) {
             console.log('on:field');
             console.log(fieldname);
+
         });
 
         req.busboy.once('end', function() {
