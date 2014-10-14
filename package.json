@@ -1,12 +1,12 @@
 {
   "name": "glimpse-api",
-  "main": "app.js",
+  "main": "./app/app.js",
   "description": "a short description about the project",
   "repository": "https://neshorange@bitbucket.org/neshorange/glimpse.git",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node app.js",
+    "start": "node ./app/app.js",
     "test": "mocha test"
   },
   "dependencies": {
