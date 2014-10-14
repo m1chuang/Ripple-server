@@ -11,19 +11,22 @@ app.use(bodyParser.urlencoded({
 }));
 
 var nconf = require('nconf');
-nconf.argv().env().file({ file: 'config.json' });
+nconf.argv().env().file({ file: './app/config.json' });
 
 var mongoose   = require('mongoose');
 mongoose.connect( nconf.get('database') );
 
-var port = process.env.PORT || 8000;
-var api = require(__dirname +'/app/api');
+
+var api = require(__dirname +'/api/api');
 
 app.use('/api/moment', api.moment);
 app.use('/api/device', api.device);
 app.use('/api/test', api.test);
 
-app.listen(port);
+
+
+module.exports = app
+
 
 
 

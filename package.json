@@ -1,12 +1,12 @@
 {
   "name": "glimpse-api",
-  "main": "./app/app.js",
+  "main": "server.js",
   "description": "a short description about the project",
   "repository": "https://neshorange@bitbucket.org/neshorange/glimpse.git",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node ./app/app.js",
+    "start": "node server.js",
     "test": "mocha test"
   },
   "dependencies": {
@@ -19,7 +19,6 @@
     "node-uuid": "1.4.1",
     "moment": "2.8.2",
     "aws-sdk": "2.0.15",
-    "knox": "^0.9.1",
     "connect-busboy": "0.0.2",
     "busboy": "^0.2.9"
   },
