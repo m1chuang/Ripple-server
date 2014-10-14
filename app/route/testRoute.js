@@ -72,31 +72,31 @@ test.route('/image')
 test.route('/imagem')
     .post( function(req, res)
     {
-
+        var params = {};
         req.busboy.on('file', function(fieldname, file, filename, encoding) {
             console.log('on:file');
 
             S3.s3_test(fieldname, file, filename, encoding,
                 function( err, s3_response) {
-                 res.json(
+                 res.end(JSON.stringify(
                         {
                             url:'https://s3-us-west-1.amazonaws.com/glimpsetest/'+filename,
                             s3_response:s3_response,
-                            json: 'some value:'+req.body.device_id
-
-                        });
-                    });
+                            params : params
+                        })
+                    )});
         });
 
         req.busboy.on('field', function(fieldname, value, valTruncated, keyTruncated) {
             console.log('on:field');
             console.log(fieldname);
+            params[fieldname]=value;
 
         });
 
-        req.busboy.once('end', function() {
+        req.busboy.on('end', function() {
             console.log('once:end');
-            //res.send('done');
+            res.end();
         });
 
         req.pipe(req.busboy);
