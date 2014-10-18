@@ -22,9 +22,7 @@ var pnMessage =
             'chat_channel_id'   :   params['chat_channel_id'],
             'auth_key'          :   params['auth_key']
         }
-
     }
-
 }
 
 /*
