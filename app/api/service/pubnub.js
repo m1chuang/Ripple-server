@@ -223,7 +223,7 @@ exports.subscribe_server = function( params, cb )
             error     : function(e) { console.log( 'FAILED! RETRY PUBLISH!', e ); }
         });
 }
-exports.grant = function( channel, message, cb )
+exports.grant = function( channel, cb )
 {
 
 
@@ -234,7 +234,7 @@ exports.grant = function( channel, message, cb )
            read    : true,
            write    : true,
            ttl      : 300,
-           callback  : function(m) { cb(  'SUCCESS!'+m ); },
+           callback  : function(m) { cb(  'SUCCESS!',m ); },
             error     : function(e) { cb( 'FAILED! RETRY PUBLISH!'+ e ); }
          });
 

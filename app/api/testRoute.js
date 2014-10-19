@@ -18,13 +18,14 @@ test.route('/grant')
     {
         console.log( "pubb");
         console.log( req.body.channel );
-        Pubnub.grant( req.body.channel, function(msg)
+        Pubnub.grant( req.body.channel, function(msg, obj)
         {
               res.json(
                     {
-                        feedback : msg,
+                        status : msg,
+                        feedback: obj
                     });
-        });s
+        });
 
     });
 
