@@ -17,7 +17,6 @@ var DeviceSchema   = new Schema(
                         nick_name:String,
                         auth_key:String
                     }]
-
     });
 
 

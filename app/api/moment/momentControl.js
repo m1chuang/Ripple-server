@@ -106,7 +106,7 @@ exports.login = function( params, next )
                             next( err, 200, mo.explore,results );
                         });
                         //notify friends@@@
-                        PUBNUB.brodcast(device, 'login');
+                        //PUBNUB.brodcast(device, 'login');
                     });
             }
         });
