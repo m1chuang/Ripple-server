@@ -1,0 +1,9 @@
+our concern:
+user info, message content, bot
+
+How should we authenenticate device?
+we currentily use one main token to authenticatie user and grant temporary token for comunucation in each session
+How should we encript server to device comunucation?
+We decide to use SSL, HTTPS. Should we also encrypt application wise.
+
+Are there any secruity concern with formdata

@@ -226,11 +226,9 @@ exports.subscribe_server = function( params, cb )
 exports.grant = function( channel, cb )
 {
 
-
-
         PUBNUB.grant({
            channel : channel,
-           auth_key : 'testing',
+           auth_key : 'nope',
            read    : true,
            write    : true,
            ttl      : 300,
@@ -238,6 +236,34 @@ exports.grant = function( channel, cb )
             error     : function(e) { cb( 'FAILED! RETRY PUBLISH!'+ e ); }
          });
 
+}
+
+
+exports.twofrds = function( channel, next )
+{
+
+    var auth_key = uuid.v4();
+    var allow = uuid.v4();
+    var deny = uuid.v4();
+        PUBNUB.grant({
+           channel : deny,
+           auth_key : 'nope',
+           read    : true,
+           write    : true,
+           ttl      : 3000,
+           callback  : function(m) { console.log(  'SUCCESS!',m ); },
+            error     : function(e) { console.log( 'FAILED! RETRY PUBLISH!'+ e ); }
+         });
+        PUBNUB.grant({
+           channel : allow,
+           auth_key : auth_key,
+           read    : true,
+           write    : true,
+           ttl      : 3000,
+           callback  : function(m) { console.log(  'SUCCESS!',m ); },
+            error     : function(e) { console.log( 'FAILED! RETRY PUBLISH!'+ e ); }
+         });
+        next(auth_key, allow, deny);
 }
 
 exports.pub = function( channel, message, cb )

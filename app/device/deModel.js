@@ -1,14 +1,13 @@
 
 var mongoose        = require('mongoose');
-var MOMENT    = require('../moment/momentModel');
+var MOMENT    = require('../moment/moModel');
 
 var Schema          = mongoose.Schema;
 
 var DeviceSchema   = new Schema(
     {
         device_id: String,
-        token: String,
-        server_auth_key: String,
+        client_auth_key: String,//use current moment id for now
         moments: [MOMENT.schema],
         friends: [
                     {
@@ -19,6 +18,18 @@ var DeviceSchema   = new Schema(
                     }]
     });
 
+DeviceSchema.methods.authenticate = function( req, res, next)
+{
+    this.model( 'Device' ).findOne(
+        {
+           'device_id' : req['auth_token']['device_id'],
+        },
+        function onFind( err, device )
+        {
+           req['device']=device;
+           next();
+        });
+}
 
 DeviceSchema.methods.getCurrentMoment = function(next)
 {

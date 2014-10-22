@@ -1,8 +1,11 @@
-var DeviceCtr     = require('./deviceControl');
+var DeviceCtr     = require('./deControl');
+var AUTH     = require('../service/auth');
 
 
 var express = require('express');
 var device = express.Router();
+
+device.use(AUTH.authenticate);
 
 device.route('/')
    /*
@@ -14,16 +17,24 @@ device.route('/')
         {
             device_id : req.body.device_id
         };
-
-        DeviceCtr.findOrCreate( params,
-            function( err, device, status )
+        var response = function( err, token, status )
             {
-                console.log(device);
                 res.status(status).json(
                     {
-                        server_auth_key: device.server_auth_key
+                        token: token
                     });
-            });
+            };
+
+        if(req['auth_token'] == 'new')
+        {
+            DeviceCtr.create( params, response);
+        }
+        else
+        {
+            console.log(req['auth_token']);
+            response('', req.body.token, 200);
+        }
+
     });
 
 device.route('/friends')
@@ -36,15 +47,16 @@ device.route('/friends')
             my_device_id :req.body.device_id,
         };
 
-        DeviceCtr.getFriends( params,
-            function( err, friends )
+        var response = function( err, friends )
             {
                 console.log(friends);
                 res.json(
                     {
                         friends: friends
                     });
-            });
+            };
+
+        DeviceCtr.getFriends( params, response);
     });
 
 device.route('/friends/delete')

@@ -8,6 +8,7 @@
     "start": "node main.js",
     "test": "mocha test"
   },
+
   "dependencies": {
     "express": "~4.8.3",
     "mongoose": "3.6.20",
@@ -20,7 +21,8 @@
     "aws-sdk": "2.0.15",
     "connect-busboy": "0.0.2",
     "busboy": "^0.2.9",
-    "winston-loggly": "^1.0.2"
+    "winston-loggly": "^1.0.2",
+    "winston": "^0.8.1"
   },
   "devDependencies": {
     "should": "4.0.4",

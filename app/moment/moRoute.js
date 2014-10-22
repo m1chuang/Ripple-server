@@ -1,9 +1,10 @@
-var MomentCtr     = require('./momentControl');
+var MomentCtr     = require('./moControl');
 var LOGGER = require('../service/logger');
+var AUTH     = require('../service/auth');
 var express = require('express');
 var moment = express.Router();
 
-
+moment.use(AUTH.authenticate);
 moment.route('/')
     /*
     *   Initiate a moment, request when photo taken
@@ -14,18 +15,19 @@ moment.route('/')
     {
         var params =
         {
-            my_device_id : req.body.device_id,
+            my_device_id : req['auth_token']['device_id'],//req.body.device_id,
             image   :   req.body.image,
             lat : req.body.lat,
             lon : req.body.lon
         };
 
-        MomentCtr.init( params,
-            function onInit( err, status )
-            {
-                if (err) logger.error(err);
+        var response = function(err, conntent)
+        {
+            if (err) logger.error(err);
                 res.status(status).end();
-            });
+        };
+
+        MomentCtr.init( params, response);
     })
 
     /*
@@ -37,25 +39,27 @@ moment.route('/')
     {
         var params =
         {
-            my_device_id : req.body.device_id,
+            my_device_id : req['auth_token']['device_id'],//req.body.device_id,
             status : req.body.status,
             skip : 0,
             offset : 20
         };
 
-        MomentCtr.login( params,
-            function onLogin( err, status, explore, friends )
-            {
-                if (err) logger.error(err);
-                res.status(status).json(
-                    {
-                        explore: explore,
-                        friends: friends
-                    });
-            });
+        var response = function(err, conntent)
+        {
+            if (err) logger.error(err);
+            res.status(status).json(
+                {
+                    explore: explore,
+                    friends: friends
+                });
+        };
+
+        MomentCtr.login( params,response);
     });
 
 /*
+
 *   status code:
         0: succsefully become friends
         1: already friends
@@ -67,7 +71,7 @@ moment.route('/like')
         var params =
         {
             like_mid : req.body.target_mid,
-            my_device_id : req.body.device_id
+            my_device_id : req['auth_token']['device_id'],//req.body.device_id,
         };
 
         MomentCtr.like( params,

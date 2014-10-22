@@ -1,5 +1,5 @@
-var MOMENT = require('./momentModel');
-var DEVICE = require('../device/deviceModel');
+var MOMENT = require('./moModel');
+var DEVICE = require('../device/deModel');
 var S3 = require('../service/uploader');
 var PUBNUB = require('../service/pubnub');
 
@@ -134,6 +134,9 @@ exports.like = function( params, next )
         {
             if( my_moment != null && my_moment.liked_relation != undefined && my_moment.liked_relation.length != 0 )
             {
+                //get auth token for pubnub
+                //get device_id and token
+                MOMENT.getDeviceId
                 PUBNUB.createConversation(
                     function addConnections( channel_id, initator_auth_key, target_auth_key )
                     {

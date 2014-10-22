@@ -12,11 +12,9 @@ var relationList = new Schema(
 });
 var connectionSchema = new Schema(
 {
-
     target_mid : String,
     channel_id : String,
     type : String
-
 })
 
 var relationSchema = new Schema(
@@ -159,7 +157,7 @@ MomentSchema.methods.getNearWithRelation = function( params, next )
             });
 };
 
-MomentSchema.statics.getDeviceId = function( mid , next)
+MomentSchema.statics.getDevice = function( mid , next)
 {
     this.model( 'Moment' ).findOne(
         {
@@ -169,7 +167,7 @@ MomentSchema.statics.getDeviceId = function( mid , next)
         {
             console.log( CHALK.blue('-get did: ') );
             console.log(  mo.device_id );
-            next( err, mo.device_id, 'u');
+            next( err, mo, 'u');
         });
 };
 
@@ -213,7 +211,6 @@ MomentSchema.methods.addConnection = function( params, next )
                 {
                     'target_mid'    : target_mid,
                     'channel_id'    : params['channel_id'],
-                    'auth_key'      : params['auth_key'],
                     'type'          : params['type']
                 }
             },

@@ -1,47 +1,33 @@
-var DEVICE     = require('./deviceModel');
-var MOMENT = require('../moment/momentModel');
+var DEVICE     = require('./deModel');
+var MOMENT = require('../moment/moModel');
+var AUTH     = require('../service/auth');
 var uuid = require('node-uuid');
 var PUBNUB = require('../service/pubnub');
 var LOGGER = require('../service/logger');
 var CHALK =  require('chalk');
 
-exports.findOrCreate = function( params, next )
+exports.create = function( params, next )
 {
-        //Get device, create one if device does not exist
-        DEVICE.findOne( { device_id: params['device_id'] },
-            function( err, device )
-            {
-                if (err) logger.error(err);
-                if ( !device )
-                {
-                    LOGGER.info('Device not found');
-                    var server_auth_key = uuid.v4();
+    var device_id = uuid.v4();
+    var client_auth_key = uuid.v4();
+    var new_device = new DEVICE(
+        {
+            device_id: device_id,
+            client_auth_key : client_auth_key
+        });
 
-                    var device = new DEVICE(
-                        {
-                            device_id: params['device_id'],
-                            //server_channel is device id
-                            //server_channel : server_channel_id,
-                            server_auth_key : server_auth_key
-                        });
-
-                    PUBNUB.createServerConnection( params['device_id'], server_auth_key,
-                        function()
-                        {
-                            LOGGER.log('debug',device);
-                            device.save(
-                                function( err, device )
-                                {
-                                    next( err, device, 201 );
-                                });
-                        });
-                }
-                else
+    PUBNUB.createServerConnection( device_id, client_auth_key,
+        function()
+        {
+            AUTH.newBaseToken( new_device,
+                function( device, token )
                 {
-                    next( err, device, 200 );
-                }
-            });
+                    next( '', token, 201 );
+                    device.save();
+                });
+        });
 }
+
 
 exports.getNewExplore = function( params, next )
 {

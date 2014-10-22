@@ -11,17 +11,20 @@ app.use(bodyParser.urlencoded({
 }));
 
 var nconf = require('nconf');
-nconf.argv().env().file({ file: './app/config.json' });
+nconf.argv().env().file({ file: __dirname + '/config.json' });
 
 var mongoose   = require('mongoose');
 mongoose.connect( nconf.get('database') );
 
 
-var api = require(__dirname +'/api/api');
+var moment     = require('./moment/moRoute');
+var device     = require('./device/deRoute');
+var test     = require('./testRoute');
 
-app.use('/api/moment', api.moment);
-app.use('/api/device', api.device);
-app.use('/api/test', api.test);
+
+app.use('/api/moment', moment);
+app.use('/api/device', device);
+app.use('/api/test', test);
 
 
 

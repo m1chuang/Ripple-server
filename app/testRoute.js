@@ -4,6 +4,31 @@ var express = require('express');
 var test = express.Router();
 
 
+test.route('/twofrds')
+    .post( function( req, res )
+    {
+         var params =
+        {
+            my_device_id : req.body.device_id
+        };
+        Pubnub.twofrds( params, function(auth_key, allow, deny){
+            res.json(
+                    {
+                        auth_key: auth_key,
+                        friends: [
+                            {
+                                channel_id: allow,
+                                nick_name: "michael"
+                            },
+                            {
+                                channel_id: deny,
+                                nick_name: "angie"
+                            },
+                        ]
+                    });
+        });
+    });
+
 
 test.route('/pub')
     .post( function( req, res )

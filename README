@@ -1,0 +1,5 @@
+use jwt token to store pubnub client auth key and device id
+
+middleware jwt
+    if jwt:
+        verify device then auth key
