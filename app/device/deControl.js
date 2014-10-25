@@ -3,10 +3,10 @@ var MOMENT = require('../moment/moModel');
 var AUTH     = require('../service/auth');
 var uuid = require('node-uuid');
 var PUBNUB = require('../service/pubnub');
-var LOGGER = require('../service/logger');
+var LOG = require('../service/logger');
 var CHALK =  require('chalk');
 
-exports.create = function( params, next )
+exports.create = function( next )
 {
     var device_id = uuid.v4();
     var client_auth_key = uuid.v4();
@@ -23,7 +23,7 @@ exports.create = function( params, next )
                 function( device, token )
                 {
                     next( '', token, 201 );
-                    device.save();
+                    new_device.save();
                 });
         });
 }
@@ -31,14 +31,14 @@ exports.create = function( params, next )
 
 exports.getNewExplore = function( params, next )
 {
-    LOGGER.info( CHALK.red('In MOMENT.getNewExplore') );
+    LOG.info( CHALK.red('In MOMENT.getNewExplore') );
 
     DEVICE.findOne( { device_id: params['my_device_id'] },
         function onFind(err,device)
         {
             if( !device )
             {
-                LOGGER.info("Device id: '"+params['my_device_id']+"' not found");
+                LOG.info("Device id: '"+params['my_device_id']+"' not found");
                 next( err, device );
             }
             else
@@ -76,7 +76,7 @@ exports.getPageExplore = function( params, next )
         },
         function( err, device )
         {
-            if (err) logger.error(err);
+            if (err) LOG.error(err);
             next( err, device.moments[0].explore);
         });
 }

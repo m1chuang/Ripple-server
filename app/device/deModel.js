@@ -1,6 +1,6 @@
-
 var mongoose        = require('mongoose');
 var MOMENT    = require('../moment/moModel');
+var LOG = require('../service/logger');
 
 var Schema          = mongoose.Schema;
 
@@ -18,18 +18,25 @@ var DeviceSchema   = new Schema(
                     }]
     });
 
-DeviceSchema.methods.authenticate = function( req, res, next)
+DeviceSchema.statics.getDevice = function( req, res, next)
 {
-    this.model( 'Device' ).findOne(
+    LOG.info('in get d');
+    LOG.info(req['auth_token']);
+    LOG.info(req['auth_token']['device_id']);
+    mongoose.model('Device').findOne(
         {
            'device_id' : req['auth_token']['device_id'],
         },
         function onFind( err, device )
         {
-           req['device']=device;
-           next();
+            console.log(device);
+            LOG.info(err);
+            req['resource_device'] = device;
+            next();
         });
 }
+
+
 
 DeviceSchema.methods.getCurrentMoment = function(next)
 {
@@ -38,7 +45,7 @@ DeviceSchema.methods.getCurrentMoment = function(next)
 
 DeviceSchema.statics.saveFriend = function( did, frdObj )
 {
-    this.model( 'Device' ).findOne(
+    mongoose.model('Device').findOne(
         {
            'device_id' : did,
         },

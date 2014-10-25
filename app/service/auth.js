@@ -23,21 +23,21 @@ module.exports.newBaseToken = function(device, next)
 
 module.exports.authenticate = function( req, res, next )
 {
-    var token = req.body.token;
-    console.log('in auth');
+    var token = req.body.token || '';
+
     if( token == 'new' )
     {
-        req['auth_token'] = token;
-        console.log('in auth new');
+        req['auth_token'] = 'new';
         next();
     }
     else
     {
         jwt.verify( token, nconf.get('auth-secrete-key'), {}, function( err, payload)
         {
+
             if(err)
             {
-                res.end('invalid auth token');
+                res.status(401).json( { err:'invalid auth token' } );
             }else
             {
                 req['auth_token'] = payload;

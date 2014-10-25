@@ -2,7 +2,7 @@ var MOMENT = require('./moModel');
 var DEVICE = require('../device/deModel');
 var S3 = require('../service/uploader');
 var PUBNUB = require('../service/pubnub');
-
+var LOG = require('../service/logger');
 
 var CHALK =  require('chalk');
 var async = require('async');
@@ -12,104 +12,83 @@ var uuid = require('node-uuid');
 /*
 *   Upload photo and create a temporary moment
 */
-exports.init = function( params, next )
+exports.init = function(device, params, next )
 {
     console.log( CHALK.red('In MOMENT.init') );
-    DEVICE.findOne( { device_id: params['my_device_id'] },
-        function onFind( err, device )
+    var moment_id = uuid.v4();
+    S3.upload( params['image'], { key:moment_id } );
+    var temp_moment = new MOMENT(
+    {
+         mid :           moment_id,
+         device_id :     device.device_id,
+         image_url :     'https://s3-us-west-2.amazonaws.com/glimpsing/'+moment_id+'.jpg',
+         complete :      false,
+         date :          time(),
+         status :        '',
+         location :      [params['lon'], params['lat']],
+         explore:        [],
+         liked_relation  : []
+    });
+
+    params['offset'] = 0;
+    params['limit'] = 20;
+    temp_moment.getNear( params,
+        function prepareExploreList( err, obj )
         {
-            if( !device )
-            {
-                next( err, 404, device );
-            }
-            else
-            {
-                var moment_id = uuid.v4();
-                S3.upload( params['image'], { key:moment_id } );
-                var moment = new MOMENT(
+            temp_moment.createExplore( obj,
+                function saveExploreList( err, explore_list)
                 {
-                     mid :           moment_id,
-                     device_id :     params['my_device_id'],
-                     image_url :     'https://s3-us-west-2.amazonaws.com/glimpsing/'+moment_id+'.jpg',
-                     complete :      false,
-                     date :          time(),
-                     status :        '',
-                     location :      [params['lon'], params['lat']],
-                     explore:        [],
-                     liked_relation  : []
+                    temp_moment.explore = explore_list;
+                    device.moments.set( 0, temp_moment );
+                    device.save();
                 });
-
-                params['offset'] = 0;
-                params['limit'] = 20;
-                moment.getNear( params,
-                    function prepareExploreList( err, obj )
-                    {
-                        moment.createExplore( obj,
-                            function saveExploreList( err, explore_list)
-                            {
-                                moment.explore = explore_list;
-                                console.log(explore_list);
-                                device.moments.set( 0, moment );
-                                device.save(
-                                    function onDeviceSave( err, device )
-                                    {});
-                            });
-                    });
-
-                next( err, 202 );
-            }
         });
+
+    next( 202 );
 }
 
 /*
 *   Finalize the temporary moment
 */
-exports.login = function( params, next )
+exports.login = function( device, params, next )
 {
     console.log( CHALK.red('In MOMENT.login') );
 
-    DEVICE.findOne( { device_id: params['my_device_id'] },
-        function onFind(err,device)
-        {
-            if( !device )
-            {
-                next( err, 404, null, null );
-            }
-            else
-            {
-                var temp_moment = device.moments[0];
-                var moment = new MOMENT(
-                {
-                     mid :           temp_moment.mid,
-                     device_id :     temp_moment.device_id,
-                     image_url :     temp_moment.image_url,
-                     complete :      true,
-                     date :          temp_moment.date,
-                     explore :       temp_moment.explore,
-                     liked_relation : [],
-                     status :        params['status'],
-                     location :      temp_moment.location
-                });
+    var temp_moment = device.moments[0];
+    console.log( device);
+    var new_moment = new MOMENT(
+    {
+         mid :           temp_moment.mid,
+         device_id :     temp_moment.device_id,
+         image_url :     temp_moment.image_url,
+         complete :      true,
+         date :          temp_moment.date,
+         explore :       temp_moment.explore,
+         liked_relation : [],
+         status :        params['status'],
+         location :      temp_moment.location
+    });
 
-                MOMENT.create( moment,
-                    function onMomentCreate( err, mo )
-                    {
-                        async.filter(device.friends, function(friend)
-                        {
-                            return {
-                                    nick_name: friend.nick_name,
-                                    channel_id : friend.channel_id,
-                                    initator_auth_key:friend.initator_auth_key
-                            }
-                        }, function(results)
-                        {
-                            next( err, 200, mo.explore,results );
-                        });
-                        //notify friends@@@
-                        //PUBNUB.brodcast(device, 'login');
-                    });
-            }
+    MOMENT.create( new_moment,
+        function( err, mo )
+        {
+            async.filter(device.friends, function(friend)
+            {
+                return {
+
+                        nick_name: friend.nick_name,
+                        channel_id : friend.channel_id,
+                        moments : friend.moments,
+                    }
+
+            }, function(results)
+            {
+                next( err, mo.explore, results, 200 );
+            });
+            //notify friends@@@
+            //PUBNUB.brodcast(device, 'login');
         });
+
 }
 
 

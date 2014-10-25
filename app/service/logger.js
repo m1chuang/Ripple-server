@@ -11,6 +11,7 @@ logger = new winston.Logger({
             colorize: true,
             level: logLevel
         }),
+    /*
     new winston.transports.Logentries({
         token: '54360b32-87c6-4b3f-b932-ff258bee5e50',
         level: logLevel
@@ -23,6 +24,7 @@ logger = new winston.Logger({
             subdomain: 'neshorange',
             tags: ['glimpse']
     })
+*/
   ]
 });
 

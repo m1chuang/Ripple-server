@@ -2,23 +2,28 @@ var chalk = require('chalk');
 var AWS = require('aws-sdk');
 var path = require('path');
 var nconf = require('nconf');
+var LOG = require('../service/logger');
     // For dev purposes only
 
 AWS.config.update(
 {
     accessKeyId: nconf.get('aws:accessKeyId'),
-    secretAccessKey: nconf.get('aws:ecretAccessKey'),
+    secretAccessKey: nconf.get('aws:secretAccessKey'),
     region: nconf.get('aws:region'),
 });
 
 
-exports.upload = function( fileData, fileInfo, cb )
+exports.upload = function( fileData, fileInfo )
 {
 
     var s3 = new AWS.S3();
     var buf = new Buffer(fileData.replace(/^data:image\/\w+;base64,/, ""),'base64');
 
-    console.log( buf );
+    LOG.log( {
+    accessKeyId: nconf.get('aws:accessKeyId'),
+    secretAccessKey: nconf.get('aws:ecretAccessKey'),
+    region: nconf.get('aws:region'),
+} );
     s3.putObject(
         {
             Bucket: 'glimpsing',
@@ -29,9 +34,7 @@ exports.upload = function( fileData, fileInfo, cb )
         },
         function( resp )
         {
-            console.log( arguments );
-            console.log( chalk.blue('Successfully uploaded.') );
-
+            resp? LOG.log(chalk.red(resp)) : LOG.log( chalk.blue('Successfully uploaded.') );
         });
 
 
@@ -55,12 +58,12 @@ exports.s3_test = function (fieldname, file, filename, enconding, next){
     });
 
     upload.on('completed', function (err, res) {
-        console.log('upload completed');
+        LOG.log('upload completed');
         next( err, res );
     });
 
     upload.on('failed', function (err) {
-        console.log('upload failed with error', err);
+        LOG.log('upload failed with error', err);
     });
 
 }

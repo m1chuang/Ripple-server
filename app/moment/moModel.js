@@ -29,7 +29,6 @@ var exploreSchema = new Schema(
 {
     mid : String,
     image_url: String,
-    location : { type: [Number], index: '2d'},
     status: String,
     distance: String,
     like : false,
@@ -52,7 +51,7 @@ var MomentSchema   = new Schema(
         current         : String
     });
 
-MomentSchema.index( { location: '2dsphere' } );
+
 
 var AsyncMomentFactory =
 {
@@ -63,7 +62,6 @@ var AsyncMomentFactory =
                 mid         : item.mid,
                 device_id   : item.device_id,
                 image_url   : item.image_url,
-                location    : item.location,
                 distance    : item.distance,
                 status      : item.status,
                 like        : (item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false,
@@ -95,7 +93,8 @@ MomentSchema.methods.createExplore = function( nearby_moments, next)
 MomentSchema.methods.getNear = function( params, next )
 {
     console.log( CHALK.blue('In getNear: ') );
-    this.model( 'Moment' ).aggregate(
+
+    mongoose.model( 'Moment' ).aggregate(
         {$geoNear : {
             near: this.location,
             distanceField: "distance",
@@ -107,9 +106,7 @@ MomentSchema.methods.getNear = function( params, next )
     },
     function( err, nearby_moments )
             {
-                if (err) throw err;
-                console.log( CHALK.blue('-nearby_moments: ') );
-                console.log(  nearby_moments );
+                //if (err) throw err;
                 next( err, nearby_moments );
             });
 
