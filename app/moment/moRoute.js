@@ -26,6 +26,11 @@ moment.put('/',function(req,res,next)
         var validate = validator(nconf.get('validation')['moment']['put']);
         validate(req.body)? next() : res.status( 400 ).json({ errs : validate.errors });
     });
+moment.post('/action',function(req,res,next)
+    {
+        var validate = validator(nconf.get('validation')['moment']['action']);
+        validate(req.body)? next() : res.status( 400 ).json({ errs : validate.errors });
+    });
 
 moment.use(AUTH.authenticate);
 
@@ -87,8 +92,6 @@ moment.route('/')
 
         MomentCtr.login( req['resource_device'], params,response);
     });
-
-
 
 /*    status code:
         0: succsefully become friends

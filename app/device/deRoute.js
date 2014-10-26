@@ -31,7 +31,7 @@ device.route('/')
         {
             res.status(status).json(
                 {
-                    token: token
+                    auth_token: token
                 });
         };
 

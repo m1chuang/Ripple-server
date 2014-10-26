@@ -25,13 +25,14 @@
   {
     "moment":
     {
-      "post"  :  "object { string token; string image; string lat; string lon; }*;",
+      "post"  :  "object { string auth_token; string image; string lat; string lon; }*;",
 
-      "put"   :  "object {  string token; string status; }*;"
+      "put"   :  "object {  string auth_token; string status; }*;"
     },
+    "action":"object {  string auth_token; string action_token; }*;",
     "device":
     {
-      "all"   :   "object {  string token; string status; }*;"
+      "all"   :   "object {  string auth_token; }*;"
     }
   }
 }

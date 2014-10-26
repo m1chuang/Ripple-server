@@ -29,14 +29,13 @@ module.exports.newBaseToken = function(device, next)
     var payload = {
         client_auth_key : device.client_auth_key,
         device_id : device.device_id,
-    }
-    var token = jwt.sign(payload, nconf.get('auth-secrete-key') );
-    next(device, token);
+    }    
+    next(device, signToken('auth',payload));
 };
 
 module.exports.authenticate = function( req, res, next )
 {
-    var token = req.body.token || '';
+    var token = req.body.auth_token || '';
 
     if( token == 'new' )
     {
@@ -49,7 +48,7 @@ module.exports.authenticate = function( req, res, next )
         {
             if(err)
             {
-                res.status(401).json( { err:'invalid auth token' } );
+                res.status(401).json( { err:err } );
             }else
             {
                 req['auth_token'] = payload;
@@ -62,7 +61,7 @@ module.exports.authenticate = function( req, res, next )
 
 module.exports.parseAction = function( req, res, next)
 {
-    var token = req.body.token || '';
+    var token = req.body.action_token || '';
     verifyToken( token, 'action', function( err, payload)
     {
         if(err)
