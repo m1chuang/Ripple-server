@@ -2,11 +2,15 @@ var MomentCtr     = require('./moControl');
 var DEVICE    = require('../device/deModel');
 var LOG = require('../service/logger');
 var AUTH     = require('../service/auth');
-
 var validator = require('is-my-json-valid');
 var nconf = require('nconf');
 var express = require('express');
+
+
+
 var moment = express.Router();
+
+
 
 /**
 **  Input Validation & Authentication
@@ -16,6 +20,7 @@ moment.post('/',function(req,res,next)
         var validate = validator(nconf.get('validation')['moment']['post']);
         validate(req.body)? next() : res.status( 400 ).json({ errs : validate.errors });
     });
+
 moment.put('/',function(req,res,next)
     {
         var validate = validator(nconf.get('validation')['moment']['put']);
@@ -24,11 +29,14 @@ moment.put('/',function(req,res,next)
 
 moment.use(AUTH.authenticate);
 
+
+
 /**
 **  Routes
 **/
 moment.route('/')
     .all(DEVICE.getDevice)
+
 
     /*
        Initiate a moment, request when photo taken
@@ -37,7 +45,6 @@ moment.route('/')
     */
     .post( function( req, res )
     {
-        console.log('in');
         var params =
         {
             auth_token : req['auth_token'],
@@ -53,6 +60,7 @@ moment.route('/')
 
         MomentCtr.init( req['resource_device'], params, response);
     })
+
 
     /*
        Complete a moment and login
@@ -80,21 +88,24 @@ moment.route('/')
         MomentCtr.login( req['resource_device'], params,response);
     });
 
+
+
 /*    status code:
         0: succsefully become friends
         1: already friends
         2: waiting to be liked
 */
-moment.route('/like')
+moment.route('/action')
+    .all(AUTH.parseAction)
     .post( function( req, res )
     {
         var params =
         {
-            like_mid : req.body.target_mid,
             my_device_id : req['auth_token']['device_id'],//req.body.device_id,
+            action_token : req['action_token']
         };
 
-        MomentCtr.like( params,
+        MomentCtr.doAction( params, res,
             function onLike( err, status, connection )
             {
                 if (err) LOG.error(err);
@@ -105,6 +116,7 @@ moment.route('/like')
                     });
             });
     });
+
 
 
 module.exports = moment

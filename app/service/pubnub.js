@@ -68,33 +68,33 @@ exports.createServerConnection = function( device_id, server_auth_key, next )
     next(client_auth_key);
 }
 
-exports.createConversation = function( next )
+exports.createConversation = function( initator_auth_key, target_auth_key, next)
 {
     var channel_id = uuid.v4();
-    var initator_auth_key = uuid.v4();
-    var target_auth_key = uuid.v4();
 
-    PUBNUB.grant(
-        {
-            channel     : channel_id,
-            auth_key    : initator_auth_key,
-            read        : true,
-            write       : true,
-            callback    : function(e) { console.log( 'SUCCESS!', e ); },
-            error       : function(e) { console.log( 'FAILED! RETRY PUBLISH!', e ); }
-        });
+        PUBNUB.grant(
+            {
+                channel     : channel_id,
+                auth_key    : initator_auth_key,
+                read        : true,
+                write       : true,
+                callback    : function(e) { console.log( 'SUCCESS!', e ); },
+                error       : function(e) { console.log( 'FAILED! RETRY PUBLISH!', e ); }
+            });
 
-    PUBNUB.grant(
-        {
-            channel     : channel_id,
-            auth_key    : target_auth_key,
-            read        : true,
-            write       : true,
-            callback    : function(e) { console.log( 'SUCCESS!', e ); },
-            error       : function(e) { console.log( 'FAILED! RETRY PUBLISH!', e ); }
-        });
+        PUBNUB.grant(
+            {
+                channel     : channel_id,
+                auth_key    : target_auth_key,
+                read        : true,
+                write       : true,
+                callback    : function(e) { console.log( 'SUCCESS!', e ); },
+                error       : function(e) { console.log( 'FAILED! RETRY PUBLISH!', e ); }
+            });
 
-    next(channel_id, initator_auth_key, target_auth_key);
+        next(channel_id);
+
+
 
 }
 

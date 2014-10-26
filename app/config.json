@@ -8,12 +8,19 @@
     "test-bucket": "glimpsetest"
   },
   "server-master-key": "MGZlNTIyN2QtMGUwNy00Mjg0LTMzA0ZmQzZDk2k0MDUtMTA0",
-  "auth-secrete-key": "SGNlNTIyN2QtuGUwNy05Mjg0uTMzA0ZmQzZDkek0MDUtuTA0",
   "pubnub": {
     "subscribe_key": "sub-c-b314c43e-3a97-11e4-8947-02ee2ddab7fe",
     "publish_key": "pub-c-594c8c54-eccd-44d8-9286-3a6d311d4cd6",
     "secret_key": "sec-c-ZTBjY2U4YmYtNTIyMy00ZjY0LTgxNWUtMDEzMmRjYTIyNDQy"
   },
+  "secrete-key":
+  {
+    "token":{
+      "action":   "SGNlNTIyN2QtuGUwNy05Mjg0uTMzA0ZmQzZDkek0MDUtuTA0",
+      "auth":     "UGNlNTIyN2QtuGUwNy05Mjg0uTMzA0ZmQNZDkek0MDUtuTA1"
+      }
+  },
+
   "validation":
   {
     "moment":

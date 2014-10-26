@@ -1,6 +1,6 @@
 var mongoose     = require( 'mongoose' );
 var Schema       = mongoose.Schema;
-
+var AUTH     = require('../service/auth');
 var PUBNUB = require('../service/pubnub');
 var async = require( 'async' );
 var CHALK =  require( 'chalk' );
@@ -10,9 +10,9 @@ var relationList = new Schema(
     target_mid : String,
     type    : String,
 });
+
 var connectionSchema = new Schema(
 {
-    target_mid : String,
     channel_id : String,
     type : String
 })
@@ -43,6 +43,8 @@ var MomentSchema   = new Schema(
         image_url       : String,
         status          : String,
         complete        : Boolean,
+        pubnub_key : String,
+        secret_key      : String,
         date            : { type: Date, default: Date.now },
         location        : { type: [Number], index: '2d' },
         explore         : [exploreSchema],
@@ -57,32 +59,38 @@ var AsyncMomentFactory =
 {
     generate_explore : function( item, next )
     {
-        var explore_item =
+        var action_token = AUTH.issueActionToken('like',
             {
-                mid         : item.mid,
-                device_id   : item.device_id,
-                image_url   : item.image_url,
-                distance    : item.distance,
-                status      : item.status,
-                like        : (item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false,
-                connect     : (item.connection != undefined&&item.connection.length > 0)? true:false,
-                chat_channel: String
-            };
+                target_mid          : item.mid,
+                target_did          : item.device_id,
+                target_distance     : item.distance
+            });
+        var explore_item =
+        {
+            action_like : action_token,
+            image_url   : item.image_url,
+            distance    : item.distance,
+            status      : item.status,
+            like        : (item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false,
+            connect     : (item.connection != undefined&&item.connection.length > 0)? true:false,
+            chat_channel: String,
+        };
 
         next( null, explore_item );
     },
 };
 
-MomentSchema.methods.createExplore = function( nearby_moments, next)
+MomentSchema.methods.createExplore = function( params, nearby_moments, next)
 {
     console.log( CHALK.blue('In createExplore:') );
+
     if( !nearby_moments )
     {
         next(null, null);
     }
     else
     {
-        async.map( nearby_moments, AsyncMomentFactory.generate_explore.bind( AsyncMomentFactory ),
+        async.map( nearby_moments, AsyncMomentFactory.generate_explore.bind( {my_moment_secrete_key:params['my_moment_secret_key']} ),
             function onExploreGenerate( err, explore_list )
             {
                 next( err, explore_list );
@@ -95,16 +103,25 @@ MomentSchema.methods.getNear = function( params, next )
     console.log( CHALK.blue('In getNear: ') );
 
     mongoose.model( 'Moment' ).aggregate(
-        {$geoNear : {
-            near: this.location,
-            distanceField: "distance",
-            includeLocs: "location",
-            maxDistance : 2000
-        }},
-        { $limit : params['limit'] },
-        {$project : {'mid' : 1, 'image_url' : 1, 'status': 1, 'device_id' : 1, '_id' : 1, 'distance' : 1}
-    },
-    function( err, nearby_moments )
+        {
+            $geoNear : {
+                near: this.location,
+                distanceField: "distance",
+                includeLocs: "location",
+                maxDistance : 2000
+            }},
+        {   $limit : params['limit'] },
+        {   $project :
+            {
+                'mid' : 1,
+                'pubnub_key': 1,
+                'image_url' : 1,
+                'status': 1,
+                'device_id' : 1,
+                '_id' : 1,
+                'distance' : 1
+            }},
+        function( err, nearby_moments )
             {
                 //if (err) throw err;
                 next( err, nearby_moments );
@@ -263,8 +280,7 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
                             target_mid          : params['owner_mid'],
                             chat_channel_id     : params['channel'],
                             server_channel_id   : mo.device_id,
-                            //using server master key
-                            //auth_key : params['auth_key']
+
                         },function(){});
 
                     console.log( CHALK.blue('-addRemoteconncetion: ') );
@@ -274,7 +290,7 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
         });
 };
 
-MomentSchema.statics.addRemoteRelation = function( target_mid, owner_mid, next )
+MomentSchema.statics.addRemoteRelation = function( target_mid, my_moment, next )
 {
     this.model( 'Moment' ).findOne(
         {
@@ -288,8 +304,12 @@ MomentSchema.statics.addRemoteRelation = function( target_mid, owner_mid, next )
                     {
                         liked_relation :
                         {
-                            'target_mid'    : owner_mid,
-                            'connect'       : false,
+                            'target_mid'        : my_moment.mid,
+                            'connect'           : false,
+                            'action_connect'    : AUTH.issueActionToken('connect',
+                                                    {
+                                                        pubnub_key:my_moment.pubnub_key
+                                                    }, my_moment.secret_key)
                         }
                     }
                 },
@@ -300,9 +320,9 @@ MomentSchema.statics.addRemoteRelation = function( target_mid, owner_mid, next )
         });
 };
 
-MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
+MomentSchema.statics.getRelation = function( target_mid, owner_did, target_secret, res, next )
 {
-    this.model( 'Moment' ).find(
+    mongoose.model( 'Moment' ).find(
         {
            'device_id' : owner_did,
         },
@@ -322,8 +342,11 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
                     target_mid : target_mid,
                 }
             },
-            mid : 1
-        }).sort(
+            mid : 1,
+            secret_key:1,
+            pubnub_key: 1
+        })
+        .sort(
             {"date": -1}
         ).limit(1)
         .exec(
@@ -332,9 +355,23 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, next )
                 console.log(err);
                 console.log('obj');
                 console.log(obj);
-                next( err, obj[0] );
-            }
-        );
+
+                if(obj!= null && obj.liked_relation != undefined && obj.liked_relation.length != 0 ){
+                    AUTH.verifySecret(target_secret, obj.secret_key, res,
+                        function(payload)
+                        {
+                            next( err, 'liked', obj[0], payload );
+                        });
+                }
+                else if( my_moment != null && my_moment.connection != undefined && my_moment.connection.length != 0 )
+                {
+                    next( err, 'already friends', {}, {});
+                }
+                else
+                {
+                    next( err, 'initiate like', {}, {});
+                }
+            });
 };
 
 module.exports = mongoose.model( 'Moment', MomentSchema );

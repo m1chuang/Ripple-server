@@ -7,7 +7,7 @@ var Schema          = mongoose.Schema;
 var DeviceSchema   = new Schema(
     {
         device_id: String,
-        client_auth_key: String,//use current moment id for now
+        pubnub_auth_key: String,
         moments: [MOMENT.schema],
         friends: [
                     {

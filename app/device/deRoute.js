@@ -43,7 +43,6 @@ device.route('/')
         {
             response('', req.body.token, 200);
         }
-
     });
 
 device.route('/friends')

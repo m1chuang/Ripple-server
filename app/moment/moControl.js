@@ -21,6 +21,8 @@ exports.init = function(device, params, next )
     {
          mid :           moment_id,
          device_id :     device.device_id,
+         pubnub_auth_key : device.pubnub_auth_key,
+         secret_key      : uuid.v4,
          image_url :     'https://s3-us-west-2.amazonaws.com/glimpsing/'+moment_id+'.jpg',
          complete :      false,
          date :          time(),
@@ -32,10 +34,11 @@ exports.init = function(device, params, next )
 
     params['offset'] = 0;
     params['limit'] = 20;
+    params['my_moment_secret_key'] = temp_moment.secret_key;
     temp_moment.getNear( params,
         function prepareExploreList( err, obj )
         {
-            temp_moment.createExplore( obj,
+            temp_moment.createExplore( params, obj,
                 function saveExploreList( err, explore_list)
                 {
                     temp_moment.explore = explore_list;
@@ -60,6 +63,8 @@ exports.login = function( device, params, next )
     {
          mid :           temp_moment.mid,
          device_id :     temp_moment.device_id,
+         pubnub_auth_key : temp_moment.pubnub_auth_key,
+         secret_key      : temp_moment.secret_key,
          image_url :     temp_moment.image_url,
          complete :      true,
          date :          temp_moment.date,
@@ -80,10 +85,25 @@ exports.login = function( device, params, next )
                         channel_id : friend.channel_id,
                         moments : friend.moments,
                     }
-
-            }, function(results)
+            },
+            function(friend_list)
             {
-                next( err, mo.explore, results, 200 );
+                async.filter(mo.explore, function(ex)
+                {
+                    return {
+                            action_like : ex.action_like,
+                            image_url   : ex.image_url,
+                            distance    : ex.distance,
+                            status      : ex.status,
+                            like        : ex.like,
+                            connect     : ex.connect,
+                            chat_channel: ex.chat_channel
+                        }
+
+                }, function(explore_list)
+                {
+                    next( err, explore_list, friend_list, 200 );
+                });
             });
             //notify friends@@@
             //PUBNUB.brodcast(device, 'login');
@@ -102,37 +122,41 @@ var calDistance = function (lat1, lon2, lat2, lon2)
 }
 
 
-/*
-*   Check if a like relation with the target is already place in your relations
-*   if yes, create the connection. Otherwise, place a like relation in the target's relations
-*/
-exports.like = function( params, next )
+
+exports.doAction = function( params, res, next )
 {
-    MOMENT.getRelation( params['like_mid'], params['my_device_id'],
-        function connectOrCreate( err, my_moment )
+    /*
+    *   Check if a like relation with the target is already place in your relations
+    *   if yes, create the connection. Otherwise, place a like relation in the target's relations
+    */
+    var action = {
+        like: function(params, next)
         {
-            if( my_moment != null && my_moment.liked_relation != undefined && my_moment.liked_relation.length != 0 )
-            {
-                //get auth token for pubnub
-                //get device_id and token
-                MOMENT.getDeviceId
-                PUBNUB.createConversation(
-                    function addConnections( channel_id, initator_auth_key, target_auth_key )
+            var target_mid = params['action_token']['target_mid'],
+                target_did = params['action_token']['target_did'],
+                target_secret = params['action_token']['target_secret'],
+                my_did = params['my_device_id'];
+
+            MOMENT.getRelation( target_mid, my_did, target_secret, res,
+                function connectOrRequset( err, status, my_moment, target_info )
+                {
+                    if( status =='liked' )
                     {
-                        my_connection = {
-                                    type       : 'like',
-                                    channel_id : channel_id,
-                                };
-                        next( err, 0, my_connection );
-                        MOMENT.getDeviceId( params['like_mid'],
-                            function ( err, target_did, d)
+                        PUBNUB.createConversation( my_moment['pubnub_key'],target_info['target_pubnub_key'],
+                            function addConnections( channel_id )
                             {
+                                my_connection = {
+                                            type       : 'like',
+                                            channel_id : channel_id,
+                                        };
+                                next( err, 0, my_connection );
+
                                 my_moment.addConnection( my_connection,
                                     function( err, my_moment){});
 
                                 MOMENT.addRemoteConnection(
                                     {
-                                        target_mid  : params['like_mid'],
+                                        target_mid  : target_mid,
                                         target_did : target_did,
                                         owner_mid   : my_moment.mid,
                                         type        : 'like',
@@ -148,7 +172,7 @@ exports.like = function( params, next )
                                                 moments : [{
                                                     image: my_moment.image_url,
                                                     status: my_moment.status,
-                                                    //distance: my_moment.distance,
+                                                    distance: target_info['target_distance'],
                                                 }]
                                             });
 
@@ -160,23 +184,25 @@ exports.like = function( params, next )
                                                 moments: [{
                                                     image: target_moment.image_url,
                                                     status: target_moment.status,
-                                                    //distance: target_moment.distance,
+                                                    distance: target_info['target_distance'],
                                                 }],
                                             });
                                     });
                             });
-                    });
-            }
-            else if( my_moment != null && my_moment.connection != undefined && my_moment.connection.length != 0 )
-            {
-                next( err, 1, {});
-            }
-            else
-            {
-                MOMENT.addRemoteRelation( params['like_mid'], my_moment.mid, function(){} );
-                next( err, 2, {});
-            }
+                    }
+                    else if( status =='already friends')
+                    {
+                        next( err, 1, {});
+                    }
+                    else
+                    {
+                        MOMENT.addRemoteRelation( target_mid, my_moment, function(){} );
+                        next( err, 2, {});
+                    }
 
-        });
+                });
+        },
+    };
+    action[params['action_token']['action']](params, next);
 }
 
