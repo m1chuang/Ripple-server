@@ -2,6 +2,7 @@ var MomentCtr     = require('./moControl');
 var DEVICE    = require('../device/deModel');
 var LOG = require('../service/logger');
 var AUTH     = require('../service/auth');
+var S3 = require('../service/uploader');
 var validator = require('is-my-json-valid');
 var nconf = require('nconf');
 var express = require('express');
@@ -15,7 +16,7 @@ var moment = express.Router();
 /**
 **  Input Validation & Authentication
 **/
-moment.post('/',function(req,res,next)
+moment.post('/', S3.multipart, function(req,res,next)
     {
         var validate = validator(nconf.get('validation')['moment']['post']);
         validate(req.body)? next() : res.status( 400 ).json({ errs : validate.errors });
@@ -42,7 +43,6 @@ moment.use(AUTH.authenticate);
 moment.route('/')
     .all(DEVICE.getDevice)
 
-
     /*
        Initiate a moment, request when photo taken
        TODO:
@@ -50,6 +50,7 @@ moment.route('/')
     */
     .post( function( req, res )
     {
+
         var params =
         {
             auth_token : req['auth_token'],
@@ -60,10 +61,10 @@ moment.route('/')
 
         var response = function(status)
         {
-            res.status(status).end();
+            res.status(status).json();
         };
-
-        MomentCtr.init( req['resource_device'], params, response);
+        response(202);
+        MomentCtr.init( req['resource_device'], params);
     })
 
 
@@ -74,7 +75,7 @@ moment.route('/')
     {
         var params =
         {
-            my_device_id : req['auth_token']['device_id'],
+            auth_token : req['auth_token'],
             status : req.body.status,
             skip : 0,
             offset : 20
@@ -85,8 +86,8 @@ moment.route('/')
             if (err) LOG.error(err);
             res.status(status).json(
                 {
-                    explore: explore || [],
-                    friends: friends || []
+                    explore_list: explore || [],
+                    friend_list: friends || []
                 });
         };
 
@@ -104,12 +105,12 @@ moment.route('/action')
     {
         var params =
         {
-            my_device_id : req['auth_token']['device_id'],//req.body.device_id,
+            auth_token : req['auth_token'],//req.body.device_id,
             action_token : req['action_token']
         };
 
         MomentCtr.doAction( params, res,
-            function onLike( err, status, connection )
+            function ( err, status, connection )
             {
                 if (err) LOG.error(err);
                 res.json(

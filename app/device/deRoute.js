@@ -1,4 +1,5 @@
 var DeviceCtr     = require('./deControl');
+var DEVICE    = require('../device/deModel');
 var AUTH     = require('../service/auth');
 var validator = require('is-my-json-valid');
 var nconf = require('nconf');
@@ -22,26 +23,30 @@ device.use(AUTH.authenticate);
 **  Routes
 **/
 device.route('/')
+
    /*
     *   Request when APP is open
     */
     .post( function( req, res )
     {
-        var response = function( err, token, status )
+        var response = function( err, token, require_login, uuid, pubnub_key, status )
         {
             res.status(status).json(
                 {
-                    auth_token: token
+                    auth_token: token,
+                    require_login:require_login,
+                    pubnub_key:pubnub_key,
+                    uuid: uuid
                 });
         };
 
         if(req['auth_token'] == 'new')// For now, all clients requesting token will be granted
         {
-            DeviceCtr.create( response);
+            DeviceCtr.createOrRenew( req, res, response);
         }
         else
         {
-            response('', req.body.token, 200);
+            response('', req['auth_token'], '', '', '', 200);
         }
     });
 

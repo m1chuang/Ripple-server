@@ -3,6 +3,7 @@ var AWS = require('aws-sdk');
 var path = require('path');
 var nconf = require('nconf');
 var LOG = require('../service/logger');
+var S3 = require('../service/uploader');
     // For dev purposes only
 
 AWS.config.update(
@@ -11,9 +12,35 @@ AWS.config.update(
     secretAccessKey: nconf.get('aws:secretAccessKey'),
     region: nconf.get('aws:region'),
 });
+var s3_url = nconf.get('S3')['glimpse_test'];
 
+module.exports.multipart = function(req, res, next)
+{
+    
+    req.busboy.on('file', function(fieldname, file, filename, encoding) {
+        console.log('on:file: '+s3_url+filename);
+        req.body['image']=s3_url+filename;
+        S3.s3_test(fieldname, file, filename, encoding,
+            function( err, s3_response) {                
+            });
+    });
 
-exports.upload = function( fileData, fileInfo )
+    req.busboy.on('field', function(fieldname, value, valTruncated, keyTruncated) {
+        console.log('on:field');
+        console.log(fieldname);
+        req.body[fieldname]=value;
+
+    });
+
+    req.busboy.on('finish', function() {
+        console.log('once:end');
+        next();
+    });
+
+    req.pipe(req.busboy);
+}
+
+module.exports.upload = function( fileData, fileInfo )
 {
 
     var s3 = new AWS.S3();
@@ -44,7 +71,7 @@ var Uploader = require('s3-streaming-upload').Uploader,
 
 
 
-exports.s3_test = function (fieldname, file, filename, enconding, next){
+module.exports.s3_test = function (fieldname, file, filename, enconding, next){
     upload = new Uploader({
         // credentials to access AWS
         accessKey:  nconf.get('aws:accessKeyId'),

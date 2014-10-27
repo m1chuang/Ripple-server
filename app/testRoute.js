@@ -104,13 +104,13 @@ test.route('/imagem')
 
             S3.s3_test(fieldname, file, filename, encoding,
                 function( err, s3_response) {
-                 res.end(JSON.stringify(
+                    res.json(
                         {
-                            url:'https://s3-us-west-1.amazonaws.com/glimpsetest/'+filename,
+                            url:'https://glimpsetest.s3.amazonaws.com/'+filename,
                             s3_response:s3_response,
                             params : params
-                        })
-                    )});
+                        });
+                });
         });
 
         req.busboy.on('field', function(fieldname, value, valTruncated, keyTruncated) {
@@ -119,12 +119,12 @@ test.route('/imagem')
             params[fieldname]=value;
 
         });
-
-        req.busboy.on('end', function() {
+/*
+        req.busboy.on('finish', function() {
             console.log('once:end');
             res.end();
         });
-
+*/
         req.pipe(req.busboy);
 
     });

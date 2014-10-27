@@ -6,14 +6,14 @@ var PUBNUB = require('../service/pubnub');
 var LOG = require('../service/logger');
 var CHALK =  require('chalk');
 
-exports.create = function( next )
+exports.createOrRenew = function( req, res, next )
 {
     var device_id = uuid.v4();
     var client_auth_key = uuid.v4();
     var new_device = new DEVICE(
         {
             device_id: device_id,
-            client_auth_key : client_auth_key
+            pubnub_key : client_auth_key,
         });
 
     PUBNUB.createServerConnection( device_id, client_auth_key,
@@ -22,8 +22,8 @@ exports.create = function( next )
             AUTH.newBaseToken( new_device,
                 function( device, token )
                 {
-                    next( '', token, 201 );
-                    new_device.save();
+                    next( '', token, true, device_id, client_auth_key, 201 );
+                    new_device.save(function(err){console.log('save device');console.log(err);});
                 });
         });
 }
@@ -50,7 +50,7 @@ exports.getNewExplore = function( params, next )
                 moment.getNearWithRelation( params,
                     function prepareExploreList( err, obj )
                     {
-                        moment.createExplore( obj,
+                        moment.createExplore( params, obj,
                             function saveExploreList( err, explore_list)
                             {
                                 moment.explore = explore_list;

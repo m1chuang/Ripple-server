@@ -5,35 +5,38 @@ var PUBNUB = require('../service/pubnub');
 var async = require( 'async' );
 var CHALK =  require( 'chalk' );
 
-var relationList = new Schema(
-{
-    target_mid : String,
-    type    : String,
-});
 
+var actionTokenSchema = new Schema(
+{
+    action_type : String,
+    action_token    : String,
+});
 var connectionSchema = new Schema(
 {
     channel_id : String,
     type : String
-})
+});
+
+
 
 var relationSchema = new Schema(
 {
     target_mid : String,
+    target_pubnub_key: String,
     type    : String,
     connect : false,
-})
+});
 
 
 var exploreSchema = new Schema(
 {
-    mid : String,
+    action_token:[actionTokenSchema],
     image_url: String,
     status: String,
     distance: String,
     like : false,
     connect : false,
-})
+});
 
 
 var MomentSchema   = new Schema(
@@ -43,7 +46,7 @@ var MomentSchema   = new Schema(
         image_url       : String,
         status          : String,
         complete        : Boolean,
-        pubnub_key : String,
+        pubnub_key      : String,
         secret_key      : String,
         date            : { type: Date, default: Date.now },
         location        : { type: [Number], index: '2d' },
@@ -55,34 +58,41 @@ var MomentSchema   = new Schema(
 
 
 
-var AsyncMomentFactory =
-{
-    generate_explore : function( item, next )
-    {
-        var action_token = AUTH.issueActionToken('like',
-            {
-                target_mid          : item.mid,
-                target_did          : item.device_id,
-                target_distance     : item.distance
-            });
-        var explore_item =
-        {
-            action_like : action_token,
-            image_url   : item.image_url,
-            distance    : item.distance,
-            status      : item.status,
-            like        : (item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false,
-            connect     : (item.connection != undefined&&item.connection.length > 0)? true:false,
-            chat_channel: String,
-        };
-
-        next( null, explore_item );
-    },
-};
 
 MomentSchema.methods.createExplore = function( params, nearby_moments, next)
 {
     console.log( CHALK.blue('In createExplore:') );
+    console.log( CHALK.blue('params: '));
+    console.log( params );
+    console.log( CHALK.blue('near: '));
+    console.log( nearby_moments);
+    var generate_explore = function( item, next )
+    {
+        AUTH.issueActionToken('like',
+            {
+                target_info:
+                {
+                    mid          : item.mid,
+                    did          : item.device_id,
+                    distance     : item.distance
+                }
+            },{}, function(action_token){
+                console.log( 'action_token');
+                console.log( action_token);
+                var explore_item =
+                {
+                    action_token : [action_token],
+                    image_url   : item['image_url'],
+                    distance    : item['distance'],
+                    status      : item['status'],
+                    like        : (item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false,
+                    connect     : (item.connection != undefined&&item.connection.length > 0)? true:false,
+                };
+
+                next( null, explore_item );
+            });
+
+    }
 
     if( !nearby_moments )
     {
@@ -90,17 +100,21 @@ MomentSchema.methods.createExplore = function( params, nearby_moments, next)
     }
     else
     {
-        async.map( nearby_moments, AsyncMomentFactory.generate_explore.bind( {my_moment_secrete_key:params['my_moment_secret_key']} ),
-            function onExploreGenerate( err, explore_list )
-            {
-                next( err, explore_list );
-            });
+        console.log( CHALK.blue('start ex factory '));
+
+        async.map( nearby_moments, generate_explore,
+        function onExploreGenerate( err, explore_list )
+        {
+            console.log( CHALK.blue('in map ex: '));
+            next( err, explore_list );
+        });
     }
 };
 
 MomentSchema.methods.getNear = function( params, next )
 {
-    console.log( CHALK.blue('In getNear: ') );
+    console.log( CHALK.blue('In getNear: '));
+    console.log( params);
 
     mongoose.model( 'Moment' ).aggregate(
         {
@@ -118,12 +132,13 @@ MomentSchema.methods.getNear = function( params, next )
                 'image_url' : 1,
                 'status': 1,
                 'device_id' : 1,
+                'distance':1,
                 '_id' : 1,
-                'distance' : 1
             }},
         function( err, nearby_moments )
             {
-                //if (err) throw err;
+                if (err) throw err;
+                console.log( nearby_moments );
                 next( err, nearby_moments );
             });
 
@@ -171,19 +186,7 @@ MomentSchema.methods.getNearWithRelation = function( params, next )
             });
 };
 
-MomentSchema.statics.getDevice = function( mid , next)
-{
-    this.model( 'Moment' ).findOne(
-        {
-           'mid' : mid,
-        },
-        function onFind( err, mo )
-        {
-            console.log( CHALK.blue('-get did: ') );
-            console.log(  mo.device_id );
-            next( err, mo, 'u');
-        });
-};
+
 
 MomentSchema.statics.updateExplore = function( my_mid, next )
 {
@@ -292,36 +295,41 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
 
 MomentSchema.statics.addRemoteRelation = function( target_mid, my_moment, next )
 {
-    this.model( 'Moment' ).findOne(
-        {
-           'mid' : target_mid,
-        },
-        function onFind( err, mo )
-        {
-            mo.update(
+
+    console.log('connect_token');
+    console.log(my_moment);
+    console.log(target_mid);
+    mongoose.model( 'Moment' ).findOne(
+    {
+       'mid' : target_mid,
+    },
+    function onFind( err, mo )
+    {
+        mo.update(
+            {
+                $addToSet :
                 {
-                    $addToSet :
+                    liked_relation :
                     {
-                        liked_relation :
-                        {
-                            'target_mid'        : my_moment.mid,
-                            'connect'           : false,
-                            'action_connect'    : AUTH.issueActionToken('connect',
-                                                    {
-                                                        pubnub_key:my_moment.pubnub_key
-                                                    }, my_moment.secret_key)
-                        }
+                        'target_mid'        : my_moment.mid,
+                        'connect'           : false,
+                        'target_pubnub_key'    : my_moment.pubnub_key
                     }
-                },
-                function onUpdate( err, obj )
-                {
-                    next( err, obj );
-                });
-        });
+                }
+            },
+            function onUpdate( err, obj )
+            {
+                next( err, obj );
+            });
+    });
+
+
 };
 
-MomentSchema.statics.getRelation = function( target_mid, owner_did, target_secret, res, next )
+MomentSchema.statics.getRelation = function( target_mid, owner_did, res, next )
 {
+    console.log('get relation');
+    console.log(target_mid);
     mongoose.model( 'Moment' ).find(
         {
            'device_id' : owner_did,
@@ -343,7 +351,7 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, target_secre
                 }
             },
             mid : 1,
-            secret_key:1,
+            //secret_key:1,
             pubnub_key: 1
         })
         .sort(
@@ -353,23 +361,23 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, target_secre
             function( err, obj )
             {
                 console.log(err);
+                console.log(owner_did);
                 console.log('obj');
                 console.log(obj);
-
-                if(obj!= null && obj.liked_relation != undefined && obj.liked_relation.length != 0 ){
-                    AUTH.verifySecret(target_secret, obj.secret_key, res,
-                        function(payload)
-                        {
-                            next( err, 'liked', obj[0], payload );
-                        });
+                console.log('err');
+                console.log(err);
+                if (err) console.log(err);
+                if(obj[0]!= null && obj[0].liked_relation != undefined && obj[0].liked_relation.length != 0 ){
+                    console.log('liked');
+                    next( err, 'liked', obj[0]);
                 }
-                else if( my_moment != null && my_moment.connection != undefined && my_moment.connection.length != 0 )
+                else if( obj[0] != null && obj[0].connection != undefined && obj[0].connection.length != 0 )
                 {
-                    next( err, 'already friends', {}, {});
+                    next( err, 'already friends', {});
                 }
                 else
                 {
-                    next( err, 'initiate like', {}, {});
+                    next( err, 'initiate like', obj[0]);
                 }
             });
 };

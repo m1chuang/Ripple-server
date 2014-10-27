@@ -1,6 +1,9 @@
 {
   "test-database": "mongodb://neshorange:Nesh6502@ds039850.mongolab.com:39850/glimpse-test",
   "database": "mongodb://neshorange:Nesh6502@ds063919.mongolab.com:63919/glimpse",
+  "S3":{
+    "glimpse_test":"https://glimpsetest.s3.amazonaws.com/"
+  },
   "aws": {
     "accessKeyId": "AKIAJD7KI7ZEE5EDJ3IA",
     "secretAccessKey": "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",
@@ -18,18 +21,21 @@
     "token":{
       "action":   "SGNlNTIyN2QtuGUwNy05Mjg0uTMzA0ZmQzZDkek0MDUtuTA0",
       "auth":     "UGNlNTIyN2QtuGUwNy05Mjg0uTMzA0ZmQNZDkek0MDUtuTA1"
-      }
+      },
+    "encription":"8zTvzr3p67VC61jmV54rIYu1545x4TlU"
   },
 
   "validation":
   {
     "moment":
     {
-      "post"  :  "object { string auth_token; string image; string lat; string lon; }*;",
+      "post"  :  "object { string image; string auth_token; string lat; string lon; }*;",
 
-      "put"   :  "object {  string auth_token; string status; }*;"
+      "put"   :  "object {  string auth_token; string status; }*;",
+
+      "action": "object {  string auth_token; string action_token; }*;"
     },
-    "action":"object {  string auth_token; string action_token; }*;",
+
     "device":
     {
       "all"   :   "object {  string auth_token; }*;"

@@ -7,7 +7,7 @@ var Schema          = mongoose.Schema;
 var DeviceSchema   = new Schema(
     {
         device_id: String,
-        pubnub_auth_key: String,
+        pubnub_key: String,
         moments: [MOMENT.schema],
         friends: [
                     {
@@ -20,19 +20,25 @@ var DeviceSchema   = new Schema(
 
 DeviceSchema.statics.getDevice = function( req, res, next)
 {
-    LOG.info('in get d');
+    LOG.info('[ Middleware ] getDevice');
     LOG.info(req['auth_token']);
     LOG.info(req['auth_token']['device_id']);
     mongoose.model('Device').findOne(
         {
            'device_id' : req['auth_token']['device_id'],
         },
-        function onFind( err, device )
+        function ( err, device )
         {
-            console.log(device);
-            LOG.info(err);
-            req['resource_device'] = device;
-            next();
+            LOG.info('device');
+            LOG.info(device);
+            if(!device)
+            {
+                res.status(404).json({err:err});
+            }else{
+                req['resource_device'] = device;
+                next();
+            }
+
         });
 }
 

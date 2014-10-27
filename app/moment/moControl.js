@@ -12,18 +12,19 @@ var uuid = require('node-uuid');
 /*
 *   Upload photo and create a temporary moment
 */
-exports.init = function(device, params, next )
+exports.init = function(device, params )
 {
     console.log( CHALK.red('In MOMENT.init') );
+    console.log(params);
+    console.log(device);
     var moment_id = uuid.v4();
-    S3.upload( params['image'], { key:moment_id } );
+
     var temp_moment = new MOMENT(
     {
          mid :           moment_id,
          device_id :     device.device_id,
-         pubnub_auth_key : device.pubnub_auth_key,
-         secret_key      : uuid.v4,
-         image_url :     'https://s3-us-west-2.amazonaws.com/glimpsing/'+moment_id+'.jpg',
+         pubnub_key :    device.pubnub_key,
+         image_url :     params['image'],
          complete :      false,
          date :          time(),
          status :        '',
@@ -34,20 +35,23 @@ exports.init = function(device, params, next )
 
     params['offset'] = 0;
     params['limit'] = 20;
-    params['my_moment_secret_key'] = temp_moment.secret_key;
     temp_moment.getNear( params,
         function prepareExploreList( err, obj )
         {
+            console.log('raw_explore_list');
+            console.log(obj);
             temp_moment.createExplore( params, obj,
                 function saveExploreList( err, explore_list)
                 {
+                    console.log('@@@@@@explore_list');
+                    console.log(explore_list);
                     temp_moment.explore = explore_list;
                     device.moments.set( 0, temp_moment );
-                    device.save();
+                    device.save(function( err, obj ){console.log('save temp moment:'+err);console.log(obj);});
                 });
         });
 
-    next( 202 );
+
 }
 
 /*
@@ -63,48 +67,40 @@ exports.login = function( device, params, next )
     {
          mid :           temp_moment.mid,
          device_id :     temp_moment.device_id,
-         pubnub_auth_key : temp_moment.pubnub_auth_key,
-         secret_key      : temp_moment.secret_key,
+         pubnub_key : temp_moment.pubnub_key,
          image_url :     temp_moment.image_url,
          complete :      true,
          date :          temp_moment.date,
-         explore :       temp_moment.explore,
+         explore :       temp_moment.explore || [],
          liked_relation : [],
          status :        params['status'],
          location :      temp_moment.location
     });
-
+    console.log('in loginiiiii');
+    console.log(temp_moment.explore);
     MOMENT.create( new_moment,
         function( err, mo )
         {
+            console.log(CHALK.red(err));
             async.filter(device.friends, function(friend)
             {
-                return {
+                return (friend)?{}: {
 
                         nick_name: friend.nick_name,
                         channel_id : friend.channel_id,
-                        moments : friend.moments,
+                        moments : friend.moments
                     }
             },
             function(friend_list)
             {
-                async.filter(mo.explore, function(ex)
-                {
-                    return {
-                            action_like : ex.action_like,
-                            image_url   : ex.image_url,
-                            distance    : ex.distance,
-                            status      : ex.status,
-                            like        : ex.like,
-                            connect     : ex.connect,
-                            chat_channel: ex.chat_channel
-                        }
 
-                }, function(explore_list)
-                {
-                    next( err, explore_list, friend_list, 200 );
-                });
+                console.log('async frd');
+                console.log(friend_list);
+                console.log('mo.explore');
+                console.log(mo.explore);
+                next( err, mo.explore,friend_list, 200 );
             });
+
             //notify friends@@@
             //PUBNUB.brodcast(device, 'login');
         });
@@ -132,17 +128,21 @@ exports.doAction = function( params, res, next )
     var action = {
         like: function(params, next)
         {
-            var target_mid = params['action_token']['target_mid'],
-                target_did = params['action_token']['target_did'],
-                target_secret = params['action_token']['target_secret'],
-                my_did = params['my_device_id'];
-
-            MOMENT.getRelation( target_mid, my_did, target_secret, res,
-                function connectOrRequset( err, status, my_moment, target_info )
+            var target_info = params['action_token']['encrypted']['target_info'],
+                my_did = params['auth_token']['device_id'];
+            console.log('params in do action');
+            console.log(params);
+            console.log('target_info');
+            console.log(params['action_token']['encrypted']['target_info']);
+            console.log(target_info['mid']);
+            MOMENT.getRelation( target_info['mid'], my_did, res,
+                function connectOrRequset( err, status, my_moment )
                 {
+                    console.log('like satus');
+                        console.log(status);
                     if( status =='liked' )
                     {
-                        PUBNUB.createConversation( my_moment['pubnub_key'],target_info['target_pubnub_key'],
+                        PUBNUB.createConversation( my_moment['pubnub_key'],target_info['pubnub_key'],
                             function addConnections( channel_id )
                             {
                                 my_connection = {
@@ -156,8 +156,8 @@ exports.doAction = function( params, res, next )
 
                                 MOMENT.addRemoteConnection(
                                     {
-                                        target_mid  : target_mid,
-                                        target_did : target_did,
+                                        target_mid  : target_info['mid'],
+                                        target_did : target_info['did'],
                                         owner_mid   : my_moment.mid,
                                         type        : 'like',
                                         channel     : channel_id,
@@ -172,13 +172,13 @@ exports.doAction = function( params, res, next )
                                                 moments : [{
                                                     image: my_moment.image_url,
                                                     status: my_moment.status,
-                                                    distance: target_info['target_distance'],
+                                                    distance: target_info['distance'],
                                                 }]
                                             });
 
                                         DEVICE.saveFriend( params['my_device_id'],
                                             {
-                                                device_id: target_did,
+                                                device_id: target_info['did'],
                                                 nick_name: '',
                                                 channel_id : channel_id,
                                                 moments: [{
@@ -196,7 +196,9 @@ exports.doAction = function( params, res, next )
                     }
                     else
                     {
-                        MOMENT.addRemoteRelation( target_mid, my_moment, function(){} );
+                        console.log('my_moment');
+                        console.log(my_moment);
+                        MOMENT.addRemoteRelation( target_info['mid'], my_moment, function(){} );
                         next( err, 2, {});
                     }
 
