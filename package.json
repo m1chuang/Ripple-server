@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "async": "0.9.0",
-    "aws-sdk": "1.13.0",
+    "aws-sdk": "^1.13.0",
     "body-parser": "~1.6.3",    
     "chalk": "0.5.1",
     "connect-busboy": "0.0.2",
