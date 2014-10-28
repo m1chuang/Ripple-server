@@ -3,7 +3,7 @@
   "description": "a short description about the project",
   "repository": "https://neshorange@bitbucket.org/neshorange/glimpse.git",
   "version": "0.1.0",
-    "engines": {
+  "engines": {
     "node": "0.10.32"
   },
   "private": true,
@@ -12,20 +12,24 @@
     "test": "mocha test"
   },
   "dependencies": {
-    "express": "~4.8.3",
-    "mongoose": "3.6.20",
-    "body-parser": "~1.6.3",
-    "pubnub": "3.6.7",
     "async": "0.9.0",
-    "chalk": "0.5.1",
-    "node-uuid": "1.4.1",
-    "moment": "2.8.2",
-    "aws-sdk": "2.0.15",
-    "connect-busboy": "0.0.2",
+    "aws-sdk": "1.13.0",
+    "body-parser": "~1.6.3",
     "busboy": "^0.2.9",
-    "winston-loggly": "^1.0.2",
+    "chalk": "0.5.1",
+    "connect-busboy": "0.0.2",
+    "express": "~4.8.3",
+    "is-my-json-valid": "^1.4.0",
+    "jsonwebtoken": "^1.1.2",
+    "moment": "2.8.2",
+    "mongoose": "3.6.20",
+    "nconf": "^0.6.9",
+    "node-uuid": "1.4.1",
+    "pubnub": "3.6.7",
+    "s3-streaming-upload": "^0.1.15",
     "winston": "^0.8.1",
-    "jsonwebtoken": "^1.1.2"
+    "winston-logentries": "^1.0.1",
+    "winston-loggly": "^1.0.2"
   },
   "devDependencies": {
     "should": "4.0.4",
