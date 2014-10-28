@@ -1,0 +1,26 @@
+[global]
+ApplicationName=glimpse
+AwsCredentialFile=/Users/michaelchuang/ct/app/server/.elasticbeanstalk/credentials
+DevToolsEndpoint=git.elasticbeanstalk.us-west-1.amazonaws.com
+EnvironmentName=glimpse-env
+EnvironmentTier=WebServer::Standard::1.0
+EnvironmentType=SingleInstance
+InstanceProfileName=aws-elasticbeanstalk-ec2-role
+OptionSettingFile=/Users/michaelchuang/ct/app/server/.elasticbeanstalk/optionsettings.glimpse-env
+RdsEnabled=No
+Region=us-west-1
+ServiceEndpoint=https://elasticbeanstalk.us-west-1.amazonaws.com
+SolutionStack=64bit Amazon Linux 2014.03 v1.0.7 running Node.js
+
+[branches]
+prod=glimpse-prod-env
+
+[branch:prod]
+ApplicationVersionName=Sample Application
+EnvironmentName=glimpse-prod-env
+EnvironmentTier=WebServer::Standard::1.0
+EnvironmentType=SingleInstance
+InstanceProfileName=aws-elasticbeanstalk-ec2-role
+OptionSettingFile=/Users/michaelchuang/ct/app/server/.elasticbeanstalk/optionsettings.glimpse-prod-env
+RdsEnabled=No
+
