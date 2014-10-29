@@ -69,7 +69,7 @@ module.exports.upload = function( fileData, fileInfo )
 var Uploader = require('s3-streaming-upload').Uploader,
     upload = null
 
-
+// s3Stream = require('s3-upload-stream')(new AWS.S3()),
 
 module.exports.s3_test = function (fieldname, file, filename, enconding, next){
     upload = new Uploader({

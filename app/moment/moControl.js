@@ -2,7 +2,7 @@ var MOMENT = require('./moModel');
 var DEVICE = require('../device/deModel');
 var S3 = require('../service/uploader');
 var PUBNUB = require('../service/pubnub');
-var LOG = require('../service/logger');
+var LOG = require('../service/util').logger;;
 
 var CHALK =  require('chalk');
 var async = require('async');

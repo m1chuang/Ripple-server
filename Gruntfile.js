@@ -3,52 +3,73 @@ module.exports = function(grunt) {
     var port = grunt.option('port') || 3000
 
     // Project configuration
-    grunt.initConfig({
+    grunt.initConfig(
+    {
         pkg: grunt.file.readJSON('package.json'),
-        meta: {
-            banner:
-                ''
+        watch:
+        {
+            scripts:
+            {
+                files: ['app/**/*.*'],
+                tasks: ['jshint'],
+            }
         },
+        jshint: {
 
+                options:
+                {
+                    reporter: require('jshint-stylish'), // use jshint-stylish to make our errors look and read good
+                    force:true,
+                    undef:true,
+                    node:true
+                },
+                build: ['Grunfile.js', 'app/**/*.*']
 
-        mochaTest: {
-            test: {
-                options: {
+        },
+        mochaTest:
+        {
+            test:
+            {
+                options:
+                {
                     reporter: 'spec'
                 },
                 src: ['test/*.js']
             }
         },
-
+        nodemon:
+        {
+            dev:
+            {
+                options:
+                {
+                    script: './main.js',
+                    ignore: ['node_modules/**']
+                }
+            }
+        },
         concurrent: {
-
-            start: {
+            dev:
+            {
+                tasks: ['jshint', 'nodemon', 'watch'],
+                options:
+                {
+                    logConcurrentOutput: true
+                }
+            },
+            test:
+            {
                 tasks: ['mochaTest', 'nodemon', 'watch'],
-                options: {
+                options:
+                {
                     logConcurrentOutput: true
                 }
             }
-        },
-
-        nodemon: {
-            dev: {
-                options: {
-                    nodeArgs: ['--port', port]
-                }
-            }
-        },
-           watch: {
-            files: ['app/**/*.*',
-                    'test/*.*',
-
-                    ],
-            tasks: ['mochaTest']
         }
-
     });
 
     // Dependencies
-
+    grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-nodemon');
@@ -57,6 +78,16 @@ module.exports = function(grunt) {
     // Run tests
     grunt.registerTask('test', [ 'mochaTest' ] );
 
-    // Default tasks
-    grunt.registerTask('default', ['concurrent:start']);
+
+    grunt.registerTask('dev', '', function()
+    {
+        var taskList = [
+
+            'concurrent',
+            'jshint:dev',
+            'nodemon',
+            'watch'
+        ];
+        grunt.task.run(taskList);
+    });
 };

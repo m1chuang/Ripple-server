@@ -6,11 +6,7 @@ var async = require( 'async' );
 var CHALK =  require( 'chalk' );
 
 
-var actionTokenSchema = new Schema(
-{
-    action_type : String,
-    action_token    : String,
-});
+
 var connectionSchema = new Schema(
 {
     channel_id : String,
@@ -30,7 +26,9 @@ var relationSchema = new Schema(
 
 var exploreSchema = new Schema(
 {
-    action_token:[actionTokenSchema],
+    action_token:{
+        like:String
+    },
     image_url: String,
     status: String,
     distance: String,
@@ -81,7 +79,7 @@ MomentSchema.methods.createExplore = function( params, nearby_moments, next)
                 console.log( action_token);
                 var explore_item =
                 {
-                    action_token : [action_token],
+                    action_token : {like: action_token},
                     image_url   : item['image_url'],
                     distance    : item['distance'],
                     status      : item['status'],
@@ -101,7 +99,6 @@ MomentSchema.methods.createExplore = function( params, nearby_moments, next)
     else
     {
         console.log( CHALK.blue('start ex factory '));
-
         async.map( nearby_moments, generate_explore,
         function onExploreGenerate( err, explore_list )
         {

@@ -3,7 +3,7 @@ var MOMENT = require('../moment/moModel');
 var AUTH     = require('../service/auth');
 var uuid = require('node-uuid');
 var PUBNUB = require('../service/pubnub');
-var LOG = require('../service/logger');
+var LOG = require('../service/util').logger;;
 var CHALK =  require('chalk');
 
 exports.createOrRenew = function( req, res, next )
@@ -26,26 +26,26 @@ exports.createOrRenew = function( req, res, next )
                     new_device.save(function(err){console.log('save device');console.log(err);});
                 });
         });
-}
+};
 
 
 exports.getNewExplore = function( params, next )
 {
     LOG.info( CHALK.red('In MOMENT.getNewExplore') );
 
-    DEVICE.findOne( { device_id: params['my_device_id'] },
+    DEVICE.findOne( { device_id: params.my_device_id },
         function onFind(err,device)
         {
             if( !device )
             {
-                LOG.info("Device id: '"+params['my_device_id']+"' not found");
+                LOG.info("Device id: '"+params.my_device_id+"' not found");
                 next( err, device );
             }
             else
             {
                 var moment = device.moments[0];
-                params['location'] = moment.location;
-                params['my_mid'] = moment.mid;
+                params.location = moment.location;
+                params.my_mid = moment.mid;
 
                 moment.getNearWithRelation( params,
                     function prepareExploreList( err, obj )
@@ -65,28 +65,28 @@ exports.getNewExplore = function( params, next )
                     });
             }
         });
-}
+};
 
 exports.getPageExplore = function( params, next )
 {
     console.log( CHALK.red('In MOMENT.getPageExplore') );
     DEVICE.findOne(
         {
-            'device_id': params['my_device_id']
+            'device_id': params.my_device_id
         },
         function( err, device )
         {
             if (err) LOG.error(err);
             next( err, device.moments[0].explore);
         });
-}
+};
 
 exports.getFriends = function( params, next )
 {
     console.log( CHALK.red('In MOMENT.getFriends') );
     DEVICE.findOne(
         {
-            'device_id': params['my_device_id']
+            'device_id': params.my_device_id
         },
         function( err, device )
         {
@@ -97,7 +97,7 @@ exports.getFriends = function( params, next )
                             nick_name: friend.nick_name,
                             channel_id : friend.channel_id,
                             initator_auth_key:friend.initator_auth_key
-                    }
+                    };
                 }, function(results)
                 {
                     next( err, results);

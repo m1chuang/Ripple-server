@@ -1,9 +1,10 @@
 var MomentCtr     = require('./moControl');
 var DEVICE    = require('../device/deModel');
-var LOG = require('../service/logger');
+var UTIL     = require('../service/util');
+var LOG = UTIL.logger;
+var validator = require('../service/util').validator;
 var AUTH     = require('../service/auth');
 var S3 = require('../service/uploader');
-var validator = require('is-my-json-valid');
 var nconf = require('nconf');
 var express = require('express');
 
@@ -16,22 +17,9 @@ var moment = express.Router();
 /**
 **  Input Validation & Authentication
 **/
-moment.post('/', S3.multipart, function(req,res,next)
-    {
-        var validate = validator(nconf.get('validation')['moment']['post']);
-        validate(req.body)? next() : res.status( 400 ).json({ errs : validate.errors });
-    });
-
-moment.put('/',function(req,res,next)
-    {
-        var validate = validator(nconf.get('validation')['moment']['put']);
-        validate(req.body)? next() : res.status( 400 ).json({ errs : validate.errors });
-    });
-moment.post('/action',function(req,res,next)
-    {
-        var validate = validator(nconf.get('validation')['moment']['action']);
-        validate(req.body)? next() : res.status( 400 ).json({ errs : validate.errors });
-    });
+moment.post('/', S3.multipart, validator('moment','post'));
+moment.put('/', validator('moment','put'));
+moment.post('/action', validator('moment','action'));
 
 moment.use(AUTH.authenticate);
 
@@ -93,6 +81,21 @@ moment.route('/')
 
         MomentCtr.login( req['resource_device'], params,response);
     });
+
+moment.route('/moment/explore')
+    .post( function(req, res)
+    {
+        DeviceCtr.getNewExplore( params,
+            function( err, explore_list )
+            {
+                console.log(explore_list);
+                res.json(
+                    {
+                        explore: explore_list
+                    });
+            });
+    })
+
 
 /*    status code:
         0: succsefully become friends

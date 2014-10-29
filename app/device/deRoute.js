@@ -1,21 +1,16 @@
 var DeviceCtr     = require('./deControl');
 var DEVICE    = require('../device/deModel');
 var AUTH     = require('../service/auth');
-var validator = require('is-my-json-valid');
+var validator     = require('../service/util').validator;
 var nconf = require('nconf');
 
 var express = require('express');
 var device = express.Router();
 
-
 /**
-**  Input Validation & Authentication
+**  Middleware
 **/
-device.use(function(req,res,next)
-    {
-        var validate = validator(nconf.get('validation')['device']['all']);
-        validate(req.body)? next() : res.status( 400 ).json({ errs : validate.errors });
-    });
+device.use(validator('device','all'));
 
 device.use(AUTH.authenticate);
 
