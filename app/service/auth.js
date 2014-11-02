@@ -2,11 +2,11 @@ var jwt = require('jsonwebtoken');
 var nconf = require('nconf');
 
 
-
+console.log(nconf.get('secret-key'));
 
 var crypto = require('crypto'),
   algorithm = 'aes-256-ctr',// update to encryption with GCM later
-  key = nconf.get('secrete-key')['encription'];
+  key = nconf.get('secret-key')['encription'];
 
 function encrypt(text) {
     //var iv = new Buffer(crypto.randomBytes(12)); // ensure that the IV (initialization vector) is random
@@ -34,12 +34,12 @@ function decrypt(encrypted) {
 
 var signToken =  function( type, payload)
 {
-    var token = jwt.sign(payload, nconf.get('secrete-key')['token'][type] );
+    var token = jwt.sign(payload, nconf.get('secret-key')['token'][type] );
     return token;
 };
 
 var verifyToken = function(type, token, verified) {
-  return jwt.verify(token, nconf.get('secrete-key')['token'][type] , {}, verified);
+  return jwt.verify(token, nconf.get('secret-key')['token'][type] , {}, verified);
 };
 
 module.exports.verifySecret = function( secret, key, res, next) {
@@ -68,13 +68,15 @@ module.exports.newBaseToken = function(device, next)
     next(device, token);
 };
 
-module.exports.authenticate = function( req, res, next )
+module.exports.registerOrAuth = function( req, res, next )
 {
     var token = req.body.auth_token || '';
-    console.log('auth_token:'+ token);
+    console.log('body::');
+    console.log( req.body);
+    console.log('body::');
     if( token == 'new' )
     {
-        req['auth_token'] = 'new';
+        req.body.auth_token = 'new';
         next();
     }
     else
@@ -86,37 +88,47 @@ module.exports.authenticate = function( req, res, next )
                 res.status(401).json( { err:err } );
             }else
             {
-                req['auth_token'] = payload;
+                console.log('verify auth_token:');
+                console.log( payload);
+                req.body.auth_token = payload;
                 next();
             }
         });
     }
 
 };
+module.exports.authenticate = function( req, res, next )
+{
+    var token = req.body.auth_token || '';
+    console.log('body::');
+    console.log( req.body);
+    console.log('body::');
+
+    verifyToken('auth',token, function( err, payload)
+    {
+        if(err)
+        {
+            res.status(401).json( { err:err } );
+        }else
+        {
+            console.log('verify auth_token:');
+            console.log( payload);
+            req.body.auth_token = payload;
+            next();
+        }
+    });
+
+
+};
 
 module.exports.parseAction = function( req, res, next)
 {
     var token = req.body.action_token || '';
-    console.log( 'auth  parse action token');
-    console.log(token);
-    verifyToken('action',token, function( err, payload)
-    {
-        if(err)
-        {
-            res.status(401).json( { err:err} );
-        }else
-        {
-            if(payload['encrypted'] &&payload['encrypted'] != '')
-            {
-                console.log('payload');
-                console.log(payload);
-                var secret = JSON.parse(JSON.parse(decrypt(payload['encrypted'])));
-                payload['encrypted'] = secret;
-            }
-            req['action_token'] = payload;
-            next();
-        }
-    });
+    var secret = JSON.parse(JSON.parse(decrypt(token)));
+
+    req['action_token'] = secret;
+    next();
+
 }
 
 module.exports.issueActionToken = function( action, secrets, options, next)
@@ -134,7 +146,7 @@ module.exports.issueActionToken = function( action, secrets, options, next)
                     encrypted:secret
                 });
 
-            next( {action_type:'like',action_token:token} );
+            next( secret );
         },
         connect: function(options, next)
         {
@@ -144,7 +156,7 @@ module.exports.issueActionToken = function( action, secrets, options, next)
                     action : 'connect',
                     encrypted: secret
                 });
-            next({action_type:'connect',action_token:token} );
+            next(token);
         }
     };
 

@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {
     "start": "node main.js",
-    "test": "mocha test"
+    "test": "NODE_ENV=test node grunt test"
   },
   "dependencies": {
     "async": "0.9.0",
@@ -31,7 +31,7 @@
     "winston-loggly": "^1.0.2"
   },
   "devDependencies": {
-    "grunt": "0.4.5",
+    "grunt": "^0.4.5",
     "grunt-concurrent": "1.0.0",
     "grunt-contrib-jshint": "^0.10.0",
     "grunt-contrib-watch": "0.6.1",

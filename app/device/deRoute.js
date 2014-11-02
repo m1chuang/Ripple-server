@@ -12,7 +12,7 @@ var device = express.Router();
 **/
 device.use(validator('device','all'));
 
-device.use(AUTH.authenticate);
+
 
 /**
 **  Routes
@@ -22,7 +22,7 @@ device.route('/')
    /*
     *   Request when APP is open
     */
-    .post( function( req, res )
+    .post( AUTH.registerOrAuth,function( req, res )
     {
         var response = function( err, token, require_login, uuid, pubnub_key, status )
         {
@@ -35,24 +35,27 @@ device.route('/')
                 });
         };
 
-        if(req['auth_token'] == 'new')// For now, all clients requesting token will be granted
+        if(req.body.auth_token == 'new')// For now, all clients requesting token will be granted
         {
             DeviceCtr.createOrRenew( req, res, response);
         }
         else
         {
-            response('', req['auth_token'], '', '', '', 200);
+            response('', req.body.auth_token, '', '', '', 200);
         }
     });
 
+
+device.use(AUTH.authenticate);
 device.route('/friends')
+    .all(DEVICE.getDevice)
     .post( function( req, res)
     {
         //@@@ return friend list
         //@@@ show unread updates
         var params =
         {
-            my_device_id :req.body.device_id,
+            device_obj:req.resource_device
         };
 
         var response = function( err, friends )

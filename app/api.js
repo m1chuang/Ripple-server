@@ -12,9 +12,12 @@ app.use(bodyParser.urlencoded({
 
 var nconf = require('nconf');
 nconf.argv().env().file({ file: __dirname + '/config.json' });
+var ENV = nconf.get('NODE_ENV');
 
+var LOG     = require('./service/util').logger;
+LOG.info(ENV);
 var mongoose   = require('mongoose');
-mongoose.connect( nconf.get('database') );
+mongoose.connect( nconf.get('database')[ENV] );
 
 
 var moment     = require('./moment/moRoute');

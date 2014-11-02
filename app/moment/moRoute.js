@@ -24,7 +24,6 @@ moment.post('/action', validator('moment','action'));
 moment.use(AUTH.authenticate);
 
 
-
 /**
 **  Routes
 **/
@@ -41,7 +40,7 @@ moment.route('/')
 
         var params =
         {
-            auth_token : req['auth_token'],
+            device_id : req.body.auth_token.device_id,
             image   :   req.body.image,
             lat : req.body.lat,
             lon : req.body.lon
@@ -52,7 +51,7 @@ moment.route('/')
             res.status(status).json();
         };
         response(202);
-        MomentCtr.init( req['resource_device'], params);
+        MomentCtr.init( req.body.resource_device, params);
     })
 
 
@@ -79,19 +78,24 @@ moment.route('/')
                 });
         };
 
-        MomentCtr.login( req['resource_device'], params,response);
+        MomentCtr.login( req.body.resource_device, params,response);
     });
 
-moment.route('/moment/explore')
+moment.route('/explore')
+
     .post( function(req, res)
     {
-        DeviceCtr.getNewExplore( params,
+        var params =
+        {
+            device_id : req.body.auth_token.device_id,
+        };
+        MomentCtr.getNewExplore( params,
             function( err, explore_list )
             {
                 console.log(explore_list);
                 res.json(
                     {
-                        explore: explore_list
+                        explore_list: explore_list
                     });
             });
     })
@@ -108,8 +112,8 @@ moment.route('/action')
     {
         var params =
         {
-            auth_token : req['auth_token'],//req.body.device_id,
-            action_token : req['action_token']
+            auth_token : req.body.auth_token,//req.body.device_id,
+            action_content : req.body.action_token.encrypted
         };
 
         MomentCtr.doAction( params, res,

@@ -2,7 +2,7 @@ var chalk = require('chalk');
 var AWS = require('aws-sdk');
 var path = require('path');
 var nconf = require('nconf');
-var LOG = require('../service/logger');
+var LOG = require('../service/util').logger;
 var S3 = require('../service/uploader');
     // For dev purposes only
 
@@ -16,12 +16,12 @@ var s3_url = nconf.get('S3')['glimpse_test'];
 
 module.exports.multipart = function(req, res, next)
 {
-    
+
     req.busboy.on('file', function(fieldname, file, filename, encoding) {
         console.log('on:file: '+s3_url+filename);
         req.body['image']=s3_url+filename;
         S3.s3_test(fieldname, file, filename, encoding,
-            function( err, s3_response) {                
+            function( err, s3_response) {
             });
     });
 

@@ -8,6 +8,10 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
         watch:
         {
+            options: {
+                spawn: false,
+            },
+
             scripts:
             {
                 files: ['app/**/*.*'],
@@ -32,7 +36,8 @@ module.exports = function(grunt) {
             {
                 options:
                 {
-                    reporter: 'spec'
+                    reporter: 'spec',
+                    clearRequireCache: true
                 },
                 src: ['test/*.js']
             }
@@ -41,9 +46,9 @@ module.exports = function(grunt) {
         {
             dev:
             {
+                script: 'main.js',
                 options:
                 {
-                    script: './main.js',
                     ignore: ['node_modules/**']
                 }
             }

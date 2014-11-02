@@ -31,7 +31,7 @@ exports.createOrRenew = function( req, res, next )
 
 exports.getNewExplore = function( params, next )
 {
-    LOG.info( CHALK.red('In MOMENT.getNewExplore') );
+    //LOG.info( CHALK.red('In MOMENT.getNewExplore') );
 
     DEVICE.findOne( { device_id: params.my_device_id },
         function onFind(err,device)
@@ -83,25 +83,10 @@ exports.getPageExplore = function( params, next )
 
 exports.getFriends = function( params, next )
 {
-    console.log( CHALK.red('In MOMENT.getFriends') );
-    DEVICE.findOne(
+    console.log( CHALK.red('In DEVICE.getFriends') );
+    DEVICE.filterFriends( device, function(friends)
         {
-            'device_id': params.my_device_id
-        },
-        function( err, device )
-        {
-            if (err) throw err;
-            async.filter( device.friends, function(friend)
-                {
-                    return {
-                            nick_name: friend.nick_name,
-                            channel_id : friend.channel_id,
-                            initator_auth_key:friend.initator_auth_key
-                    };
-                }, function(results)
-                {
-                    next( err, results);
-                });
+            next( err, friends);
         });
 };
 

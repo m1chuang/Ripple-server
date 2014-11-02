@@ -1,3 +1,4 @@
+var nconf = require('nconf');
 /*
     Logger
 */
@@ -11,8 +12,8 @@ var logger = new winston.Logger({
         new winston.transports.Console(
         {
             colorize: true,
-            level: logLevela,
-            json: true
+            level: logLevel,
+
         })
     /*
     new winston.transports.Logentries({
@@ -29,12 +30,16 @@ var logger = new winston.Logger({
     })*/
     ],
     exceptionHandlers: [
-      new winston.transports.Console()
+      new winston.transports.Console(
+      {
+            colorize: true,
+            json: true
+      })
     ]
 });
 process.on('uncaughtException', function (err) {
     logger.error('uncaughtException', { message : err.message, stack : err.stack }); // logging with MetaData
-    process.exit(1); // exit with failure
+    //process.exit(1); // exit with failure
 });
 
 logger.exitOnError = false;
@@ -67,4 +72,4 @@ var validate = function(resource, type)
     }
 
 
-module.exports = {logger:logger,validator:validator};
+module.exports = {logger:logger,validator:validate};
