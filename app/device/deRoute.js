@@ -100,29 +100,6 @@ device.route('/friends/add')
 
     });
 
-device.route('/explore')
-    /*
-    *   Get update on explore list, etc
-        TODO:
-            finish getExplore
-    */
-    .post( function( req, res )
-    {
-        var params =
-        {
-            my_device_id :req.body.device_id,
-        };
-
-        DeviceCtr.getNewExplore( params,
-            function( err, explore_list )
-            {
-                console.log(explore_list);
-                res.json(
-                    {
-                        explore: explore_list
-                    });
-            });
-    });
 
 device.route('/explore/:page')
     /*

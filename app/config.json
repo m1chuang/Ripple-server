@@ -1,10 +1,10 @@
 {
-  "NODE_ENV":"dev",
+  "NODE_ENV":"local-test",
   "database":
   {
     "dev":"mongodb://neshorange:Nesh6502@ds063919.mongolab.com:63919/glimpse",
     "prod": "mongodb://neshorange:Nesh6502@ds039850.mongolab.com:39850/glimpse",
-    "local-test":"'mongodb://localhost:27017/test-app'"
+    "local-test":"mongodb://localhost/test-app"
   },
 
   "S3":{

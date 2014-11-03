@@ -4,7 +4,7 @@ var AUTH     = require('../service/auth');
 var PUBNUB = require('../service/pubnub');
 var async = require( 'async' );
 var CHALK =  require( 'chalk' );
-
+var LOG = require('../service/util').logger;
 
 
 var connectionSchema = new Schema(
@@ -79,7 +79,7 @@ var createExplore = function( nearby_moments, next)
                     like        : (item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false,
                     connect     : (item.connection != undefined&&item.connection.length > 0)? true:false,
                 };
-                console.log(explore_item);
+                LOG.info(explore_item);
 
                 next( null, explore_item );
             });
@@ -101,6 +101,7 @@ var createExplore = function( nearby_moments, next)
 
 MomentSchema.methods.getExplore =function( params, next )
 {
+    LOG.info( CHALK.green('In model moment.getExplore') );
     mongoose.model( 'Moment' ).aggregate(
         {
             $geoNear : {
@@ -124,7 +125,7 @@ MomentSchema.methods.getExplore =function( params, next )
         function( err, nearby_moments )
             {
                 if (err) throw err;
-                console.log( nearby_moments );
+                LOG.info( nearby_moments );
                 createExplore(nearby_moments, next);
             });
 
@@ -159,7 +160,7 @@ MomentSchema.methods.addConnection = function( params, next )
         },
         function onUpdate( err, num, obj )
         {
-            //console.log( CHALK.blue('-addconncetion: ') );
+            //LOG.info( CHALK.blue('-addconncetion: ') );
             next( err, obj );
         });
 };
@@ -206,8 +207,8 @@ MomentSchema.statics.addRemoteConnection = function( params, next )
 
                             },function(){});
 
-                        console.log( CHALK.blue('-addRemoteconncetion: ') );
-                        //console.log(err);
+                        LOG.info( CHALK.blue('-addRemoteconncetion: ') );
+                        //LOG.info(err);
                         next( err, obj );
                     });
             });
@@ -278,9 +279,9 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, res, next )
             function( err, obj )
             {
 
-                if (err) console.log(err);
+                if (err) LOG.info(err);
                 if(obj[0]!= null && obj[0].liked_relation != undefined && obj[0].liked_relation.length != 0 ){
-                    console.log('liked');
+                    LOG.info('liked');
                     next( err, 'liked', obj[0]);
                 }
                 else if( obj[0] != null && obj[0].connection != undefined && obj[0].connection.length != 0 )
@@ -303,7 +304,7 @@ MomentSchema.statics.getRelation = function( target_mid, owner_did, res, next )
 
 MomentSchema.methods.getNearWithRelation = function( params, next )
 {
-    console.log( CHALK.blue('In getNear: ') );
+    LOG.info( CHALK.blue('In getNear: ') );
     mongoose.model( 'Moment' ).find(
         {
             'location' :

@@ -12,31 +12,34 @@ var uuid = require('node-uuid');
 /*
 *   Upload photo and create a temporary moment
 */
-exports.init = function(device, params )
+exports.init = function( params )
 {
-    console.log( CHALK.red('In MOMENT.init') );
-    console.log(params);
-    console.log(device);
+    LOG.info( CHALK.red('In MOMENT.init') );
+    var device = params.resource_device;
+    LOG.info(params);
+    LOG.info(device);
     var moment_id = uuid.v4();
-
+    LOG.info('@@@@@@emi');
+    LOG.info(device.device_id);
     var temp_moment = new MOMENT(
     {
          mid :           moment_id,
          device_id :     device.device_id,
          pubnub_key :    device.pubnub_key,
-         image_url :     params['image'],
+         image_url :     params.image,
          timestamp :     time(),
-         location :      [params['lon'], params['lat']],
+         location :      [params.lon, params.lat],
     });
 
     temp_moment.getExplore( params,
         function saveExploreList( err, explore_list)
         {
-            console.log('@@@@@@explore_list');
-            console.log(explore_list);
-            temp_moment.explore = explore_list;
+            LOG.info('@@@@@@explore_list');
+            LOG.info(explore_list);
+            LOG.info(temp_moment);
+            temp_moment.explore = explore_list || [];
             device.moments.set( 0, temp_moment );
-            device.save(function( err, obj ){console.log('save temp moment:'+err);console.log(obj);});
+            device.save(function( err, obj ){LOG.info('save temp moment:'+err);LOG.info(obj);});
         });
 
 };
@@ -44,13 +47,14 @@ exports.init = function(device, params )
 /*
 *   Finalize the temporary moment
 */
-exports.login = function( device, params, next )
+exports.login = function(  params, next )
 {
-    console.log( CHALK.red('In MOMENT.login') );
+    LOG.info( CHALK.red('In MOMENT.login') );
 
-
+    var device = params.resource_device;
+    LOG.info(device);
     var temp_moment = device.moments[0];
-    if (!temp_moment) next('resend data', [],[],401);
+    if (!temp_moment) next('resend data', [],[],400);
     var new_moment = new MOMENT(
     {
          mid :           temp_moment.mid,
@@ -62,15 +66,15 @@ exports.login = function( device, params, next )
          status :        params['status'],
          location :      temp_moment.location
     });
-    console.log('in loginiiiii');
-    console.log(temp_moment.explore);
+    LOG.info('in loginiiiii');
+    LOG.info(temp_moment.explore);
     new_moment.save(function( err, mo )
         {
-            console.log(CHALK.red(err));
+            LOG.info(CHALK.red(err));
             DEVICE.filterFriends(device,
                 function(friend_list)
                 {
-                    console.log({async_frd:friend_list, mo_explore:mo.explore});
+
                     next( err, mo.explore,friend_list, 200 );
                 });
 
@@ -83,16 +87,16 @@ exports.login = function( device, params, next )
 exports.getNewExplore = function( params, next )
 {
     LOG.info( CHALK.red('In MOMENT.getNewExplore') );
-    console.log('params-');
-        console.log(params.device_id);
+    LOG.info('params-');
+        LOG.info(params.device_id);
     mongoose.model( 'Moment' ).findOne(
     {
         'device_id': params.device_id
     } ,function(err, mo)
     {
-        console.log('moment');
-        console.log(mo);
-        console.log(err);
+        LOG.info('moment');
+       // LOG.info(mo);
+        LOG.info(err);
         if( err )
         {
             LOG.info("Device id: '"+params.my_device_id+"' not found");
@@ -101,17 +105,17 @@ exports.getNewExplore = function( params, next )
         else
         {
             params.location = mo.location;
-            console.log('loc');
+            LOG.info('loc');
 
             mo.getExplore(params,
                 function saveExploreList( err, explore_list)
                 {
-                    console.log('explore');
-                    console.log(explore_list);
+                    LOG.info('explore');
+                    LOG.info(explore_list);
                     mo.explore = explore_list;
                     next( err,explore_list );
                     //device.moments.set( 0, mo );
-                    mo.save(function( err, obj ){console.log('save temp moment:'+err);console.log(obj);});
+                    mo.save(function( err, obj ){LOG.info('save temp moment:'+err);LOG.info(obj);});
                 });
 
         }
@@ -131,17 +135,17 @@ exports.doAction = function( params, res, next )
             var target_info = params['action_content']['target_info'],
                 my_device_id = params['auth_token']['device_id'];
 
-            console.log('params in do action');
-            console.log(params);
-            console.log('target_info');
-            console.log(params['action_token']['encrypted']['target_info']);
-            console.log(target_info['mid']);
+            LOG.info('params in do action');
+            LOG.info(params);
+            LOG.info('target_info');
+            LOG.info(params['action_token']['encrypted']['target_info']);
+            LOG.info(target_info['mid']);
 
             MOMENT.getRelation( target_info['mid'], my_device_id, res,
                 function connectOrRequset( err, status, my_moment )
                 {
-                    console.log('like satus');
-                        console.log(status);
+                    LOG.info('like satus');
+                        LOG.info(status);
                     if( status =='liked' )
                     {
                         PUBNUB.createConversation( my_moment['pubnub_key'],target_info['pubnub_key'],
@@ -198,8 +202,8 @@ exports.doAction = function( params, res, next )
                     }
                     else
                     {
-                        console.log('my_moment');
-                        console.log(my_moment);
+                        LOG.info('my_moment');
+                        LOG.info(my_moment);
                         MOMENT.addRemoteRelation( target_info['mid'], my_moment, function(){} );
                         next( err, 2, {});
                     }

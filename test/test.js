@@ -25,7 +25,7 @@ describe('Routing', function() {
 
     before(function(done)
     {
-/*
+
         mongoose.connection.on('open',
             function(err)
             {
@@ -36,10 +36,10 @@ describe('Routing', function() {
                 (devices)? mongoose.connection.collections['devices'].drop(done): done();
                 if(moments) mongoose.connection.collections['moments'].drop();
 
-done();
-            });*/
 
-done();
+            });
+
+
 
     });
     var user_a;
@@ -61,7 +61,9 @@ done();
             {
             console.log('init_users.users');
 
-                user_a.device_post(done);
+                user_a.device_post(function(res){
+                    done();
+                });
                 //check if device now exist in db
             });
 
@@ -73,7 +75,9 @@ done();
 
                 var lat = Math.floor((Math.random() * 10) + 1);
                 var lon = Math.floor((Math.random() * 10) + 1);
-                user_a.init_moment(lat, lon, done);
+                user_a.init_moment(lat, lon, function(){
+                    done();
+                });
              });
         it('should get 400 for POST on /moment if missing info',
             function(done)
@@ -84,9 +88,12 @@ done();
         it('should get 200 for PUT on /moment',
             function(done)
             {
+
                // console.log(user);
-               user_a.complete_moment(done);
-               done();
+               user_a.complete_moment(function(res){
+                    done();
+                });
+
            });
 
     });
@@ -95,6 +102,7 @@ done();
 
         before(function(done)
         {
+
             group_a = new User_pool();
             group_a.genUsers(['katie', 'annie', 'albee'], function(){
                 group_a.allLogin(function(){

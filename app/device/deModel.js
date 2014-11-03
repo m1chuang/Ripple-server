@@ -27,23 +27,22 @@ DeviceSchema.statics.getDevice = function( req, res, next)
     LOG.info(req.body.auth_token);
     LOG.info(req.body.auth_token.device_id);
 
-    mongoose.model('Device').find(
+    mongoose.model('Device').findOne(
         {
            'device_id' : req.body.auth_token.device_id,
-        })
-        .limit(1)
-        .exec(
-            function ( err, device )
+        },
+        function ( err, device )
             {
                 LOG.info('device in get device');
-                LOG.info(typeof device);
-                LOG.info(device );
-                LOG.info(err);
+                //LOG.info(typeof device);
+                //LOG.info(device );
+                //LOG.info(device[0] );
+               // LOG.info(err);
                 if(err)
                 {
                     res.status(404).json({err:err});
                 }else{
-                    req.body.resource_device = device[0];
+                    req.body.resource_device = device;
                     next();
                 }
 

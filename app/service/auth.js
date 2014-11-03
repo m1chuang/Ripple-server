@@ -41,6 +41,7 @@ var signToken =  function( type, payload)
 var verifyToken = function(type, token, verified) {
   return jwt.verify(token, nconf.get('secret-key')['token'][type] , {}, verified);
 };
+module.exports.verifyToken = verifyToken;
 
 module.exports.verifySecret = function( secret, key, res, next) {
   req['action_token'] = decript(secret);
@@ -114,6 +115,7 @@ module.exports.authenticate = function( req, res, next )
             console.log('verify auth_token:');
             console.log( payload);
             req.body.auth_token = payload;
+            console.log( req.body.auth_token);
             next();
         }
     });
@@ -140,11 +142,7 @@ module.exports.issueActionToken = function( action, secrets, options, next)
         like: function(options, next)
         {
             var secret = encrypt(JSON.stringify(JSON.stringify(secrets)));
-            var token = signToken('action',
-                {
-                    action : 'like',
-                    encrypted:secret
-                });
+
 
             next( secret );
         },

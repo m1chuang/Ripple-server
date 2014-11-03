@@ -41,6 +41,7 @@ moment.route('/')
         var params =
         {
             device_id : req.body.auth_token.device_id,
+            resource_device : req.body.resource_device,
             image   :   req.body.image,
             lat : req.body.lat,
             lon : req.body.lon
@@ -51,7 +52,7 @@ moment.route('/')
             res.status(status).json();
         };
         response(202);
-        MomentCtr.init( req.body.resource_device, params);
+        MomentCtr.init(params);
     })
 
 
@@ -62,7 +63,8 @@ moment.route('/')
     {
         var params =
         {
-            auth_token : req['auth_token'],
+            device_id : req.body.auth_token.device_id,
+            resource_device : req.body.resource_device,
             status : req.body.status,
             skip : 0,
             offset : 20
@@ -78,7 +80,7 @@ moment.route('/')
                 });
         };
 
-        MomentCtr.login( req.body.resource_device, params,response);
+        MomentCtr.login( params,response);
     });
 
 moment.route('/explore')
