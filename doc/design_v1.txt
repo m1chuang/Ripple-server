@@ -1,0 +1,200 @@
+/*
+  common tasks:
+    A-is token present and valid jwt
+    B-get device
+    C-get Actor
+    D-get Moment
+    E-new token(new aid)
+    F-get nearby
+ */
+/*
+    token
+ */
+device login //check if new mement required
+  A-is token present and valid jwt
+    yes
+
+      B-get device
+      is device found
+        yes
+        --deviceCrontroller.login------------------------------
+          D-get Moment
+          is token.aid found in Moments?
+            yes
+              is the Moment expired?
+                yes
+                  E-new token(new aid)
+                  --> new token
+                  --> login required
+                  --> friends
+                no
+                  0
+                  --> new token
+                  --> login not required
+                  --> friends
+            no
+              E-new token(new aid)
+              --> new token
+              --> login required
+              --> friends
+        ----------------------------------------------------------
+        no
+          --x invalid request
+
+    no
+    --deviceCrontroller.register------------------------------
+      is token = 'new'
+        yes
+          1
+          2
+          E-new token(new aid)
+          --> new token
+          --> login required
+        no
+          --x invalid request
+    ----------------------------------------------------------
+
+/*
+
+  tasks:
+    0 create token( old aid )
+    1 create new device
+    2 crceate server connection
+ */
+
+------------------------------------------------------------------
+/*
+    token
+    image data
+    lat
+    lon
+ */
+
+moment inint
+  A-is token present and valid jwt
+    yes
+    --momentController.init---------------------------------------
+      E-new token(new aid)
+      --> 202 accept
+      1
+      F-get nearby
+    --------------------------------------------------------------
+    no
+      --x invalid request
+
+/*
+  tasks:
+    0 upload image
+      success
+      fail
+        update moment(health = 'badimage')
+    1 create new Actor(health: 'established')
+
+
+ */
+------------------------------------------------------------------
+/*
+    token
+    status
+    lat
+    lon
+ */
+
+moment complete
+  A-is token present and valid jwt?
+    yes
+      C-get Actor
+      is Actor found?
+        yes
+          case Actor.health = 'established'?
+            1
+              is there duplicate?
+                yes
+                  0
+                  F-get nearby
+                  E-new token(new aid)
+                  -->
+                    msg: request image !!-- follow up action required
+                    new token
+                    explore
+                no
+                  2
+                  -->
+                    explore
+          case Actor.health = 'pending' or 'badimage'?
+           0
+           F-get nearby
+           E-new token(new aid)
+            -->
+              msg: request image !!-- follow up action required
+              new token
+              explore
+        no
+          0
+          F-get nearby
+          E-new token(new aid)
+          -->
+            msg: request image !!-- follow up action required
+            new token
+            explore
+    no
+      --x invalid request
+
+/*
+  tasks:
+    0 create new Actor(health: pending, status= status)
+    1 create moment
+    2 update Actor(status = 'completed')
+ */
+------------------------------------------------------------------
+
+
+
+moment like
+  A-is token present and valid jwt and action token valid
+    yes
+      C-get Actor
+      is Actor found
+        yes
+          Actor.status = 'completed'?
+            yes
+              is target_aid found in relation?
+                yes
+                  is relation[target_aid].status = 1 // liked by target?
+                    0
+                    1
+                    2
+                    3
+                    --> 201 created
+                      channel_id
+                  is relation[target_aid].status = 0 // already liked this target?
+                    --> 202 accepted
+                no
+                  4
+                  --> 202 accepted
+            no
+              --x 403 forbidden
+        no
+          --x 404 not found
+    no
+      --x 400 bad request
+
+/*
+  tasks:
+    0 update relation[target_aid].status = 2
+    1 create chat connection
+    2 add friend to self
+    3 add friend to target
+    4 add target.Actor.relation[self.aid](status = 1)
+ */
+
+
+delete friend
+get explore
+get more explore
+get friend
+
+
+
+
+

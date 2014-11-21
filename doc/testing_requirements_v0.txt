@@ -1,0 +1,129 @@
+system testing
+  moment like
+    case
+      1 A like B, A not liked by B
+      2 A like B, B liked A
+  --tbc
+
+
+api testing
+  device login
+    case
+      1 input valid, token valid, device found, moment valid
+        --> 200 ok
+          new token
+          login not requiled
+
+      2 input valid, token valid, device found, moment invalid
+        --> 200 ok
+          new token
+          login required
+
+      3 input valid, token valid, device not found
+        --x 404 not found
+
+      4 input valid, token = 'new'
+        --> 201 created
+          new token
+          login required
+
+      5 input valid, token invalid and is not 'new'
+        --x 401 invalid request
+
+      6 input invalid
+        --x 400 invalid request
+
+  moment init
+    case
+      1 input valid, token valid, device found
+        --> 202 accepted
+
+      2 input valid, token valid, device not found
+        --x 404 not found
+
+      3 input valid, token invalid
+        --x 401 not authorized
+
+      4 input invalid
+        --x 400 bad request
+
+  moment complete
+    case
+      1 input valid, token valid, device found, moment present, latest_moment.health = 'establihed', explore.length > 0
+        --> 201 created
+          explore
+          friend
+
+      2 input valid, token valid, device found, moment present, latest_moment.health = 'establihed', explore.length = 0
+        --> 201 created
+          explore
+          friend
+
+      3 input valid, token valid, device found, moment present, latest_moment.health = 'completed'
+        --> 200 ok
+          msg: resend imag
+          explore
+          friend
+
+      4 input valid, token valid, device found, moment present, latest_moment.health = 'pending'
+        --> 200 ok
+          msg: resend imag
+          explore
+          friend
+
+      5 input valid, token valid, device found, moment present, latest_moment.health = 'badimage'
+        --> 200 ok
+          msg: resend imag
+          explore
+          friend
+      6 input valid, token valid, device found, moment not present
+        --> 200 ok
+          msg: resend imag
+          explore
+          friend
+
+      7 input valid, token valid, device not found
+        --x 404 not found
+
+      8 input valid, token invalid
+        --x 401 not authorized
+
+      9 input invalid
+        --x 400 bad request
+
+  moment like
+    case
+      1 input valid, token valid, liked by target
+      --> 201 created
+        channel_id
+
+      2 input valid, token valid, not liked by target
+      --> 202 accepted
+
+      3 input valid, token invalid
+      --x 401 not authorized
+
+      4 input invalid
+      --x 400 bad request
+
+
+unit testing
+  check token
+  create token
+    is token valid
+  get device
+  create device
+  upload image
+    success
+    fail
+      update moment.health
+  init moment
+  update nearby
+  get latest moment
+    is latest
+  update moment
+  get moment
+  create connection
+    channels valid
+  add friend
+  cerate relation

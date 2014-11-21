@@ -1,0 +1,121 @@
+/*
+    token
+ */
+device login //check if new mement required
+  is token present and valid jwt
+    yes
+      is device id in token found in devices
+        yes
+          is moment still vaid
+            yes
+              cerate new token
+              --> new token
+              --> login not required
+            no
+              cerate new token
+              --> new token
+              --> login required
+        no
+          --x invalid request
+    no
+      is token = 'new'
+        yes
+          create new device
+          generate new token
+          --> new token
+          --> login required
+        no
+          --x invalid request
+/*
+    token
+    image data
+    lat
+    lon
+ */
+
+moment inint
+  is token present and valid
+    yes
+      is device id found in devices
+        yes
+          --= 202 accept
+          upload image
+          init moment
+          pull nearby
+        no
+          --x invalid request
+    no
+      --x invalid request
+
+/*
+    token
+    status
+    lat
+    lon
+ */
+
+moment complete
+  is token present and valid
+    yes
+      is device id found in device
+        yes
+          is moment present
+            yes
+              get latest moment
+              if moment health = 'established'
+                update moment status
+                set this.health = 'completed'
+                is explore.length > 0
+                  yes
+                    --> explore
+                    --> friend
+                  no
+                    update explore
+                    --> explore
+                    --> friend
+              if moment health = 'completed'
+                create moment(satuts)
+                  set this.health = 'pending'
+                  get nearby
+                    success
+                      set this.health = 'completed'
+                    fail
+                      set this.health = 'badimage'
+                --> msg:request image
+                --> explore
+                --> friend
+              if moment health = 'pending'
+                create moment
+            no
+              cerate moment(status)
+                set this.health = 'pending'
+                  get nearby
+                  success
+                    set this.health = 'completed'
+                  fail
+                    set this.health = 'badimage'
+        no
+          --x invalid request
+    no
+      --x invalid request
+
+
+moment like
+  is token valid
+    yes
+      is liked by target
+        yes
+          create connection
+          add friend to both
+          --= msg: success
+          --= channel_id
+        no
+          create relation
+          --= msg: pneding
+    no
+      --x invald request
+
+
+
+
+

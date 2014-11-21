@@ -1,0 +1,159 @@
+/*
+  common tasks:
+    A-is token present and valid jwt
+    B-get device
+ */
+/*
+    token
+ */
+device login //check if new mement required
+  A-is token present and valid jwt
+    yes
+      B-get device
+      is device found
+        yes
+          is moment still vaid
+            yes
+              0
+              --> new token
+              --> login not required
+            no
+              0
+              --> new token
+              --> login required
+        no
+          --x invalid request
+    no
+      is token = 'new'
+        yes
+          1
+          0
+          --> new token
+          --> login required
+        no
+          --x invalid request
+
+/*
+
+  tasks:
+    0 create token
+    1 create new device
+ */
+
+
+/*
+    token
+    image data
+    lat
+    lon
+ */
+
+moment inint
+  A-is token present and valid jwt
+    yes
+      B-get device
+      is device found
+        yes
+          --= 202 accept
+          0
+          1
+          2
+        no
+          --x invalid request
+    no
+      --x invalid request
+/*
+  tasks:
+    0 upload image
+      success
+      fail
+        update moment(health = 'badimage')
+    1 init moment
+    2 update nearby
+ */
+
+/*
+    token
+    status
+    lat
+    lon
+ */
+
+moment complete
+  A-is token present and valid jwt
+    yes
+      B-get device
+      is device found
+        yes
+          is moment present
+            yes
+              0
+              if moment health = 'established'
+                1
+                is explore.length > 0
+                  yes
+                    --> explore
+                    --> friend
+                  no
+                    2
+                    --> explore
+                    --> friend
+              if moment health = 'completed' or 'pending' or 'badimage'--report error
+                3
+                --> msg:request image
+                --> explore
+                --> friend
+
+            no
+              3
+                --> msg:request image
+                --> explore
+                --> friend
+        no
+          --x invalid request
+    no
+      --x invalid request
+/*
+  tasks:
+    0 get latest moment
+    1 update moment (status = status, health = 'completed')
+    2 update moment (explore = get explore moment)
+    3 create moment (status = status, health = 'pending', exlore = get explore moment)
+ */
+
+moment like
+  A-is token present and valid jwt
+    yes
+      0
+      is liked by target
+        yes
+          1
+          2
+          3
+          --= msg: success
+          --= channel_id
+        no
+          4
+          --= msg: pneding
+    no
+      --x invald request
+
+/*
+  tasks:
+    0 get moment
+    1 create connection
+    2 add friend to self
+    3 add friend to target
+    4 cerate relation
+ */
+
+
+delete friend
+get explore
+get more explore
+get friend
+
+
+
+
+

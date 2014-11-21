@@ -26,22 +26,29 @@ describe('Routing', function() {
     before(function(done)
     {
 
-        mongoose.connection.on('open',
-            function(err)
-            {
-                console.log(err);
+        function clearDB() {
+            for (var i in mongoose.connection.collections) {
+                mongoose.connection.collections[i].remove(function() {});
+            }
+            return done();
+        }
 
-                var devices = mongoose.connection.collections['devices'];
-                var moments = mongoose.connection.collections['moments'];
-                (devices)? mongoose.connection.collections['devices'].drop(done): done();
-                if(moments) mongoose.connection.collections['moments'].drop();
-
-
+        if (mongoose.connection.readyState === 0) {
+            mongoose.connect(config.db.test, function (err) {
+                if (err)
+                {
+                    throw err;
+                }
+                return clearDB();
             });
-
-
+        }
+        else
+        {
+            return clearDB();
+        }
 
     });
+
     var user_a;
     var group_a;
     var device_uuid = [];
