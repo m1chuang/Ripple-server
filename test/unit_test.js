@@ -74,13 +74,30 @@ describe('Unit testing', function() {
 
     after(function(done)
     {
-
-            mongoose.connection.db.executeDbCommand( {dropDatabase:1}, function(err, result) {
-                console.log(err);
-                console.log(result);
-                done();
-
+        mongoose.connection.collections['actors'].drop( function(err) {
+            console.log('collection dropped');
+            ACTOR.ensureIndexes(function(){
+              console.log('Index ensured');
             });
+        });
+        mongoose.connection.collections['devices'].drop( function(err) {
+            console.log('collection dropped');
+            DEVICE.ensureIndexes(function(){
+              console.log('Index ensured');
+            });
+        });
+        mongoose.connection.collections['moments'].drop( function(err) {
+            console.log('collection dropped');
+            MOMENT.ensureIndexes(function(){
+              console.log('Index ensured');
+               setTimeout(function()
+                      {
+                        done();
+                      },1500);
+            });
+
+        });
+
 
     });
 
@@ -321,90 +338,5 @@ describe('Unit testing', function() {
 
 
     });
-
-    /*
-    //s3
-        describe('upload image', function()
-        {
-            it('upload image',
-                function(done)
-                    {
-                        done();
-                    });
-
-            //uplead to s3 and viewable
-            //if not viewable set actor.status = 'badimage'
-
-        });
-
-    //moment
-        //actor
-        describe('creater actor', function()
-        {
-            it('create actor',
-                function(done)
-                    {
-                        done();
-                    });
-            //create actor, get nearby
-        });
-
-        describe('update actor', function()
-        {
-            it('update actor',
-                function(done)
-                    {
-                        done();
-                    });
-
-        });
-
-
-        describe('cerate relation', function()
-        {
-            it('cerate relation',
-                function(done)
-                    {
-                        done();
-                    });
-
-        });
-
-        //moment
-        describe('create moment', function()
-        {
-            it('create moment',
-                function(done)
-                    {
-                        done();
-                    });
-
-        });
-
-        describe('get nearby', function()
-        {
-            it('get nearby',
-                function(done)
-                    {
-                        done();
-                    });
-
-        });
-
-        describe('get moment', function()
-        {
-            it('get moment',
-                function(done)
-                    {
-                        done();
-                });
-
-
-
-        });
-
-         after(function(done) {
-
-            done();
-        });
-    */
+describe('Device Endpoints testing', require('./api.device.test').device_routing);
+describe('Moment Endpoints testing', require('./api.moment.test').moment_routing);

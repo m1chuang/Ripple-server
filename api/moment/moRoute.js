@@ -91,7 +91,7 @@ moment.route('/')
                     newToken: newToken
                 });
         };
-        console.log(params);
+        //console.log(params);
         MomentCtr.completeMoment(params,response);
     });
 
@@ -108,7 +108,7 @@ moment.route('/explore')
         MomentCtr.getNewExplore( params,
             function( err, explore_list )
             {
-                console.log(explore_list);
+                //console.log(explore_list);
                 res.json(
                     {
                         explore_list: explore_list

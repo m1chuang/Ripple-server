@@ -76,13 +76,13 @@ var token = function(tokenType)
                 {
                     if(!req.body.action_token || !req.body.action_token.action)
                     {
-                        console.log( 'res.body');
-                        console.log( req.body);
+      //                  console.log( 'res.body');
+    //                    console.log( req.body);
                         res.status( 400 ).json({ errs : 'invalid action token' });
                     }
                     else{
-                        console.log( 'res.body');
-                        console.log( req.body);
+//                        console.log( 'res.body');
+  //                      console.log( req.body);
                         var validate = validator(nconf.get('validation').token[tokenType][req.body.action_token.action]);
                         validate(req.body.action_token)? next() : res.status( 400 ).json({ errs : validate.errors });
                     }

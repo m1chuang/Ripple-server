@@ -28,8 +28,7 @@ var createExplore = function( nearby_moments, next)
 {
     var generate_explore = function( item, next )
     {
-        LOG.error(item);
-
+        //LOG.error(item);
         AUTH.issueActionToken('like',
             {
                 target_info:
@@ -63,11 +62,9 @@ var createExplore = function( nearby_moments, next)
     }
     else
     {
-        LOG.error('---explore_listssss');
         async.map( nearby_moments, generate_explore,
         function onExploreGenerate( err, explore_list )
         {
-            LOG.error('explore_list');
             LOG.info(explore_list);
             if(err) throw err;
             next( err, explore_list );
@@ -100,14 +97,12 @@ MomentSchema.statics.getExplore =function( params, next )
             }},
         function( err, nearby_moments )
             {
-                LOG.error('err');
-                LOG.error(err);
-                LOG.info([params.lat,params.lon]);
-                console.log(nearby_moments);
+                LOG.error( nearby_moments);
+                LOG.error( err);
                 if (err) throw err;
                 createExplore(nearby_moments, function (err,explore_list) {
-                    LOG.error('explore_listssss');
-                    LOG.error(explore_list);
+                    //LOG.error('explore_listssss');
+                    //LOG.error(explore_list);
                     next(err, explore_list);
                     // body...
                 });

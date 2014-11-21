@@ -44,7 +44,7 @@ mockActor.prototype.addRelation = function(target, type, status){
 
 
   this.model.relation = ("undefined" != typeof this.relation)? this.relation.push(info):new Array(info);;
-  console.log(this.model.relation);
+  //console.log(this.model.relation);
 };
 
 mockActor.prototype.addConnection = function(params, target){
@@ -56,8 +56,8 @@ mockActor.prototype.addConnection = function(params, target){
 
   this.model.connection = ("undefined" != typeof this.connection)? this.connection.push(info):new Array(info);;
   target.model.connection = ("undefined" != typeof target.model.connection)? target.model.connection.push(info):new Array(info);;
-  console.log(this.model);
-  console.log(target.model);
+  //console.log(this.model);
+  //console.log(target.model);
 };
 
 module.exports = mockActor;

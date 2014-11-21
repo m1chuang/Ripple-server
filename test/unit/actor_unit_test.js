@@ -65,10 +65,12 @@ var mockActor = require('../mock/actor_mock');
 var actor_unit_test = function() {
 
         before(function(done)
-        {
-            done();
-
-        });
+          {
+              setTimeout(function()
+                      {
+                        done();
+                      },1000);
+          });
 
 
         describe('.getActor', function() {
@@ -80,7 +82,18 @@ var actor_unit_test = function() {
                     a.addRelation(b, 'like', 0);//b liked a
                     //a.addConnection({channel_id:'a_b'}, b);
                     a.model.save();
-                    b.model.save(done);
+                    b.model.save();
+                    this.timeout(10000);
+                      ['a','b','c','d','e','f','g','h','i','j','k'].forEach(function(name) {
+                        var lat = Math.floor((Math.random() * 10) + 1);
+                        var lon = Math.floor((Math.random() * 10) + 1);
+                        var mo = new MOMENT({actor_id:name, device_id:name, status:name, image_url:'img',location:[lat,lon]})
+                        mo.save();
+                      });
+                      setTimeout(function()
+                      {
+                        done();
+                      },1500);
                 });
             it('middleware should pass actor to req',
                 function(done)
@@ -119,23 +132,27 @@ var actor_unit_test = function() {
             it('should have fresh explore, new actor_id, and health is pending ',
                 function(done)
                 {
-
+                    LOG.error('actor');
                     ACTOR.createPending({
                             auth_token:{actor_id:mock_actor.pending.actor_id},
                             lat:13,
-                            lon:35
+                            lon:9.5
                        },
                        function(actor)
                        {
+                            LOG.error('actor');
                             actor.save();
+
+                            console.log('actor');
                             setTimeout(function(){
                                     ACTOR.findOne({actor_id:mock_actor.pending.actor_id},function(err,moment)
                                     {
                                         if(err)throw err;
-                                        should.exist(moment);
+                                        console.log(moment);
+
                                         done();
                                     });
-                                },100);
+                                },500);
                        });
                 });
             });
@@ -181,11 +198,11 @@ var actor_unit_test = function() {
                         type:'like',
                     },function(err, num, obj)
                         {
-                            console.log(obj);
-                            console.log(num);
+                            LOG.info(obj);
+                            LOG.info(num);
                             mongoose.model('Actor').find({actor_id:a.model.actor_id},function(err,obj)
                             {
-                                console.log(obj);
+                                LOG.info(obj);
                                 expect(obj[0].connection[0].actor_id).to.equal(b.model.actor_id);
                                 expect(obj[0].connection[0].channel_id).to.equal('a_b');
                                 should.not.exist(obj[0].relation[0]);
@@ -211,7 +228,7 @@ var actor_unit_test = function() {
                     c.model.save();
                     b.model.save(done);
                 });
-            it('should return relation if exist',
+            it('should return connection if exist',
                 function(done)
                 {
 
@@ -221,11 +238,11 @@ var actor_unit_test = function() {
                         channel_id:     'a_c',
                     },function(err, obj)
                         {
-                            console.log(obj);
+                            LOG.info(obj);
 
                             mongoose.model('Actor').find({actor_id:c.model.actor_id},function(err,obj)
                             {
-                                console.log(obj);
+                                LOG.info(obj);
                                 expect(obj[0].connection[0].actor_id).to.equal(a.model.actor_id);
                                 expect(obj[0].connection[0].channel_id).to.equal('a_c');
 
@@ -242,7 +259,7 @@ var actor_unit_test = function() {
             var c = new mockActor({health:'completed'});
             before(function(done)
                 {
-                    a.addRelation(b, 'like', 0);//b liked a
+                    //a.addRelation(b, 'like', 0);//b liked a
                     //a.addConnection({channel_id:'a_b'}, b);
                     a.model.save();
                     c.model.save();
@@ -259,18 +276,22 @@ var actor_unit_test = function() {
                         type:'like',
                     },function(err, num, obj)
                         {
-                            console.log(obj);
-                            console.log(num);
-                            mongoose.model('Actor').find({actor_id:b.model.actor_id},function(err,obj)
-                            {
-                                console.log(obj);
-                                expect(obj[0].relation[0].actor_id).to.eql(a.model.actor_id);
-                                expect(obj[0].relation[0].type).to.eql('like');
-                                expect(obj[0].relation[0].status).to.eql(0);
+                            LOG.info(err);
 
-                                done();
-                            });
+                            setTimeout(function()
+                              {
 
+                                mongoose.model('Actor').find({actor_id:b.model.actor_id},function(err,obj)
+                                {
+                                    LOG.info(obj);
+                                    expect(obj[0].relation[0].actor_id).to.eql(a.model.actor_id);
+                                    expect(obj[0].relation[0].type).to.eql('like');
+                                    expect(obj[0].relation[0].status).to.eql(0);
+
+                                    done();
+                                });
+
+                              },1000);
                         });
 
                 });

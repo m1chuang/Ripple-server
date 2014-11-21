@@ -24,16 +24,40 @@ LOG.transports.console.level = 'error';
     }
     return false;
  }
-describe('Routing', function() {
-  var url = 'http://someurl.com';
+var moment_routing= function() {
 
+  before(function(done)
+  {
+      setTimeout(function()
+              {
+                done();
+              },1000);
+  });
   after(function(done)
     {
       this.timeout(10000);
-      mongoose.connection.db.executeDbCommand( {dropDatabase:1}, function(err, result) {
-          LOG.error(err);
-          LOG.error(result);
-          done();
+      mongoose.connection.collections['actors'].drop( function(err) {
+            console.log('collection dropped');
+            ACTOR.ensureIndexes(function(){
+              console.log('Index ensured');
+            });
+        });
+        mongoose.connection.collections['devices'].drop( function(err) {
+            console.log('collection dropped');
+            DEVICE.ensureIndexes(function(){
+              console.log('Index ensured');
+            });
+        });
+        mongoose.connection.collections['moments'].drop( function(err) {
+            console.log('collection dropped');
+            MOMENT.ensureIndexes(function(){
+              console.log('Index ensured');
+               setTimeout(function()
+                      {
+                        done();
+                      },1500);
+            });
+
         });
 
     });
@@ -445,4 +469,5 @@ describe('/api/moment/action', function() {
 
   });
 
-});
+};
+module.exports = {moment_routing:moment_routing};

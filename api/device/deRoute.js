@@ -29,8 +29,9 @@ device.route('/')
             token:req.body.auth_token
         };
         var response = function( token, require_login, uuid, pubnub_key, status )
+
         {
-            console.log( 'in res');
+
             res.status(status).json(
                 {
                     auth_token: token,
@@ -40,12 +41,12 @@ device.route('/')
                 });
         };
 
-    console.log( req.body);
+
 
         if(params.token === 'new')// For now, all clients requesting token will be granted
         {
             DeviceCtr.register( params, res, response);
-            console.log( 'ttttttt');
+
         }
         else
         {

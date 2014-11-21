@@ -15,7 +15,7 @@ var ACTOR = require('../actor');
 */
 exports.initMoment = function( params )
 {
-    LOG.error( CHALK.red('In MOMENT.init') );
+    LOG.info( CHALK.red('In MOMENT.init') );
     var device = params.resource_device;
     var actor_id = params.actor_id;
     var newActor = new ACTOR(
@@ -29,7 +29,7 @@ exports.initMoment = function( params )
     MOMENT.getExplore( params,
         function saveExploreList( err, explore_list)
         {
-            LOG.error( CHALK.red('In MOMENT.init end') );
+            LOG.info( CHALK.red('In MOMENT.init end') );
             newActor.explore = explore_list || [];
             newActor.save();
         });
@@ -47,7 +47,7 @@ exports.completeMoment = function(params,response)
         if(actor.health === 'established')
         {
             //create moment
-            console.log('completin')
+            LOG.info('completin')
             var mo = new MOMENT({
                 actor_id:       actor.actor_id,
                 device_id :     actor.device_id,
@@ -139,7 +139,7 @@ exports.doAction = function( params,  next )
                                     channel_id:channel_id,
                                 },'liked by target');
                                 actor[0].saveConnection({target_aid:target_aid,type:'like', channel_id:channel_id});
-                                ACTOR.saveRemoteConnection({owner_aid:target_aid, target_aid:params.auth_token.actor_id,type:'like', channel_id:channel_id},
+                                ACTOR.saveRemoteConnection({owner_aid:params.auth_token.actor_id, target_aid:target_aid,type:'like', channel_id:channel_id},
                                     function(err, device_id)
                                     {
                                         LOG.info('device_id');

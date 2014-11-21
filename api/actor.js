@@ -61,7 +61,7 @@ ActorSchema.statics.getActor = function( req, res, next)
         },
         function ( err, actor )
             {
-                console.log(err);
+                LOG.info(err);
                 if(err)
                 {
                     res.status(404).json({err:err});
@@ -181,7 +181,7 @@ ActorSchema.statics.saveRemoteConnection = function( params, next )
 
      mongoose.model( 'Actor' ).findOne(
         {
-           'actor_id' : params.owner_aid,
+           'actor_id' : params.target_aid,
         },function ( err, actor )
             {
                 var device_id = actor.device_id
@@ -193,7 +193,7 @@ ActorSchema.statics.saveRemoteConnection = function( params, next )
                         {
                             connection :
                             {
-                                'actor_id'    : params.target_aid,
+                                'actor_id'    : params.owner_aid,
                                 'channel_id'    : params.channel_id,
                                 'type'          : 'like',
                             }
@@ -202,7 +202,7 @@ ActorSchema.statics.saveRemoteConnection = function( params, next )
                         {
                             relation:
                             {
-                                'actor_id' : params.target_aid,
+                                'actor_id' : params.owner_aid,
                                 'type':'like'
                             }
                         },
@@ -227,24 +227,25 @@ ActorSchema.statics.addRemoteRelation = function( params, next )
             {
 
                 if (err) LOG.info(err);
-               actor.update(
+                //LOG.info('actor');
+                //LOG.info(actor);
+                actor.update(
                     {
                         $addToSet :
                         {
                             relation:
                             {
-                                'actor_id' : params.owner_aid,
-                                'explore_id':params.explore_id,
+                                'actor_id':params.owner_aid,
                                 'type':params.type,
                                 'pubnub_key':params.pubnub_key,
                                 'status':params.status
                             }
                         }
                     },
-                    function onUpdate( err, obj )
+                    function onUpdate( err, num,obj )
                     {
                         //LOG.info(err);
-                        if(next) next( err, obj );
+                        if(next) next( err, num, obj );
                     });
             });
 };
@@ -257,11 +258,11 @@ var actorModel = mongoose.model('Actor', ActorSchema);
 actorModel.createPending = function(params, next)
 {
 
-    LOG.info('IN create pending');
+    LOG.error('IN create pending');
     MOMENT.getExplore(params, function (err, explore_list)
         {
-            LOG.info('create pending');
-            LOG.info(err);
+            LOG.error('create pending');
+            LOG.error(err);
             if (err) throw err;
 
             var newActor = new actorModel({

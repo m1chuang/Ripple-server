@@ -7,27 +7,52 @@ var url = request('http://localhost:5050/api');
 var port = 5050;
 var LOG = require('../api/service/util').logger;
 var ACTOR = require('../api/actor');
+var DEVICE = require('../api/device/deModel');
+var MOMENT = require('../api/moment/moModel');
 var AUTH = require('../api/service/auth');
 var mongoose = require('../api').db;
 var mockDevice = require('./mock/actor_mock');
 var pubnubMock = require('./unit/pubnub_unit_test');
 LOG.transports.console.level = 'error';
 //app.listen(port);
-describe('Routing', function() {
+var device_routing= function() {
 
-  before(function(done) {
-    done();
+
+  before(function(done)
+  {
+      setTimeout(function()
+              {
+                done();
+              },1000);
   });
   after(function(done)
     {
+      mongoose.connection.collections['actors'].drop( function(err) {
+            console.log('collection dropped');
+            ACTOR.ensureIndexes(function(){
+              console.log('Index ensured');
+            });
+        });
+        mongoose.connection.collections['devices'].drop( function(err) {
+            console.log('collection dropped');
+            DEVICE.ensureIndexes(function(){
+              console.log('Index ensured');
+            });
+        });
+        mongoose.connection.collections['moments'].drop( function(err) {
+            console.log('collection dropped');
+            MOMENT.ensureIndexes(function(){
+              console.log('Index ensured');
+               setTimeout(function()
+                      {
+                        done();
+                      },1500);
+            });
 
-       mongoose.connection.db.executeDbCommand( {dropDatabase:1}, function(err, result) {
-          console.log(err);
-          console.log(result);
-          done();
         });
 
     });
+
   describe('/api/device', function() {
 
     //var mockDecive = new mockDevice({did:'',channel_uuid:'',pubnub_key:'',moments:[],friends:[]});
@@ -171,4 +196,6 @@ describe('Routing', function() {
 
 
   });
-});
+};
+
+module.exports ={device_routing:device_routing};

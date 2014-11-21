@@ -18,7 +18,7 @@ module.exports.multipart = function(req, res, next)
 {
 
     req.busboy.on('file', function(fieldname, file, filename, encoding) {
-        console.log('on:file: '+s3_url+filename);
+        LOG.info('on:file: '+s3_url+filename);
         req.body['image']=s3_url+filename;
         S3.s3_test(fieldname, file, filename, encoding,
             function( err, s3_response) {
@@ -26,14 +26,14 @@ module.exports.multipart = function(req, res, next)
     });
 
     req.busboy.on('field', function(fieldname, value, valTruncated, keyTruncated) {
-        console.log('on:field');
-        console.log(fieldname);
+        LOG.info('on:field');
+        LOG.info(fieldname);
         req.body[fieldname]=value;
 
     });
 
     req.busboy.on('finish', function() {
-        console.log('once:end');
+        LOG.info('once:end');
         next();
     });
 
