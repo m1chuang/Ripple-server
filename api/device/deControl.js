@@ -9,6 +9,7 @@ var CHALK =  require('chalk');
 
 exports.register = function( params, res, next )
 {
+    LOG.info( 'in lreg');
     var device_id = uuid.v4();
     var pubnub_auth_key = uuid.v4();
     var channel_uuid = uuid.v4();
@@ -37,24 +38,26 @@ exports.register = function( params, res, next )
 exports.login = function( params, res, next )
 {
 
+    LOG.info( params);
     mongoose.model('Device').findOne(
         {
-           'device_id' : params.token.device_id,
+           'device_id' : params.auth_token.device_id,
         },
         function ( err, device )
             {
                 LOG.info( 'in login');
-                //LOG.info( device);
-                if(err)
+                LOG.info( device);
+                LOG.info( params);
+                if(err || device===null)
                 {
                     res.status(404).json({err:err});
                 }
                 else
                 {
-                    MOMENT.isExpired(params.token,
+                    MOMENT.isExpired(params.auth_token,
                     function (status)
                     {
-                        AUTH.newAuthToken( params.token, status,
+                        AUTH.newAuthToken( params.auth_token, status,
                             function( newToken )
                             {
                                 next( newToken, status, device.channel_uuid, device.pubnub_key, 200 );

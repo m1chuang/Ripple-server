@@ -39,9 +39,10 @@ function start() {
 
   console.log("Express server listening on port %d in %s mode", port, app.settings.env);
 }
+
 // *******************************************************
 
-
+start();
 exports.app = app;
 exports.db = mongoose;
-exports.start = start;
+

@@ -100,7 +100,7 @@ module.exports.authenticate = function( req, res, next )
 
     verifyToken('auth',token, function( err, payload)
     {
-        if(err)
+        if(err || typeof payload.device_id !== 'string' )
         {
             res.status(401).json( { err:err } );
         }else

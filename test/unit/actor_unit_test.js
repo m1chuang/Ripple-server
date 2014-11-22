@@ -94,6 +94,7 @@ var actor_unit_test = function() {
                       {
                         done();
                       },1500);
+
                 });
             it('middleware should pass actor to req',
                 function(done)
@@ -126,15 +127,22 @@ var actor_unit_test = function() {
 
         describe('.createPending', function() {
             var mock_actor = {
-                        pending: new ACTOR({actor_id:uuid.v4(), device_id:uuid.v4(), health:'pending'})
+                        actor_id:uuid.v4(),
+                        device_id:uuid.v4(),
+                        health:'pending'
                     };
-
+            before(function(done)
+                {
+                    var d = new DEVICE({device_id:mock_actor.device_id,pubnub_key:uuid.v4()});
+                    d.save(done);
+                });
             it('should have fresh explore, new actor_id, and health is pending ',
                 function(done)
                 {
-                    LOG.error('actor');
+                    LOG.error('mock_actor.device_id');
+                    LOG.error(mock_actor.device_id);
                     ACTOR.createPending({
-                            auth_token:{actor_id:mock_actor.pending.actor_id},
+                            auth_token:{device_id:mock_actor.device_id ,actor_id:mock_actor.actor_id},
                             lat:13,
                             lon:9.5
                        },
@@ -145,7 +153,7 @@ var actor_unit_test = function() {
 
                             console.log('actor');
                             setTimeout(function(){
-                                    ACTOR.findOne({actor_id:mock_actor.pending.actor_id},function(err,moment)
+                                    ACTOR.findOne({actor_id:mock_actor.actor_id},function(err,moment)
                                     {
                                         if(err)throw err;
                                         console.log(moment);

@@ -35,7 +35,7 @@
   {
     "moment":
     {
-      "post"  :  "object { string image; string auth_token; string lat; string lon; }*;",
+      "post"  :  "object { string image_url; string auth_token; string lat; string lon; }*;",
 
       "put"   :  "object {  string auth_token; string status; }*;",
 
@@ -50,7 +50,8 @@
     {
       "action":{
         "like":"object{string aid; integer distance;}*;"
-      }
+      },
+      "auth":"object{string device_id; string actor_id;}*;"
     }
   }
 }

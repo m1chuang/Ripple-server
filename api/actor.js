@@ -1,6 +1,7 @@
 var mongoose        = require('mongoose');
 var async = require('async');
 var MOMENT    = require('./moment/moModel');
+var DEVICE  = require('./device/deModel')
 var MomentCtr = require('./moment/moControl');
 var LOG = require('./service/util').logger;;
 var uuid = require('node-uuid');
@@ -41,6 +42,7 @@ var ActorSchema = new Schema(
         health:String,
         device_id:String,
         pubnub_key:String,
+        image_url:String,
         relation:[relationSchema],
         explore: [exploreSchema],
         connection      : [connectionSchema],
@@ -62,7 +64,9 @@ ActorSchema.statics.getActor = function( req, res, next)
         function ( err, actor )
             {
                 LOG.info(err);
-                if(err)
+                LOG.info('actor');
+                console.log(actor);
+                if(err || actor === null)
                 {
                     res.status(404).json({err:err});
                 }else{
@@ -258,20 +262,25 @@ var actorModel = mongoose.model('Actor', ActorSchema);
 actorModel.createPending = function(params, next)
 {
 
-    LOG.error('IN create pending');
+    LOG.warn('Actor.createPending, actor.health:'+params.resource_actor);
+
     MOMENT.getExplore(params, function (err, explore_list)
         {
             LOG.error('create pending');
-            LOG.error(err);
+            LOG.error(params.auth_token.device_id);
             if (err) throw err;
-
-            var newActor = new actorModel({
-                actor_id: params.auth_token.actor_id,
-                pubnub_key: uuid.v4(),
-                health:   'pending',
-                explore:   explore_list
+            DEVICE.findOne({device_id:params.auth_token.device_id},function(err, device)
+            {
+                var newActor = new actorModel({
+                    actor_id: params.auth_token.actor_id,
+                    status: params.status,
+                    pubnub_key: device.pubnub_key,
+                    health:   'pending',
+                    explore:   explore_list
+                });
+                next(newActor);
             });
-            next(newActor);
+
 
         });
 };

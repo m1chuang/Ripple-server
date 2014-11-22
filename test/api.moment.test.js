@@ -64,19 +64,8 @@ var moment_routing= function() {
 
 
   describe('/api/moment/', function() {
-    var device_id = uuid.v4();
-    var mockDevice = {model : new DEVICE({
-        device_id:device_id,
-        channel_uuid: uuid.v4(),
-        pubnub_key: uuid.v4(),
-      }),
-      token : {
-                    device_id:device_id,
-                    actor_id:uuid.v4(),
-                }
-    };
 
-
+    var mockDevice = {};
     //actor.status = \'completed\', actor.relation[target_aid] found, actor.relation[target_aid].status = '1' //liked by target
     describe('init and complete moment',function()
     {
@@ -89,24 +78,30 @@ var moment_routing= function() {
             var mo = new MOMENT({actor_id:name, device_id:name, status:name, image_url:'img',location:[lat,lon]})
             mo.save();
           });
-          mockDevice.model.save(function(err)
-            {
-              LOG.error(err);
-              setTimeout(function()
-              {
-                done();
-              },2000);
-            });
-          AUTH.newAuthToken( mockDevice.token, false,
-            function( newToken )
-            {
 
-              mockDevice.auth_token = newToken;
-
-            });
+          request(app).post('/api/device')
+          .send({
+            auth_token:'new'
+          })
+          .expect(201)//accepted
+          .end(function(err, res)
+          {
+            //if (err) throw err;
+            console.log(res.body);
+            expect(res.body).to.include.keys('auth_token');
+            expect(res.body).to.include.keys('relogin');
+            expect(res.body).to.include.keys('pubnub_key');
+            expect(res.body).to.include.keys('uuid');
+            res.body.relogin.should.equal(true);
+            mockDevice.auth_token = res.body.auth_token;
+            mockDevice.relogin = res.body.relogin;
+            mockDevice.pubnub_key = res.body.pubnub_key;
+            mockDevice.uuid = res.body.uuid;
+            done();
+          });
         });
 
-      it('on init, Should return 202 if input and token are valid',function(done)
+      it('on init, if auth_token valid, return new auth_token',function(done)
       {
         this.timeout(10000);
         request(app).post('/api/moment')
@@ -118,14 +113,20 @@ var moment_routing= function() {
         .end(function(err, res)
           {
             if (err) throw err;
-            console.log(res.body);
+            expect(res.body).to.include.keys('new_auth_token');
+            mockDevice.auth_token = res.body.new_auth_token;
+            AUTH.verifyToken('auth', mockDevice.auth_token, function( err, payload)
+                {
+                    mockDevice.device_id = payload.device_id;
+                    expect(payload).to.include.keys('device_id');
+                    expect(payload).to.include.keys('actor_id');
 
-            setTimeout(function()
-            {
-              done();
+                    setTimeout(function()
+                      {
+                        done();
+                      },1000);
 
-            },1000);
-
+                });
           });
 
 
@@ -134,21 +135,18 @@ var moment_routing= function() {
       it('on init, should create an actor with health=established',function(done)
       {
         this.timeout(10000);
-        //LOG.error(mockDevice.device_id);
         setTimeout(function()
           {
             ACTOR.findOne({
-                device_id:mockDevice.model.device_id,
+                device_id:mockDevice.device_id,
                 },
                 function(err, obj)
                 {
-                  mockDevice.token.actor_id=obj.actor_id;
+                  mockDevice.actor_id=obj.actor_id;
                   obj.health.should.equal('established');
                   done();
                 });
-
           }, 1500);
-
       });
 
       it('on complete, Should return 201 if input and token are valid',function(done)
@@ -169,29 +167,54 @@ var moment_routing= function() {
             done();
 
           });
-
-
       });
       it('on complete, Should update actor health to \'completed\'',function(done)
       {
         setTimeout(function()
           {
             ACTOR.findOne({
-                device_id:mockDevice.model.device_id,
+                device_id:mockDevice.device_id,
                 },
                 function(err, obj)
                 {
-                  mockDevice.token.actor_id=obj.actor_id;
+                  mockDevice.actor_id=obj.actor_id;
                   obj.health.should.equal('completed');
                   done();
                 });
 
           }, 1500);
+      });
+
+      it('upon complete moment, device should not be require to relogin',function(done)
+      {
+
+        request(app).post('/api/device')
+        .send({
+          auth_token:mockDevice.auth_token
+        })
+        .expect(201)//accepted
+        .end(function(err, res)
+          {
+            //if (err) throw err;
+            console.log(res.body);
+            expect(res.body).to.include.keys('auth_token');
+            expect(res.body).to.include.keys('relogin');
+            expect(res.body).to.include.keys('pubnub_key');
+            expect(res.body).to.include.keys('uuid');
+            res.body.relogin.should.equal(false);
+            mockDevice.auth_token = res.body.auth_token;
+            mockDevice.relogin = res.body.relogin;
+            res.body.pubnub_key.should.equal(mockDevice.pubnub_key);
+            res.body.uuid.should.equal(mockDevice.uuid);
+            done();
+          });
+        });
+
 
 
       });
 
-    });
+
 
 
   });//end /moment/

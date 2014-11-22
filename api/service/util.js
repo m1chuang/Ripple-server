@@ -70,27 +70,38 @@ var route= function(resource, type)
                 }
             };
 
-var token = function(tokenType)
-            {
-                return function(req,res,next)
-                {
-                    if(!req.body.action_token || !req.body.action_token.action)
+var action_token = function(req,res,next)
                     {
-      //                  console.log( 'res.body');
-    //                    console.log( req.body);
-                        res.status( 400 ).json({ errs : 'invalid action token' });
-                    }
-                    else{
-//                        console.log( 'res.body');
-  //                      console.log( req.body);
-                        var validate = validator(nconf.get('validation').token[tokenType][req.body.action_token.action]);
-                        validate(req.body.action_token)? next() : res.status( 400 ).json({ errs : validate.errors });
-                    }
+                        if(!req.body.action_token || !req.body.action_token.action)
+                        {
+                            res.status( 400 ).json({ errs : 'invalid action token' });
+                        }
+                        else{
 
-                }
-            };
+                            var validate = validator(nconf.get('validation').token['action'][req.body.action_token.action]);
+                            validate(req.body.action_token)? next() : res.status( 400 ).json({ errs : validate.errors });
+                        }
+                    };
+var auth_token = function(req,res,next)
+                    {
+                        if(!req.body.auth_token)
+                        {
+          //                  console.log( 'res.body');
+        //                    console.log( req.body);
+                            res.status( 400 ).json({ errs : 'invalid auth token' });
+                        }
+                        else{
+    //                        console.log( 'res.body');
+      //                      console.log( req.body);
+                            var validate = validator(nconf.get('validation').token['auth']);
+                            validate(req.body.auth_token)? next() : res.status( 400 ).json({ errs : validate.errors });
+                        }
+                    };
 
 
 
 
-module.exports = {logger:logger,validator:{route:route, token:token}};
+
+
+
+module.exports = {logger:logger,validator:{route:route, action_token:action_token,auth_token:auth_token}};

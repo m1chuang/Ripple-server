@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {
     "start": "node main.js",
-    "test": "NODE_ENV=test node grunt test"
+    "test": "grunt test"
   },
   "dependencies": {
     "async": "0.9.0",

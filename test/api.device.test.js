@@ -15,6 +15,7 @@ var mockDevice = require('./mock/actor_mock');
 var pubnubMock = require('./unit/pubnub_unit_test');
 LOG.transports.console.level = 'error';
 //app.listen(port);
+
 var device_routing= function() {
 
 
@@ -55,7 +56,7 @@ var device_routing= function() {
 
   describe('/api/device', function() {
 
-    //var mockDecive = new mockDevice({did:'',channel_uuid:'',pubnub_key:'',moments:[],friends:[]});
+
     var mockDevice = {};
     before(function(done)
     {
@@ -82,19 +83,27 @@ var device_routing= function() {
           .end(function(err, res)
           {
             //if (err) throw err;
+            console.log(res.body);
+            expect(res.body).to.include.keys('auth_token');
+            expect(res.body).to.include.keys('relogin');
+            expect(res.body).to.include.keys('pubnub_key');
+            expect(res.body).to.include.keys('uuid');
+            res.body.relogin.should.equal(true);
 
             mockDevice.auth_token = res.body.auth_token;
             mockDevice.relogin = res.body.relogin;
             mockDevice.pubnub_key = res.body.pubnub_key;
             mockDevice.uuid = res.body.uuid;
 
-            res.body.relogin.should.equal(true);
+
             setTimeout(function() {
               AUTH.verifyToken('auth', mockDevice.auth_token, function( err, payload)
                 {
-                    should.not.exist(err);
                     mockDevice.device_id = payload.device_id;
-                    pubnubMock.checkServer(done,payload.device_id,mockDevice.pubnub_key);
+                    expect(payload).to.include.keys('device_id');
+                    expect(payload).to.include.keys('actor_id');
+
+                    done();
 
                 });
             },3000);
@@ -111,11 +120,15 @@ var device_routing= function() {
           .send({
             auth_token:mockDevice.auth_token
           })
-          .expect(200)//accepted
+          .expect(200)
           .end(function(err, res)
           {
             //if (err) throw err;
             res.body.relogin.should.equal(true);
+            expect(res.body).to.include.keys('auth_token');
+            expect(res.body).to.include.keys('relogin');
+            expect(res.body).to.include.keys('pubnub_key');
+            expect(res.body).to.include.keys('uuid');
 
             done();
           });
@@ -124,8 +137,7 @@ var device_routing= function() {
 
           it('should recieve server sent message on pubnub channel',function(done)
           {
-
-              done();
+            pubnubMock.checkServer(done,mockDevice.device_id,mockDevice.pubnub_key);
           });
 
 
@@ -140,20 +152,14 @@ var device_routing= function() {
         //input valid, token valid, device found, moment found & vali
         it('should return 404',function(done)
         {
-          console.log( 'test' );
-
           request(app).post('/api/device')
           .send({
             auth_token:'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkZXZpY2VfaWQiOiIxNTAzNTJmOS02ZmQwLTQ0YmMtOTc5Zi00Y2RjMzJmYzA2YTQiLCJhY3Rvcl9pZCI6IjZhNmY2NTgxLWM5OGEtNGYyNC1hM2RkLTk0MmE1ODEyOGE5OSIsImlhdCI6MTQxNjQ2ODk1NH0.kHt375QCdgAD7czZXgMYwv2LRvcZnnyYRDPtd0o_YS4'
           })
-          .expect(404)//accepted
+          .expect(404)
           .end(function(err, res)
           {
             //if (err) throw err;
-            console.log(res.body);
-
-
-
             done();
           });
 
@@ -171,8 +177,6 @@ var device_routing= function() {
         //input valid, token valid, device found, moment found & vali
         it('should return 404',function(done)
         {
-          console.log( 'test' );
-
           request(app).post('/api/device')
           .send({
             auth_token:'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkZXZpY2VfaWQiOiIxNTAzNTJmOS02ZmQwLTQ0YmMtOTc5Zi00Y2RjMzJmYzA2YTQiLCJhY3Rvcl9pZCI6IjZhNmY2NTgxLWM5OGEtNGYyNC1hM2RkLTk0MmE1ODEyOGE5OSIsImlhdCI6MTQxNjQ2ODk1NH0.kHt375QCdgAD7czZXgMYwv2PRvcZnnyYRDPtd0o_YS4'
@@ -180,11 +184,6 @@ var device_routing= function() {
           .expect(401)//accepted
           .end(function(err, res)
           {
-            //if (err) throw err;
-            console.log(res.body);
-
-
-
             done();
           });
 

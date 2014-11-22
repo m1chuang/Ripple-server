@@ -189,6 +189,10 @@ var moment_unit_test =  function() {
                                     image   : 'image',
                                     lat : 15,
                                     lon : 35
+                                },function(status, msg, newToken)
+                                {
+                                    status.should.equal(202);
+                                    msg.should.equal('');
                                 });
                             //need to test if th eactor is really added
                             done();
@@ -204,7 +208,10 @@ var moment_unit_test =  function() {
                     {
                         mock_actor.established.save();
                         mock_actor.pending.save();
-                        done();
+                        LOG.error('mock_actor.established.device_id');
+                        LOG.error(mock_actor.established.device_id);
+                        var d = new DEVICE({device_id:mock_actor.established.device_id,pubnub_key:uuid.v4()});
+                        d.save(done);
 
                     });
 
@@ -215,6 +222,7 @@ var moment_unit_test =  function() {
                             momentController.completeMoment(
                                 {
                                     resource_actor : mock_actor.established,
+                                    auth_token:{device_id:mock_actor.established.device_id},
                                     status : 'establised moment',
                                     lat : 15,
                                     lon: 35
@@ -242,7 +250,7 @@ var moment_unit_test =  function() {
                             momentController.completeMoment(
                                 {
                                     resource_actor : null,
-                                    auth_token:{actor_id:mock_actor.pending.actor_id},
+                                    auth_token:{device_id:mock_actor.established.device_id,actor_id:mock_actor.pending.actor_id},
                                     status : 'pending moment',
                                     lat : 15,
                                     lon: 35
@@ -250,7 +258,7 @@ var moment_unit_test =  function() {
                                 function(status, msg, explore, newToken)
                                 {
                                     status.should.equal(200);
-                                    msg.should.equal('Resend image.');
+                                    msg.should.equal('Resend image');
                                     setTimeout(function(){
                                         ACTOR.findOne({actor_id:mock_actor.pending.actor_id},function(err,moment)
                                         {

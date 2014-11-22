@@ -30,12 +30,8 @@ moment.use(AUTH.authenticate);
 **  Routes
 **/
 moment.route('/')
-
-
     /*
        Initiate a moment, request when photo taken
-       TODO:
-            posting multiple moment, determine active one
     */
     .post(DEVICE.getDevice, function( req, res )
     {
@@ -44,23 +40,22 @@ moment.route('/')
         {
             device_id : req.body.auth_token.device_id,
             resource_device : req.body.resource_device,
-            image   :   req.body.image,
+            image_url   :   req.body.image_url,
             lat : req.body.lat,
             lon : req.body.lon,
             actor_id:req.body.auth_token.actor_id
         };
+        LOG.info('post momnet');
         LOG.info(req.body);
-        var response = function(status)
+        var response = function(status, msg, newToken)
         {
-            res.status(status).json({status:'test'});
+            res.status(status).json(
+                {
+                    new_auth_token:newToken
+                });
         };
 
-
-        setTimeout(function()
-              {
-                response(202);
-              },3000);
-        MomentCtr.initMoment(params);
+        MomentCtr.initMoment(params, response);
     })
 
 
@@ -81,54 +76,48 @@ moment.route('/')
             offset : 20
         };
 
-        var response = function(status, msg, explore, newToken)
+        var response = function(status, msg, explore_list)
         {
-
             res.status(status).json(
                 {
                     msg:msg,
-                    explore_list: explore || [],
-                    newToken: newToken
+                    explore_list: explore_list || [],
                 });
         };
-        //console.log(params);
         MomentCtr.completeMoment(params,response);
     });
 
 
 
 moment.route('/explore')
-
-    .post( function(req, res)
+    /*
+       get latest moment since last updated
+    */
+    .post( ACTOR.getActor, function(req, res)
     {
         var params =
         {
-            device_id : req.body.auth_token.device_id,
+            auth_token : req.body.auth_token,
+            resource_actor : req.body.resource_actor
         };
         MomentCtr.getNewExplore( params,
-            function( err, explore_list )
+            function( status, explore_list )
             {
-                //console.log(explore_list);
-                res.json(
+                res.status(status).json(
                     {
-                        explore_list: explore_list
+                        explore_list: explore_list || []
                     });
             });
-    })
+    });
 
 
-/*    status code:
-        0: succsefully become friends
-        1: already friends
-        2: waiting to be liked
-*/
 moment.route('/action')
     .all(AUTH.parseAction)//,tokenValidator('action'))
     .post( function( req, res )
     {
         var params =
         {
-            auth_token : req.body.auth_token,//req.body.device_id,
+            auth_token : req.body.auth_token,
             action_token : req.body.action_token
         };
         LOG.info( 'body');
@@ -141,7 +130,6 @@ moment.route('/action')
                         payload : payload
                     });
         };
-
         MomentCtr.doAction( params, response);
     });
 

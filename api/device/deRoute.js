@@ -2,6 +2,7 @@ var DeviceCtr     = require('./deControl');
 var DEVICE    = require('../device/deModel');
 var AUTH     = require('../service/auth');
 var routeValidator     = require('../service/util').validator.route;
+var auth_tokenValidator     = require('../service/util').validator.auth_token;
 var nconf = require('nconf');
 
 var express = require('express');
@@ -26,7 +27,7 @@ device.route('/')
     {
         var params =
         {
-            token:req.body.auth_token
+            auth_token:req.body.auth_token
         };
         var response = function( token, require_login, uuid, pubnub_key, status )
 
@@ -41,16 +42,17 @@ device.route('/')
                 });
         };
 
-
-
-        if(params.token === 'new')// For now, all clients requesting token will be granted
+        if(params.auth_token === 'new')// For now, all clients requesting token will be granted
         {
             DeviceCtr.register( params, res, response);
 
         }
         else
         {
-            DeviceCtr.login(params, res, response );
+            auth_tokenValidator(req,res,function()
+                {
+                    DeviceCtr.login(params, res, response );
+                });
         }
     });
 
@@ -63,7 +65,8 @@ device.route('/friends')
 
         var params =
         {
-            device_obj:req.resource_device
+            resource_device:req.body.resource_device,
+            auth_tokne:req.body.auth_tokne
         };
 
         var response = function( err, friends )

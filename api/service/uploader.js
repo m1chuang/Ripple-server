@@ -4,6 +4,7 @@ var path = require('path');
 var nconf = require('nconf');
 var LOG = require('../service/util').logger;
 var S3 = require('../service/uploader');
+var uuid = require('node-uuid');
     // For dev purposes only
 
 AWS.config.update(
@@ -19,7 +20,7 @@ module.exports.multipart = function(req, res, next)
 
     req.busboy.on('file', function(fieldname, file, filename, encoding) {
         LOG.info('on:file: '+s3_url+filename);
-        req.body['image']=s3_url+filename;
+        req.body.image_url=s3_url+uuid.v4();
         S3.s3_test(fieldname, file, filename, encoding,
             function( err, s3_response) {
             });
