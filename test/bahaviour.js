@@ -22,8 +22,15 @@ var uuid = require('node-uuid');
 
 var behaviour= function() {
 
-
   before(function(done)
+  {
+     setTimeout(function()
+                      {
+                        done();
+                      },1500);
+
+  });
+  after(function(done)
     {
       this.timeout(10000);
       mongoose.connection.collections['actors'].drop( function(err) {
@@ -45,7 +52,7 @@ var behaviour= function() {
                setTimeout(function()
                       {
                         done();
-                      },1500);
+                      },2500);
             });
 
         });
@@ -85,8 +92,9 @@ var behaviour= function() {
                 expect(res.body).to.include.keys('relogin');
                 expect(res.body).to.include.keys('pubnub_key');
                 expect(res.body).to.include.keys('uuid');
+                next( null );
               });
-              next( null );
+
             },
             function ( err, list )
               {
@@ -105,8 +113,8 @@ var behaviour= function() {
             function(name, next)
             {
               console.log(mockUser[name].auth_token);
-              var lat = Math.floor((Math.random() * 10) + 1);
-              var lon = Math.floor((Math.random() * 10) + 1);
+              var lat = 9.5;//Math.floor((Math.random() * 10) + 1);
+              var lon = 7.5;//Math.floor((Math.random() * 10) + 1);
               setTimeout(function() {
                 request(app).post('/api/moment')
                 .attach('image',__dirname +'/image.jpg')
@@ -130,12 +138,12 @@ var behaviour= function() {
                     //.expect(202)//accepted
                     .end(function(err, res)
                     {
-                      expect(res.body).to.include.keys('explore_list');
+                      //expect(res.body).to.include.keys('explore_list');
                       console.log(res.body);
                       mockUser[name].explore_list= res.body.explore_list;
                       next( null );
                     });
-                    },1000);
+                    },1500);
 
                   });
               },1000);
@@ -152,8 +160,8 @@ var behaviour= function() {
     it('user complete moment get explore list',function(done)
       {
 
-        var lat = Math.floor((Math.random() * 10) + 1);
-        var lon = Math.floor((Math.random() * 10) + 1);
+        var lat = 10.5;//Math.floor((Math.random() * 10) + 1);
+        var lon = 10.1;//Math.floor((Math.random() * 10) + 1);
         request(app).post('/api/moment')
         .attach('image',__dirname +'/image.jpg')
         .field('auth_token',mockUser.michael.auth_token)
@@ -188,11 +196,59 @@ var behaviour= function() {
       });
 
 
-  });
 
 
 
+      it('update explore list',function(done)
+      {
 
+
+          //LOG.info(mockUser);
+          this.timeout(20000);
+          async.map( user_list,
+            function(name, next)
+            {
+              console.log(mockUser[name].auth_token);
+
+              setTimeout(function() {
+                request(app).post('/api/moment/explore')
+                .send({
+                      auth_token:mockUser[name].auth_token,
+                      offset:0,
+                      limit:10,
+                    })
+                    //.expect(202)//accepted
+                .end(function(err, res)
+                    {
+                      //expect(res.body).to.include.keys('explore_list');
+                      console.log(res.body);
+                      mockUser[name].explore_list= res.body.explore_list;
+                      next(null);
+                });
+              },1000);
+
+            },
+            function ( err, list )
+              {
+
+                done();
+              });
+
+
+      });
+
+     it('user complete moment get explore list',function(done)
+          {
+
+
+                  console.log(mockUser);
+
+                  done();
+
+      });
+
+
+    });
   });//end /moment/
 };
 

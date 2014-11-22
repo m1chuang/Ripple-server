@@ -74,10 +74,11 @@ var createExplore = function( nearby_moments, next)
 MomentSchema.statics.getExplore =function( params, next )
 {
     LOG.error( CHALK.green('In model moment.getExplore') );
+    LOG.error( params);
     mongoose.model( 'Moment' ).aggregate(
         {
             $geoNear : {
-                near: [parseFloat(params.lat), parseFloat(params.lon)],
+                near: [parseFloat(params.lat || 0), parseFloat(params.lon ||0)],
                 distanceField: "distance",
                 includeLocs: "location",
                 maxDistance : 2000
@@ -96,8 +97,9 @@ MomentSchema.statics.getExplore =function( params, next )
             }},
         function( err, nearby_moments )
             {
-                LOG.error( nearby_moments);
+                //LOG.error( nearby_moments);
                 LOG.error( err);
+                LOG.error( params.lat);
                 if (err) throw err;
                 createExplore(nearby_moments, function (err,explore_list) {
                     //LOG.error('explore_listssss');

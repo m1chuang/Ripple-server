@@ -70,10 +70,10 @@ moment.route('/')
             resource_actor : req.body.resource_actor,
             auth_token: req.body.auth_token,
             status : req.body.status,
-            lat:    req.body.lat,
-            lon:    req.body.lon,
-            skip : 0,
-            offset : 20
+            lat:    req.body.auth_token.lat || 0,
+            lon:    req.body.auth_token.lon || 0,
+            limit : 10,
+            offset : 0
         };
 
         var response = function(status, msg, explore_list)
@@ -93,12 +93,16 @@ moment.route('/explore')
     /*
        get latest moment since last updated
     */
-    .post( ACTOR.getActor, function(req, res)
+    .post( function(req, res)
     {
         var params =
         {
             auth_token : req.body.auth_token,
-            resource_actor : req.body.resource_actor
+            //resource_actor : req.body.resource_actor,
+            offset: req.body.offset,
+            limit:req.body.limit,
+            lat:req.body.auth_token.lat || 0,
+            lon:req.body.auth_token.lon || 0
         };
         MomentCtr.getNewExplore( params,
             function( status, explore_list )

@@ -25,7 +25,7 @@ exports.initMoment = function( params, response )
          image_url:      params.image_url,
          health: "established",
     });
-    AUTH.newAuthToken( {device_id:device.device_id, actor_id:actor_id}, false,
+    AUTH.newAuthToken( {device_id:device.device_id, actor_id:actor_id, lat:params.lat,lon:params.lon}, false,
                         function ( newToken )
                         {
                             response(202, '', newToken);
@@ -91,10 +91,12 @@ exports.completeMoment = function(params,response)
 
 exports.getNewExplore = function( params, next )
 {
-    var actor = params.resource_actor;
+
     MOMENT.getExplore( params,
         function ( err, explore_list)
         {
+            LOG.info('@@@@@@@@@@@@@@@@@@');
+            LOG.info(explore_list);
             next(200, explore_list);
         });
 };
