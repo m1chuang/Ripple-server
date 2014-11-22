@@ -8,7 +8,7 @@
   },
   "private": true,
   "scripts": {
-    "start": "node main.js",
+    "start": "node api.js",
     "test": "grunt test"
   },
   "dependencies": {

@@ -58,7 +58,9 @@ module.exports.newAuthToken = function(token, renewAid, next)
     var token =  signToken('auth',
     {
         device_id : token.device_id,
-        actor_id: actor_id
+        actor_id: actor_id,
+        lat:token.lat || 0,
+        lon:token.lon || 0
     });
     next(token);
 };

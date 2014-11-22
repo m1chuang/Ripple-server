@@ -15,6 +15,7 @@ var ACTOR = require('../actor');
 exports.initMoment = function( params, response )
 {
     LOG.info( CHALK.red('In MOMENT.init') );
+    console.log( params);
     var device = params.resource_device;
     var actor_id = uuid.v4();
     var newActor = new ACTOR(
