@@ -12,6 +12,7 @@ var Schema          = mongoose.Schema;
 var connectionSchema = new Schema(
 {
     actor_id: String,
+    device_id:String,
     channel_id : String,
     type : String
 });
@@ -43,6 +44,7 @@ var ActorSchema = new Schema(
         device_id:String,
         pubnub_key:String,
         image_url:String,
+        status:String,
         relation:[relationSchema],
         explore: [exploreSchema],
         connection      : [connectionSchema],
@@ -76,7 +78,30 @@ ActorSchema.statics.getActor = function( req, res, next)
 
             });
 };
+ActorSchema.statics.getConnection = function( target_aid, owner_aid, next )
+{
+    LOG.info('target_aid');
+    LOG.info(target_aid);
 
+    mongoose.model( 'Actor' ).find(
+        {
+           'actor_id' : owner_aid,
+        },
+        {
+            connection:1
+        })
+        .sort(
+            {"timestamp": -1}
+        ).limit(1)
+        .exec(
+            function( err, obj )
+            {
+
+                if (err) LOG.error(err);
+
+                next(err,obj);
+            });
+};
 ActorSchema.statics.getRelation = function( target_aid, owner_aid, next )
 {
     LOG.info('target_aid');
@@ -93,6 +118,7 @@ ActorSchema.statics.getRelation = function( target_aid, owner_aid, next )
                 {
                     actor_id : target_aid,
                 }
+
             },
             connection:
             {
@@ -103,6 +129,8 @@ ActorSchema.statics.getRelation = function( target_aid, owner_aid, next )
             },
             actor_id:1,
             pubnub_key:1,
+            image_url:1,
+            status:1,
             health:1
 
         })
@@ -144,9 +172,10 @@ ActorSchema.methods.addRelation = function( params, next )
             if(next) next( err, num, obj );
         });
 };
+
 ActorSchema.methods.saveConnection = function( params, next )
 {
-
+    var self = this;
     this.update(
         {
             $addToSet :
@@ -154,27 +183,45 @@ ActorSchema.methods.saveConnection = function( params, next )
                 connection :
                 {
                     'actor_id'    : params.target_aid,
+                    'device_id'     :params.target_device_id,
                     'channel_id'    : params.channel_id,
-                    'type'          : params.type
-                }
-            },
-            $pull :
-            {
-                relation:
-                {
-                    'actor_id' : params.target_aid,
-                    'type'          : params.type,
-                    'status'          : 0
+                    'type'          : 'friend'
                 }
             }
+
         },
         function onUpdate( err, num, obj )
         {
-            LOG.info( '-addconncetion: ' );
-            LOG.info( obj );
+            LOG.info( '-chcaddconncetion: ' );
+            console.log( self );
             LOG.info( err );
-            LOG.info( num );
-            if(next) next( err, num, obj );
+
+            mongoose.model( 'Device' ).update(
+            {
+               'device_id' :params.target_device_id
+            },
+            {
+                $addToSet :
+                {
+                    friends :
+                    {
+                        'device_id'  : self.device_id,
+                        'channel_id' : params.channel_id,
+                        'nick_name'  : '',
+                        'moments'    :[{
+                                        image_url:self.image_url,
+                                        status:self.status
+                                    }]
+                    }
+                }
+            },
+            function(err,num, obj){
+                if(next) next( err, num, obj );
+                LOG.error('#######################################################################');
+                            LOG.info(err);
+                            LOG.info(num);
+                            LOG.info(obj);
+            });
         });
 };
 
@@ -189,32 +236,59 @@ ActorSchema.statics.saveRemoteConnection = function( params, next )
         },function ( err, actor )
             {
                 var device_id = actor.device_id
-                LOG.info('actor.device_id');
-                LOG.info(actor.device_id);
+
+                var target_actor = actor;
                 actor.update(
                     {
+
                         $addToSet :
                         {
+
                             connection :
                             {
                                 'actor_id'    : params.owner_aid,
+                                'device_id'     :target_actor.device_id,
                                 'channel_id'    : params.channel_id,
-                                'type'          : 'like',
+                                'type'          : 'friend',
                             }
-                        },
-                        $pull :
-                        {
-                            relation:
-                            {
-                                'actor_id' : params.owner_aid,
-                                'type':'like'
-                            }
+
                         },
                         device_id:1
                     },
-                    function onUpdate( err, obj )
+                    function onUpdate( err, num,obj )
                     {
-                        LOG.info(obj);
+                        LOG.error('#######################################################################');
+                            LOG.info(err);
+                            LOG.info(num);
+                            console.log(params);
+                        console.log(target_actor);
+
+                        mongoose.model( 'Device' ).update(
+                        {
+                           'device_id' : params.own_device_id ,
+                        },
+                        {
+                            $addToSet :
+                            {
+                                friends :
+                                {
+                                    'device_id'    : target_actor.device_id,
+                                    'channel_id'    : params.channel_id,
+                                    'nick_name'          : '',
+                                    'moments'       :[{
+                                        image_url:target_actor.image_url,
+                                        status:target_actor.status
+                                    }]
+                                }
+                            }
+                        },
+                        function(err, num,obj){
+                            LOG.error('#######################################################################');
+                            LOG.info(err);
+                            LOG.info(num);
+                            LOG.info(obj);
+
+                        });
                         LOG.info(actor.device_id);
                         next( err, actor.device_id );
                     });
@@ -240,7 +314,6 @@ ActorSchema.statics.addRemoteRelation = function( params, next )
                             relation:
                             {
                                 'actor_id':params.owner_aid,
-                                'type':params.type,
                                 'pubnub_key':params.pubnub_key,
                                 'status':params.status
                             }

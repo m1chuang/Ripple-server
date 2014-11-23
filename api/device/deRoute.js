@@ -29,7 +29,7 @@ device.route('/')
         {
             auth_token:req.body.auth_token
         };
-        var response = function( token, require_login, uuid, pubnub_key, status )
+        var response = function( token, require_login, uuid, pubnub_key, friend_list, status )
 
         {
 
@@ -39,6 +39,7 @@ device.route('/')
                     relogin:require_login,
                     pubnub_key:pubnub_key,
                     uuid: uuid,//server channel
+                    friend_list: friend_list
                 });
         };
 

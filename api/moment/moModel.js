@@ -41,7 +41,7 @@ var createExplore = function( nearby_moments, next)
                 //LOG.error('explore_item');
                 var explore_item =
                 {
-                    action_token : {like: action_token},
+                    action_token : {like: action_token,},
                     image_url   : item['image_url'],
                     distance    : item['distance'],
                     status      : item['status'],

@@ -4,12 +4,17 @@ var MOMENT    = require('../moment/moModel');
 var LOG = require('../service/util').logger;;
 
 var Schema          = mongoose.Schema;
+
+
 var FriendScheme = new Schema(
     {
         device_id:String,
         channel_id:String,
         nick_name:String,
-        moments:[MOMENT.schema]
+        moments:[{
+            image_url:String,
+            status:String,
+        }]
     });
 var DeviceSchema   = new Schema(
     {

@@ -64,6 +64,7 @@ exports.completeMoment = function(params,response)
             // is there duplicates?
             // no
             actor.health = 'completed';
+            actor.status = params.status;
             actor.save();
             response(201, '', actor.explore);
         }
@@ -120,7 +121,8 @@ exports.doAction = function( params,  next )
             var target_aid = params.action_token.target_info.aid;
             ACTOR.getRelation(target_aid, params.auth_token.actor_id,function (err,actor)
             {
-                //LOG.info(actor[0]);
+                console.log('-------actor[0]');
+                console.log(actor[0]);
                 LOG.info(actor);
                 if(err || !actor[0])
                 {
@@ -131,34 +133,40 @@ exports.doAction = function( params,  next )
                 {
                     if(actor[0].relation[0] && actor[0].relation[0].actor_id === target_aid)
                     {
-                        if(actor[0].relation[0].status === 0)
+                        if(!actor[0].connection[0] && actor[0].relation[0].status === 0)
                         {
 
                             PUBNUB.createConversation( actor.pubnub_key, actor[0].relation[0].pubnub_key,
                             function addConnections( channel_id )
                             {
-                                next(202,{
-                                    channel_id:channel_id,
-                                },'liked by target');
-                                actor[0].saveConnection({target_aid:target_aid,type:'like', channel_id:channel_id});
-                                ACTOR.saveRemoteConnection({owner_aid:params.auth_token.actor_id, target_aid:target_aid,type:'like', channel_id:channel_id},
+
+                                ACTOR.saveRemoteConnection({own_device_id:params.auth_token.device_id,owner_aid:params.auth_token.actor_id, target_aid:target_aid,type:'like', channel_id:channel_id},
                                     function(err, device_id)
                                     {
                                         LOG.info('device_id');
                                         LOG.info(device_id);
+                                        actor[0].saveConnection({target_device_id:device_id,target_aid:target_aid,type:'like', channel_id:channel_id});
                                         PUBNUB.notifyRemote(
                                             {
                                                 type                : 'like',
                                                 explore_id          : actor[0].relation[0].actor_id,
-                                                chat_channel_id          : channel_id,
+                                                chat_channel_id     : channel_id,
                                                 server_channel_id   : device_id,
                                             },function(){});
+                                            next(202,{
+                                                channel_id:channel_id,
+                                            },'liked by target');
+
                                     });
                             });
                         }
-                        else if(actor[0].relation[0].status === 1)
+                        else if(!actor[0].connection[0] && actor[0].relation[0].status === 1)
                         {
-                            next(304,'already liked target');
+                            next(200,'already liked target');
+                        }
+                        else if(actor[0].connection[0]  )
+                        {
+                            next(200,'already friends');
                         }
                     }
                     else

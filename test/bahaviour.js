@@ -22,7 +22,7 @@ var uuid = require('node-uuid');
 
 var behaviour= function() {
 
-  before(function(done)
+  after(function(done)
   {
      setTimeout(function()
                       {
@@ -30,7 +30,7 @@ var behaviour= function() {
                       },1500);
 
   });
-  after(function(done)
+  before(function(done)
     {
       this.timeout(10000);
       mongoose.connection.collections['actors'].drop( function(err) {
@@ -56,10 +56,7 @@ var behaviour= function() {
             });
 
         });
-
-    });
-
-
+  });
   describe('/api/moment/', function() {
 
     var user_list = ['a','b','c','d','e','f','g','h','i','j','k'];
@@ -85,9 +82,9 @@ var behaviour= function() {
                   auth_token: res.body.auth_token,
                   relogin: res.body.relogin,
                   pubnub_key: res.body.pubnub_key,
-                  uuid: res.body.uuid
+                  uuid: res.body.uuid,
+                  id:name
                 };
-
                 expect(res.body).to.include.keys('auth_token');
                 expect(res.body).to.include.keys('relogin');
                 expect(res.body).to.include.keys('pubnub_key');
@@ -103,7 +100,7 @@ var behaviour= function() {
               });
         });
 
-      it('every one init moments',function(done)
+      it('user pool one init moments',function(done)
       {
 
 
@@ -113,8 +110,8 @@ var behaviour= function() {
             function(name, next)
             {
               console.log(mockUser[name].auth_token);
-              var lat = 9.5;//Math.floor((Math.random() * 10) + 1);
-              var lon = 7.5;//Math.floor((Math.random() * 10) + 1);
+              var lat = Math.floor((Math.random() * 10) + 1);
+              var lon = Math.floor((Math.random() * 10) + 1);
               setTimeout(function() {
                 request(app).post('/api/moment')
                 .attach('image',__dirname +'/image.jpg')
@@ -141,6 +138,7 @@ var behaviour= function() {
                       //expect(res.body).to.include.keys('explore_list');
                       console.log(res.body);
                       mockUser[name].explore_list= res.body.explore_list;
+                      mockUser[name].status = 'i am '+name;
                       next( null );
                     });
                     },1500);
@@ -157,22 +155,23 @@ var behaviour= function() {
 
       });
 
-    it('user complete moment get explore list',function(done)
+    it('michael complete moment and get explore list',function(done)
       {
 
-        var lat = 10.5;//Math.floor((Math.random() * 10) + 1);
-        var lon = 10.1;//Math.floor((Math.random() * 10) + 1);
+        var lat = Math.floor((Math.random() * 10) + 1);
+        var lon = Math.floor((Math.random() * 10) + 1);
         request(app).post('/api/moment')
         .attach('image',__dirname +'/image.jpg')
         .field('auth_token',mockUser.michael.auth_token)
         .field('lat',lat)
         .field('lon',lon)
-        //.expect(202)//accepted
+        .expect(202)//accepted
         .end(function(err, res)
         {
           var new_auth = res.body.new_auth_token;
           console.log(res.body);
           mockUser.michael.auth_token= new_auth;
+
           setTimeout(function() {
             request(app).put('/api/moment')
             .send({
@@ -181,7 +180,7 @@ var behaviour= function() {
               lat:lat,
               lon:lon
             })
-            //.expect(202)//accepted
+            .expect(201)//accepted
             .end(function(err, res)
             {
               expect(res.body).to.include.keys('explore_list');
@@ -189,7 +188,7 @@ var behaviour= function() {
               mockUser.michael.explore_list= res.body.explore_list;
               done();
             });
-            },1000);
+          },1000);
 
           });
 
@@ -199,7 +198,7 @@ var behaviour= function() {
 
 
 
-      it('update explore list',function(done)
+      it('user pool update explore list',function(done)
       {
 
 
@@ -237,15 +236,137 @@ var behaviour= function() {
 
       });
 
-     it('user complete moment get explore list',function(done)
+     it('michael likes target, should init like',function(done)
           {
 
 
                   console.log(mockUser);
+              request(app).post('/api/moment/action')
+              .send({
+                auth_token:mockUser.michael.auth_token,
+                action_token:mockUser.michael.explore_list[0].action_token.like
+              })
+              //.expect(202)//accepted
+              .end(function(err, res)
+              {
 
-                  done();
+                console.log(res.body);
+                done();
+
+                });
+
 
       });
+
+      it('target likes michael, should connect',function(done)
+          {
+            var target;
+            var michael_action;
+            for(var m in mockUser)
+            {
+              console.log(mockUser[m]);
+              if(mockUser[m].status === mockUser.michael.explore_list[0].status)
+              {
+                target = m;
+                console.log(target);
+              }
+            }
+
+            setTimeout(function() {
+              console.log(target);
+              for(var e in mockUser[target].explore_list)
+              {
+                console.log(mockUser[target].explore_list[e]);
+                if(mockUser[target].explore_list[e].status === 'i am michael')
+                {
+                  michael_action = mockUser[target].explore_list[e].action_token.like;
+                }
+              }
+            },300);
+
+            setTimeout(function() {
+              request(app).post('/api/moment/action')
+              .send({
+                auth_token:mockUser[target].auth_token,
+                action_token:michael_action
+              })
+              //.expect(202)//accepted
+              .end(function(err, res)
+              {
+
+                console.log(res.body);
+                done();
+
+                });
+              },1000);
+
+      });
+
+      it('michael like target again, should return already friend',function(done){
+            console.log(mockUser);
+            request(app).post('/api/moment/action')
+            .send({
+                auth_token:mockUser.michael.auth_token,
+                action_token:mockUser.michael.explore_list[0].action_token.like
+            })
+            .expect(200)//accepted
+            .end(function(err, res)
+              {
+                console.log('///////////$');
+                console.log(res.body);
+                done();
+
+              });
+      });
+
+      it('michael relogin',function(done){
+        request(app).post('/api/device')
+          .send({
+            auth_token:mockUser.michael.auth_token
+          })
+          .expect(201)//accepted
+          .end(function(err, res)
+          {
+            console.log('////////uuuuu///$');
+            console.log(res.body);
+            //expect(res.body.relogin).to.equal(false);
+            var lat = Math.floor((Math.random() * 10) + 1);
+            var lon = Math.floor((Math.random() * 10) + 1);
+            request(app).post('/api/moment')
+            .attach('image',__dirname +'/image.jpg')
+            .field('auth_token',mockUser.michael.auth_token)
+            .field('lat',lat)
+            .field('lon',lon)
+            .expect(202)//accepted
+            .end(function(err, res)
+            {
+              var new_auth = res.body.new_auth_token;
+              console.log(res.body);
+              mockUser.michael.auth_token= new_auth;
+
+              setTimeout(function() {
+                request(app).put('/api/moment')
+                .send({
+                  auth_token:new_auth,
+                  status:'i am michael2',
+                  lat:lat,
+                  lon:lon
+                })
+                .expect(201)//accepted
+                .end(function(err, res)
+                {
+                  expect(res.body).to.include.keys('explore_list');
+
+                  mockUser.michael.explore_list= res.body.explore_list;
+                  done();
+                });
+              },1000);
+
+            });
+
+          });
+
+        });
 
 
     });

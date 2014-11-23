@@ -30,7 +30,7 @@ exports.register = function( params, res, next )
             AUTH.newAuthToken( token, true,
                 function( newToken )
                 {
-                    next( newToken, true, channel_uuid, pubnub_auth_key, 201 );
+                    next( newToken, true, channel_uuid, pubnub_auth_key, [], 201 );
                 });
         });
 };
@@ -54,13 +54,14 @@ exports.login = function( params, res, next )
                 }
                 else
                 {
+
                     MOMENT.isExpired(params.auth_token,
                     function (status)
                     {
                         AUTH.newAuthToken( params.auth_token, status,
                             function( newToken )
                             {
-                                next( newToken, status, device.channel_uuid, device.pubnub_key, 200 );
+                                next( newToken, status, device.channel_uuid, device.pubnub_key, device.friends,200 );
                             });
 
                     });
