@@ -1,0 +1,86 @@
+POST device/  first call on app start up, for
+  #1 register device and generate auth_token
+  #2 check if previous moment is expired, and return friends
+  request:{
+      auth_token:'new'//for case #1
+    }
+  response:{
+      auth_token,
+      relogin,// true/false
+      pubnub_key,
+      uuid,
+      friend_list
+    }
+
+
+POST device/friend
+  request:{
+      auth_token
+    }
+  response:{
+      friend_list:{
+        channel_id:string,
+        moments:[{
+          status:string,
+          image_url:string,
+          distance:int
+        }]
+      }
+    }
+
+POST moment/  request when a photo is chonsen, return new token
+  multipart form:{
+     file: image,
+     field:auth_token,
+     field:lat,
+     field:lon
+    }
+  response:{
+    new_auth_token
+  }
+
+PUT moment/  request when submiting the moment
+  request:{
+    auth_token,
+    status,
+  }
+  response:{
+    explore_list:[
+      {
+        action_token:{
+          like:string
+        },
+        image_url:string,
+        status:string,
+        distance:int
+      }
+    ]
+  }
+
+POST moment/action
+  request:{
+    auth_token,
+    action_token
+  }
+  response:{
+    channel_id,
+  }
+
+POST moment/explore
+request:{
+    auth_token,
+    offset,
+    limit
+  }
+  response:{
+    explore_list:[
+      {
+        action_token:{
+          like:string
+        },
+        image_url:string,
+        status:string,
+        distance:int
+      }
+    ]
+  }

@@ -1,12 +1,12 @@
 
 
 api testing
-  device login
+  POST /device
     case
       1 input valid, token valid, device found, moment found & valid
         --> 200 ok
           new token(old aid)
-          login not requiled
+          relogin: false
           friends
           uuid
           pubnub_key
@@ -14,12 +14,14 @@ api testing
       2 input valid, token valid, device found, moment found & invalid
         --> 200 ok
           new token( new aid)
-          login required
+          relogin: true
+          friends
 
       3 input valid, token valid, device found, moment not found
         --> 200 ok
           new token(new aid)
-          login required
+          relogin: true
+          friends
 
       4 input valid, token valid, device not found
         --x 404 not found
@@ -27,7 +29,8 @@ api testing
       5 input valid, token = 'new'
         --> 201 created
           new token(new aid)
-          login required
+          relogin: true
+          friends
 
       6 input valid, token invalid and is not 'new'
         --x 401 invalid request
@@ -35,10 +38,11 @@ api testing
       7 input invalid
         --x 400 invalid request
 
-  moment init
+  POST /moment
     case
       1 input valid, token valid
         --> 202 accepted
+          new_auth_token
 
       2 input valid, token invalid
         --x 401 not authorized
@@ -46,29 +50,23 @@ api testing
       3 input invalid
         --x 400 bad request
 
-  moment complete
+  PUT /moment
     case
       1 input valid, token valid, actor found, actor.health = 'establihed', moment no duplicate
         --> 201 created
-          explore
+          explore_list
 
       2 input valid, token valid, actor found, actor.health = 'establihed', moment duplicate
-        --> 200 ok
-          msg: resend imag
-          new token(new aid)
-          explore
+        --> 304 not modified
+
+      3 input valid, token valid, actor found, actor.health = 'completed'
+        --> 304 not modified
 
       3 input valid, token valid, actor found, actor.health = 'pending' or 'badimage'
-        --> 200 ok
-          msg: resend imag
-          new token(new aid)
-          explore
+        --> 400 bad request
 
       4 input valid, token valid, actor not found
-        --> 200 ok
-          msg: resend imag
-          new token(new aid)
-          explore
+        --> 404
 
       5 input valid, token invalid
         --x 401 not authorized
@@ -76,7 +74,7 @@ api testing
       6 input invalid
         --x 400 bad request
 
-  moment like
+  POST moment/action
     case
       1 input valid, token valid, actor found, actor.status = 'completed', actor.relation[target_aid] found, actor.relation[target_aid].status = '1' //liked by target
       --> 201 created

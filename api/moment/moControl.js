@@ -70,21 +70,17 @@ exports.completeMoment = function(params,response)
         }
         else if(actor.health === 'completed')
         {
-            response(304,  'init new moment', actor.explore);
+            response(304,  '', actor.explore);
         }
         else if(['pending', 'badimage'].indexOf(actor.health))
         {
-            response(200,  'Resend image'+actor.health, actor.explore);
+           response(304,  '', actor.explore);
         }
     }
     else
     {
-        ACTOR.createPending( params, function (actor)
-            {
-                actor.save();
-                response(200,  'Resend image', actor.explore);
+        response(404,  'not found', []);
 
-            });
     }
 
 };

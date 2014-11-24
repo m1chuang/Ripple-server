@@ -30,9 +30,7 @@ device.route('/')
             auth_token:req.body.auth_token
         };
         var response = function( token, require_login, uuid, pubnub_key, friend_list, status )
-
         {
-
             res.status(status).json(
                 {
                     auth_token: token,
@@ -59,7 +57,7 @@ device.route('/')
 
 
 device.use(AUTH.authenticate);
-device.route('/friends')
+device.route('/friend')
     .all(DEVICE.getDevice)
     .post( function( req, res)
     {
@@ -81,7 +79,7 @@ device.route('/friends')
         DeviceCtr.getFriends( params, response);
     });
 
-device.route('/friends/delete')
+device.route('/friend/delete')
     .post( function( req, res )
     {
         var params =
@@ -100,7 +98,7 @@ device.route('/friends/delete')
 
     });
 
-device.route('/friends/add')
+device.route('/friend/add')
     .post( function( req, res )
     {
         var params =
