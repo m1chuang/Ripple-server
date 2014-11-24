@@ -1,5 +1,5 @@
 {
-  "NODE_ENV":"prod",
+  "NODE_ENV":"dev",
   "database":
   {
     "dev":"mongodb://neshorange:Nesh6502@ds063919.mongolab.com:63919/glimpse",

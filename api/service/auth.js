@@ -43,8 +43,6 @@ var verifyToken = function(type, token, verified) {
 };
 module.exports.verifyToken = verifyToken;
 
-
-
 module.exports.verifySecret = function( secret, key, res, next) {
   req['action_token'] = decript(secret);
   LOG.info('secrete')

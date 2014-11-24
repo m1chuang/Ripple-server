@@ -54,7 +54,6 @@ exports.login = function( params, res, next )
                 }
                 else
                 {
-
                     MOMENT.isExpired(params.auth_token,
                     function (status)
                     {
