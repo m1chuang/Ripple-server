@@ -112,7 +112,7 @@ test.route('/sub')
         });
     });
 
-test.route('')
+test.route('/')
     .get( function(req, res)
     {
         res.json(
