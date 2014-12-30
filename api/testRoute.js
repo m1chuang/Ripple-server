@@ -6,6 +6,40 @@ var mongoose     = require( 'mongoose' );
 var MOMENT = require('./moment/moModel');
 var DEVICE = require('./device/deModel');
 var ACTOR = require('./actor');
+
+test.route('/cleardb')
+    .post( function(req, res)
+    {
+        mongoose.connection.collections['actors'].drop( function(err) {
+            console.log('collection dropped');
+            ACTOR.ensureIndexes(function(){
+              console.log('Index ensured');
+            });
+        });
+        mongoose.connection.collections['devices'].drop( function(err) {
+            console.log('collection dropped');
+            DEVICE.ensureIndexes(function(){
+              console.log('Index ensured');
+               setTimeout(function()
+                      {
+                         res.json(
+                                {
+                                    status:'db cleared.'
+                                })
+                      },1500);
+            });
+        });
+        mongoose.connection.collections['moments'].drop( function(err) {
+            console.log('collection dropped');
+            MOMENT.ensureIndexes(function(){
+              console.log('Index ensured');
+
+            });
+
+        });
+
+
+    });
 test.route('/group').get(function(req,res){
     Pubnub.group( {}, function(auth_key, allow, deny){
             res.json();
@@ -97,39 +131,6 @@ test.route('')
     })
 
 
-test.route('/cleardb')
-    .post( function(req, res)
-    {
-        mongoose.connection.collections['actors'].drop( function(err) {
-            console.log('collection dropped');
-            ACTOR.ensureIndexes(function(){
-              console.log('Index ensured');
-            });
-        });
-        mongoose.connection.collections['devices'].drop( function(err) {
-            console.log('collection dropped');
-            DEVICE.ensureIndexes(function(){
-              console.log('Index ensured');
-               setTimeout(function()
-                      {
-                         res.json(
-                                {
-                                    status:'db cleared.'
-                                })
-                      },1500);
-            });
-        });
-        mongoose.connection.collections['moments'].drop( function(err) {
-            console.log('collection dropped');
-            MOMENT.ensureIndexes(function(){
-              console.log('Index ensured');
-
-            });
-
-        });
-
-
-    });
 
 test.route('/image')
     .post( function(req, res)
