@@ -2,7 +2,10 @@ var S3 = require('./service/uploader');
 var Pubnub   = require('./service/pubnub');
 var express = require('express');
 var test = express.Router();
-
+var mongoose     = require( 'mongoose' );
+var MOMENT = require('./moment/moModel');
+var DEVICE = require('./device/deModel');
+var ACTOR = require('./actor');
 test.route('/group').get(function(req,res){
     Pubnub.group( {}, function(auth_key, allow, deny){
             res.json();
