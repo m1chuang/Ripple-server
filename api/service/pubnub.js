@@ -128,6 +128,7 @@ var psAction =
     --------------------------------------------------------------------------- */
     LOG.info(' heree '+channel);
     var delivery_count = 0;
+    var err_count = 0;
     PUBNUB.subscribe({
         channel  : channel,
         connect  : function() {
@@ -138,7 +139,7 @@ var psAction =
             PUBNUB.publish({
 
                 channel  : channel,
-                auth_key : 'test',
+                auth_key : 'key',
                 message  : {
                     count    : ++delivery_count,
                     some_key : 'Hello World!',
@@ -168,9 +169,11 @@ var psAction =
             LOG.info('MESSAGE RECEIVED!!!');
         },
         error    : function() {
+            err_count+=1;
             LOG.info('PUBNUB Connection Dropped');
         }
     });
+    cb();
     }
 }
 
@@ -213,11 +216,14 @@ exports.twofrds = function( channel, next )
 {
 
     var auth_key = uuid.v4();
+    var deny1 = uuid.v4();
+    var deny2 = uuid.v4();
     var allow = uuid.v4();
-    var deny = uuid.v4();
+
+
         PUBNUB.grant({
-           channel : deny,
-           auth_key : 'nope',
+           channel : deny1,
+           auth_key : "nope",
            read    : true,
            write    : true,
            ttl      : 3000,
@@ -226,16 +232,48 @@ exports.twofrds = function( channel, next )
          });
         PUBNUB.grant({
            channel : allow,
-           auth_key : auth_key,
+           auth_key : 'key',
            read    : true,
            write    : true,
            ttl      : 3000,
            callback  : function(m) { LOG.info(  'SUCCESS!',m ); },
             error     : function(e) { LOG.info( 'FAILED! RETRY PUBLISH!'+ e ); }
          });
-        next(auth_key, allow, deny);
+        PUBNUB.grant({
+           channel : deny2,
+           auth_key : "nope",
+           read    : true,
+           write    : true,
+           ttl      : 3000,
+           callback  : function(m) { LOG.info(  'SUCCESS!',m ); },
+            error     : function(e) { LOG.info( 'FAILED! RETRY PUBLISH!'+ e ); }
+         });
+        next("key", allow, deny1, deny2);
 }
+exports.group = function( params, next )
+{
 
+    var auth_key = uuid.v4();
+    var allow = uuid.v4();
+    var deny = uuid.v4();
+    for(var i=0;i<10;i++){
+        console.log(i);
+        var name = 'grouptest-'+i;
+        console.log(name);
+        PUBNUB.grant({
+           channel : name,
+           auth_key : 'nope',
+           read    : (i==3 || i==4)?false:true,
+           write    : true,
+           ttl      : 3000,
+           callback  : function(m) { LOG.info(  'SUCCESS! ',m ); },
+            error     : function(e) { LOG.info( 'FAILED! RETRY PUBLISH!'+ e ); }
+         });
+    }
+
+
+    next(auth_key, allow, deny);
+}
 exports.pub = function( channel, message, cb )
 {
         LOG.info(' heree');

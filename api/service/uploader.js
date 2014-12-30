@@ -3,7 +3,7 @@ var AWS = require('aws-sdk');
 var path = require('path');
 var nconf = require('nconf');
 var LOG = require('../service/util').logger;
-var S3 = require('../service/uploader');
+
 var uuid = require('node-uuid');
     // For dev purposes only
 
@@ -15,13 +15,39 @@ AWS.config.update(
 });
 var s3_url = nconf.get('S3')['glimpse_test'];
 
+var s3_test = function (fieldname, file, filename, enconding, next){
+    upload = new Uploader({
+        // credentials to access AWS
+        accessKey:  nconf.get('aws:accessKeyId'),
+        secretKey:  nconf.get('aws:secretAccessKey'),
+        bucket:     nconf.get('aws:test-bucket'),
+        objectName: filename,
+        objectParams: {
+            ACL: 'public-read'
+        },
+        stream:     file
+    });
+
+    upload.on('completed', function (err, res) {
+        LOG.log('upload completed');
+        next( err, res );
+    });
+
+    upload.on('failed', function (err) {
+        LOG.log('upload failed with error', err);
+    });
+
+}
+
 module.exports.multipart = function(req, res, next)
 {
 
     req.busboy.on('file', function(fieldname, file, filename, encoding) {
-        LOG.info('on:file: '+s3_url+filename);
-        req.body.image_url=s3_url+uuid.v4();
-        S3.s3_test(fieldname, file, filename, encoding,
+
+        filename = uuid.v4();
+        req.body.image_url=s3_url+filename;
+        LOG.info('on:file: '+req.body.image_url);
+        s3_test(fieldname, file, filename, encoding,
             function( err, s3_response) {
             });
     });
@@ -72,26 +98,3 @@ var Uploader = require('s3-streaming-upload').Uploader,
 
 // s3Stream = require('s3-upload-stream')(new AWS.S3()),
 
-module.exports.s3_test = function (fieldname, file, filename, enconding, next){
-    upload = new Uploader({
-        // credentials to access AWS
-        accessKey:  nconf.get('aws:accessKeyId'),
-        secretKey:  nconf.get('aws:secretAccessKey'),
-        bucket:     nconf.get('aws:test-bucket'),
-        objectName: filename,
-        objectParams: {
-            ACL: 'public-read'
-        },
-        stream:     file
-    });
-
-    upload.on('completed', function (err, res) {
-        LOG.log('upload completed');
-        next( err, res );
-    });
-
-    upload.on('failed', function (err) {
-        LOG.log('upload failed with error', err);
-    });
-
-}

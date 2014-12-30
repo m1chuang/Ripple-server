@@ -3,15 +3,19 @@ var Pubnub   = require('./service/pubnub');
 var express = require('express');
 var test = express.Router();
 
-
-test.route('/twofrds')
+test.route('/group').get(function(req,res){
+    Pubnub.group( {}, function(auth_key, allow, deny){
+            res.json();
+        });
+});
+test.route('/3frds')
     .post( function( req, res )
     {
          var params =
         {
             my_device_id : req.body.device_id
         };
-        Pubnub.twofrds( params, function(auth_key, allow, deny){
+        Pubnub.twofrds( params, function(auth_key, allow, deny1, deny2){
             res.json(
                     {
                         auth_key: auth_key,
@@ -21,8 +25,13 @@ test.route('/twofrds')
                                 nick_name: "michael"
                             },
                             {
-                                channel_id: deny,
+                                channel_id: deny1,
                                 nick_name: "angie"
+                            },
+
+                            {
+                                channel_id: deny2,
+                                nick_name: "albee"
                             },
                         ]
                     });
@@ -58,10 +67,10 @@ test.route('/sub')
     .post( function(req, res)
     {
         console.log( "pubb");
-        Pubnub.subscribe(req.body.channel, req.body.key,function(info){
+        Pubnub.subTest(req.body.channel, req.body.msg,function(){
                   res.json(
                     {
-                        status : info,
+
                     });
         });
     });
@@ -94,38 +103,14 @@ test.route('/image')
             url:'https://s3-us-west-2.amazonaws.com/glimpsing/'+req.body.key
         })
     });
-
+test.post('/imagem', S3.multipart);
 test.route('/imagem')
     .post( function(req, res)
     {
-        var params = {};
-        req.busboy.on('file', function(fieldname, file, filename, encoding) {
-            console.log('on:file');
 
-            S3.s3_test(fieldname, file, filename, encoding,
-                function( err, s3_response) {
-                    res.json(
-                        {
-                            url:'https://glimpsetest.s3.amazonaws.com/'+filename,
-                            s3_response:s3_response,
-                            params : params
-                        });
-                });
-        });
 
-        req.busboy.on('field', function(fieldname, value, valTruncated, keyTruncated) {
-            console.log('on:field');
-            console.log(fieldname);
-            params[fieldname]=value;
+                    res.json(req.body);
 
-        });
-/*
-        req.busboy.on('finish', function() {
-            console.log('once:end');
-            res.end();
-        });
-*/
-        req.pipe(req.busboy);
 
     });
 

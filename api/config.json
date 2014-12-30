@@ -3,10 +3,9 @@
   "database":
   {
     "dev":"mongodb://neshorange:Nesh6502@ds063919.mongolab.com:63919/glimpse",
-    "prod": "mongodb://neshorange:Nesh6502@ds039850.mongolab.com:39850/glimpse",
+    "prod": "mongodb://neshorange:Nesh6502@ds039850.mongolab.com:39850/glimpse-test",
     "local-test":"mongodb://localhost/test-app"
   },
-
   "S3":{
     "glimpse_test":"https://glimpsetest.s3.amazonaws.com/"
   },
@@ -18,9 +17,9 @@
   },
   "server-master-key": "MGZlNTIyN2QtMGUwNy00Mjg0LTMzA0ZmQzZDk2k0MDUtMTA0",
   "pubnub": {
-    "subscribe_key": "sub-c-b314c43e-3a97-11e4-8947-02ee2ddab7fe",
-    "publish_key": "pub-c-594c8c54-eccd-44d8-9286-3a6d311d4cd6",
-    "secret_key": "sec-c-ZTBjY2U4YmYtNTIyMy00ZjY0LTgxNWUtMDEzMmRjYTIyNDQy"
+    "subscribe_key": "sub-c-28a1cc96-0b0a-11e4-8738-02ee2ddab7fe",
+    "publish_key": "pub-c-27c03dff-3dce-4a0e-921a-f0fdc4afc205",
+    "secret_key": "sec-c-N2U5YThiOTgtMzY1My00NzU0LWIxNTEtN2M4ZWE1YTU2YWIz"
   },
   "secret-key":
   {
