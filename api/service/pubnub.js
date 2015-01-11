@@ -212,14 +212,16 @@ exports.grant = function( channel, cb )
 }
 
 
-exports.twofrds = function( channel, next )
+exports.fivefrds = function( channel, next )
 {
 
-    var auth_key = uuid.v4();
-    var deny1 = uuid.v4();
-    var deny2 = uuid.v4();
-    var allow = uuid.v4();
 
+    var deny1 = channel+'_'+'d1';
+    var deny2 = channel+'_'+'d2';
+    var allow1 = channel+'_'+'a1';
+    var allow2 = channel+'_'+'a2';
+    var allow3 = channel+'_'+'a3';
+    console.log(channel);
 
         PUBNUB.grant({
            channel : deny1,
@@ -231,8 +233,8 @@ exports.twofrds = function( channel, next )
             error     : function(e) { LOG.info( 'FAILED! RETRY PUBLISH!'+ e ); }
          });
         PUBNUB.grant({
-           channel : allow,
-           auth_key : 'key',
+           channel : allow1,
+           auth_key : "key",
            read    : true,
            write    : true,
            ttl      : 3000,
@@ -248,7 +250,25 @@ exports.twofrds = function( channel, next )
            callback  : function(m) { LOG.info(  'SUCCESS!',m ); },
             error     : function(e) { LOG.info( 'FAILED! RETRY PUBLISH!'+ e ); }
          });
-        next("key", allow, deny1, deny2);
+        PUBNUB.grant({
+           channel : allow2,
+           auth_key : "key",
+           read    : true,
+           write    : true,
+           ttl      : 3000,
+           callback  : function(m) { LOG.info(  'SUCCESS!',m ); },
+            error     : function(e) { LOG.info( 'FAILED! RETRY PUBLISH!'+ e ); }
+         });
+        PUBNUB.grant({
+           channel : allow3,
+           auth_key : "key",
+           read    : true,
+           write    : true,
+           ttl      : 3000,
+           callback  : function(m) { LOG.info(  'SUCCESS!',m ); },
+            error     : function(e) { LOG.info( 'FAILED! RETRY PUBLISH!'+ e ); }
+         });
+        next("key", deny1,deny2,allow1,allow2,allow3);
 }
 exports.group = function( params, next )
 {

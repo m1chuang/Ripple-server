@@ -45,30 +45,36 @@ test.route('/group').get(function(req,res){
             res.json();
         });
 });
-test.route('/3frds')
+test.route('/5frds')
     .post( function( req, res )
     {
-         var params =
-        {
-            my_device_id : req.body.device_id
-        };
-        Pubnub.twofrds( params, function(auth_key, allow, deny1, deny2){
+
+        Pubnub.fivefrds( req.body.channel, function(auth_key,deny1,deny2,allow1,allow2,allow3){
             res.json(
                     {
                         auth_key: auth_key,
                         friends: [
                             {
-                                channel_id: allow,
-                                nick_name: "michael"
+                                channel_id: deny1,
+                                nick_name: "michael_deny"
                             },
                             {
-                                channel_id: deny1,
-                                nick_name: "angie"
+                                channel_id: allow1,
+                                nick_name: "apple_allow"
                             },
 
                             {
                                 channel_id: deny2,
-                                nick_name: "albee"
+                                nick_name: "annie_deny"
+                            },
+                            {
+                                channel_id: allow2,
+                                nick_name: "kazumi_allow"
+                            },
+
+                            {
+                                channel_id: allow3,
+                                nick_name: "lala_allow"
                             },
                         ]
                     });

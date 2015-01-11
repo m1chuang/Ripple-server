@@ -13,7 +13,7 @@ POST device/  first call on app start up, for
     }
 
 
-POST device/friend
+not tested yet-POST device/friend
   request:{
       auth_token
     }
