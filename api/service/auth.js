@@ -7,19 +7,24 @@ var crypto = require('crypto'),
   algorithm = 'aes-256-ctr',// update to encryption with GCM later
   key = nconf.get('secret-key')['encription'];
 
-var encrypt =function (text) {
+var encrypt =function (text) {/*
     //var iv = new Buffer(crypto.randomBytes(12)); // ensure that the IV (initialization vector) is random
     var cipher = crypto.createCipher(algorithm, key);//crypto.createDecipheriv(algorithm, key, iv);
     LOG.info('text');
     LOG.info(text);
     var encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
+    LOG.info(cipher);
+    LOG.info('encrypted');
+    LOG.info(encrypted);
     //var tag = cipher.getAuthTag();
     return encrypted//+'$'+ tag+'$'+ iv.toString('hex')
+    */
+   return text
 };
 module.exports.encrypt = encrypt;
 
-var decrypt =  function (encrypted) {
+var decrypt =  function (encrypted) {/*
     LOG.info('encrypted');
     LOG.info(encrypted);
     //var blob = encrypted.spilt('$');
@@ -29,6 +34,8 @@ var decrypt =  function (encrypted) {
     var dec = decipher.update(encrypted, 'hex', 'utf8')
     dec += decipher.final('utf8');
     return dec;
+    */
+   return encrypted
 };
 module.exports.decrypt = decrypt;
 
@@ -128,7 +135,7 @@ module.exports.parseAction = function( req, res, next)
 module.exports.issueActionToken = function( action, secrets, next)
 {
     LOG.info( 'auth  issue action token');
-
+    LOG.info( secrets);
 
     var tasks = {
         like: function(next)

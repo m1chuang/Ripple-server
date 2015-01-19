@@ -27,7 +27,7 @@ var createExplore = function( nearby_moments, next)
 {
     var generate_explore = function( item, next )
     {
-        //LOG.error(item);
+        LOG.error(item);
         AUTH.issueActionToken('like',
             {
                 target_info:
@@ -38,9 +38,8 @@ var createExplore = function( nearby_moments, next)
             },
             function(action_token)
             {
-                //LOG.error('explore_item');
-                var explore_item =
-                {
+                LOG.error(action_token);
+                next( null,{
                     action_token : {like: action_token,},
                     image_url   : item['image_url'],
                     distance    : item['distance'],
@@ -48,10 +47,10 @@ var createExplore = function( nearby_moments, next)
                     explore_id  : item.actor_id//item.explore_id//pre-condition: explore never create twice
                     //like        : (item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false,
                     //connect     : (item.connection != undefined&&item.connection.length > 0)? true:false,
-                };
+                });
                 //LOG.error(explore_item);
 
-                next( null, explore_item );
+
             });
     };
 
@@ -61,7 +60,7 @@ var createExplore = function( nearby_moments, next)
     }
     else
     {
-        async.map( nearby_moments, generate_explore,
+        async.mapSeries( nearby_moments, generate_explore,
         function onExploreGenerate( err, explore_list )
         {
             LOG.info(explore_list);
@@ -74,7 +73,7 @@ var createExplore = function( nearby_moments, next)
 MomentSchema.statics.getExplore =function( params, next )
 {
     LOG.error( CHALK.green('In model moment.getExplore') );
-    LOG.error( params);
+//    LOG.error( params);
     mongoose.model( 'Moment' ).aggregate(
         {
             $geoNear : {
@@ -134,10 +133,6 @@ MomentSchema.statics.isExpired =function( token, next )
 
             });
 }
-
-
-
-
 
 
 

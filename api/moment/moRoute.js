@@ -45,8 +45,7 @@ moment.route('/')
             lon : req.body.lon,
             actor_id:req.body.auth_token.actor_id
         };
-        LOG.info('post momnet');
-        LOG.info(req.body);
+
         var response = function(status, msg, newToken)
         {
             res.status(status).json(

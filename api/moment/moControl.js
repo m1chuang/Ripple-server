@@ -119,7 +119,6 @@ exports.doAction = function( params,  next )
             {
                 console.log('-------actor[0]');
                 console.log(actor[0]);
-                LOG.info(actor);
                 if(err || !actor[0])
                 {
                     LOG.info(err);
