@@ -48,6 +48,7 @@ var DeviceSchema   = new Schema(
         fans: [SubscriberScheme],
         timestamp       : { type: Date, default: Date.now },
     });
+
 /*
 * Middleware
 */
