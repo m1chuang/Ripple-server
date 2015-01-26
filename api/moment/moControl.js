@@ -61,6 +61,7 @@ exports.completeMoment = function(params,response)
                 location: [parseFloat(params.lat), parseFloat(params.lon)]
             });
             mo.save(function (err){LOG.error('eruuuuur');LOG.error(err);});
+            DEVICE.notifySubscribers(mo);
             // is there duplicates?
             // no
             actor.health = 'completed';
@@ -102,10 +103,8 @@ exports.getNewExplore = function( params, next )
 
 
 
-exports.doAction = function( params,  next )
-{
 
-    var action = {
+var actionMenu = {
         /*
         *   Check if a like relation with the target is already place in your relations
         *   if yes, create the connection. Otherwise, place a like relation in the target's relations
@@ -130,16 +129,14 @@ exports.doAction = function( params,  next )
                     {
                         if(!actor[0].connection[0] && actor[0].relation[0].status === 0)
                         {
-
                             PUBNUB.createConversation( actor.pubnub_key, actor[0].relation[0].pubnub_key,
                             function addConnections( channel_id )
                             {
-
                                 ACTOR.saveRemoteConnection({own_device_id:params.auth_token.device_id,owner_aid:params.auth_token.actor_id, target_aid:target_aid,type:'like', channel_id:channel_id},
                                     function(err, device_id)
                                     {
-                                        LOG.info('device_id');
-                                        LOG.info(device_id);
+                                        LOG.info('device_id');LOG.info(device_id);
+
                                         actor[0].saveConnection({target_device_id:device_id,target_aid:target_aid,type:'like', channel_id:channel_id});
                                         PUBNUB.notifyRemote(
                                             {
@@ -168,10 +165,7 @@ exports.doAction = function( params,  next )
                     {
                         actor[0].addRelation({target_aid:target_aid,type:'like', status:1});
 
-                        LOG.info('self');
-                        LOG.info(actor[0]);
-                        LOG.info('target');
-                        LOG.info(target_aid);
+                        LOG.info('self');LOG.info(actor[0]);LOG.info('target');LOG.info(target_aid);
                         ACTOR.addRemoteRelation({
                             target_aid:target_aid,
                             pubnub_key:actor[0].pubnub_key,
@@ -188,10 +182,19 @@ exports.doAction = function( params,  next )
                 }
             });
 
+        },
+
+        subscribe: function(params, next){
+            var target_did = param.action_token.target_info.did;
+            DEVICE.addSubscriber(target_did, params.auth_token.device_id, params.body.nickname,
+                function(err){
+                    next(err);
+                });
         }
     };
+
+exports.doAction = function( params,  next )
+{
     LOG.info(params);
-    action[params.action_token.action](params, next);
+    actionMenu[params.action_token.action](params, next);
 }
-
-

@@ -20,12 +20,13 @@ exports.register = function( params, res, next )
             channel_uuid: channel_uuid
         });
     new_device.save();
-    PUBNUB.createServerConnection( device_id, pubnub_auth_key,
+    PUBNUB.createServerConnection( channel_uuid, pubnub_auth_key,
         function()
         {
             var token = {
                 device_id:device_id,
             };
+
             AUTH.newAuthToken( token, true,
                 function( newToken )
                 {

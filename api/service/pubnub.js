@@ -4,9 +4,11 @@ var nconf = require('nconf');
 var LOG = require('./util').logger;;
 var PUBNUB = require('pubnub').init(
     {
-        subscribe_key   : nconf.get('pubnub:subscribe_key'),
-        publish_key     : nconf.get('pubnub:publish_key'),
+        subscribe_key   : 'demo',//nconf.get('pubnub:subscribe_key'),
+        publish_key     : 'demo',//nconf.get('pubnub:publish_key'),
         secret_key      : nconf.get('pubnub:secret_key'),
+        auth_key        : nconf.get('server-master-key'),
+        origin          : 'pubsub.pubnub.com',
         ssl             : true,
     });
 
@@ -18,12 +20,24 @@ var pnMessage =
     {
         return {
 
-            'type'              :   'like',
+            'type'              :   'update',
+            'code'              :   params['code'],
+            'explore_id'        :   params['explore_id'],
+            'chat_channel_id'   :   params['chat_channel_id'],
+
+        }
+    },
+    update:function(params){
+        return {
+
+            'type'              :   'update',
+            'code'              :   params['code'],
             'explore_id'        :   params['explore_id'],
             'chat_channel_id'   :   params['chat_channel_id'],
 
         }
     }
+
 }
 
 /*
@@ -48,6 +62,7 @@ exports.notifyRemote = function( params, next)
 exports.createServerConnection = function( device_id, server_auth_key, next )
 {
     var client_auth_key = server_auth_key;
+    /*
     PUBNUB.grant(
         {
             channel     : device_id,
@@ -56,15 +71,18 @@ exports.createServerConnection = function( device_id, server_auth_key, next )
             callback    : function(e) { LOG.info( 'SUCCESS!', e ); },
             error       : function(e) { LOG.info( 'FAILED! RETRY PUBLISH!', e ); }
         });
+*/
+/*
     PUBNUB.grant(
         {
             channel     : device_id,
-            auth_key    : server_master_key,
+            //auth_key    : server_master_key,
             read        : true,
             write       : true,
             callback    : function(e) { LOG.info( 'SUCCESS!', e ); },
             error       : function(e) { LOG.info( 'FAILED! RETRY PUBLISH!', e ); }
         });
+*/
     next(client_auth_key);
 }
 
@@ -190,7 +208,7 @@ exports.subscribe_server = function( params, cb )
         LOG.info( CHALK.blue( 'Subscribing to server: '+ params['mid'] ) );
         PUBNUB.publish(
         {
-            channel   : params['mid']+'_server',
+            channel   : params['mid'],
             message   : { 'message':'Hello' },
             callback  : function(m) { LOG.info( 'SUCCESS!', m ); },
             error     : function(e) { LOG.info( 'FAILED! RETRY PUBLISH!', e ); }
@@ -302,11 +320,11 @@ exports.pub = function( channel, message, cb )
         PUBNUB.publish(
         {
             channel   : channel,
-            auth_key : 'null',
             message   : { 'message':'Hello from glimpse server~~~' },
-            callback  : function(e) { LOG.info( 'SUCCESS!', e ); },
+            callback  : function(e) { LOG.info( 'SUCCESS!', e ); cb(); },
             error     : function(e) { LOG.info( 'FAILED! RETRY PUBLISH!', e ); }
         });
+
 }
 
 

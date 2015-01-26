@@ -17,9 +17,9 @@
   },
   "server-master-key": "MGZlNTIyN2QtMGUwNy00Mjg0LTMzA0ZmQzZDk2k0MDUtMTA0",
   "pubnub": {
-    "subscribe_key": "sub-c-28a1cc96-0b0a-11e4-8738-02ee2ddab7fe",
-    "publish_key": "pub-c-27c03dff-3dce-4a0e-921a-f0fdc4afc205",
-    "secret_key": "sec-c-N2U5YThiOTgtMzY1My00NzU0LWIxNTEtN2M4ZWE1YTU2YWIz"
+    "subscribe_key": "sub-c-6f5b3a4a-a4ad-11e4-a9d4-02ee2ddab7fe",
+    "publish_key": "pub-c-59368519-7ab7-4419-afc0-6ed2cfa0b43d",
+    "secret_key": "sec-c-YzYyZTE3MjUtMjY0YS00YzUyLWIxYzEtZjRiOTAyZTlhMTMy"
   },
   "secret-key":
   {

@@ -14,15 +14,39 @@ var FriendScheme = new Schema(
         moments:[{
             image_url:String,
             status:String,
-        }]
+            timestamp: { type: Date, default: Date.now },
+        }],
+        timestamp: { type: Date, default: Date.now },
     });
+
+var Subscribes = new Schema(
+    {
+        channel_id:String,
+        nick_name:String,
+        moments:[{
+            image_url:String,
+            status:String,
+            timestamp: { type: Date, default: Date.now },
+        }],
+        timestamp: { type: Date, default: Date.now },
+    });
+
+var fansScheme = new Schema(
+    {
+        channel_id:String,
+        timestamp: { type: Date, default: Date.now },
+    });
+
 var DeviceSchema   = new Schema(
     {
         device_id: String,
         channel_uuid: String,
         pubnub_key: String,
         moments: [MOMENT.schema],
-        friends: [FriendScheme]
+        friends: [FriendScheme],
+        subscribes:[Subscribes]
+        fans: [SubscriberScheme],
+        timestamp       : { type: Date, default: Date.now },
     });
 /*
 * Middleware
@@ -54,7 +78,35 @@ DeviceSchema.statics.getDevice = function( req, res, next)
 
             });
 };
+DeviceSchema.statics.addSubscriber = function(target_did, own_device_id, nickname){
+        mongoose.model('Device').findOne(
+        {
+           'device_id' : target_did,
+        },
+        function ( err, device )
+        {
+            device.update(
+                {
+                    $addToSet :
+                    {
+                        fans : {channel_id:own_device_id}
+                    }
+                });
+        });
+}
+DeviceSchema.methods.notifySubscriber = function(mo){
+    console.log('notifySubscriber');
+    mongoose.model('Device').find(
+    {
+        'device_id':did
+    },{
+        'fans':1
+    },function(err, fans){
+        console.log('notifySubscriber--friends');
+        console.log(fans);
 
+    });
+}
 DeviceSchema.statics.saveFriend = function( did, frdObj )
 {
     mongoose.model('Device').findOne(
@@ -80,7 +132,8 @@ DeviceSchema.statics.filterFriends = function(device, next)
                 return (friend)?{}: {
                         nick_name: friend.nick_name,
                         channel_id : friend.channel_id,
-                        moments : friend.moments
+                        moments : friend.moments,
+                        timestamp: friend.timestamp,
                     }
             },
             function(friend_list)

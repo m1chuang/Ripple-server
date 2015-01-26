@@ -40,11 +40,7 @@ test.route('/cleardb')
 
 
     });
-test.route('/group').get(function(req,res){
-    Pubnub.group( {}, function(auth_key, allow, deny){
-            res.json();
-        });
-});
+
 test.route('/5frds')
     .post( function( req, res )
     {
@@ -81,12 +77,17 @@ test.route('/5frds')
         });
     });
 
+test.route('/initdb')
+    .post(function(req,res){
 
+    });
 test.route('/pub')
     .post( function( req, res )
     {
         console.log( "pubb");
-        Pubnub.pub( req.body.channel, 'hi' );
+        Pubnub.pub( req.body.channel, 'hi' ,function(){
+            res.status(200);
+        });
     });
 
 

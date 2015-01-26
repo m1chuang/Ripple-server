@@ -40,17 +40,12 @@ var createExplore = function( nearby_moments, next)
             {
                 LOG.error(action_token);
                 next( null,{
-                    action_token : {like: action_token,},
+                    action_token: {like: action_token.like,subscribe:action_token.subscribe},
                     image_url   : item['image_url'],
                     distance    : item['distance'],
                     status      : item['status'],
-                    explore_id  : item.actor_id//item.explore_id//pre-condition: explore never create twice
-                    //like        : (item.liked_relation != undefined&&item.liked_relation.length > 0)? true:false,
-                    //connect     : (item.connection != undefined&&item.connection.length > 0)? true:false,
+                    explore_id  : item.actor_id
                 });
-                //LOG.error(explore_item);
-
-
             });
     };
 

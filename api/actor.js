@@ -29,7 +29,8 @@ var relationSchema = new Schema(
 var exploreSchema = new Schema(
 {
     action_token:{
-        like:String
+        like:String,
+        subscribe:String
     },
     actor_id:String,
     image_url: String,
