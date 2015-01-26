@@ -30,8 +30,7 @@ app.use('/api/moment', moment);
 app.use('/api/device', device);
 app.use('/api/test', test);
 
-var bitapi = require('./bitapi/route');
-//app.use('/bit/api', bitapi);
+
 
 
 

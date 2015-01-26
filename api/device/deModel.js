@@ -31,7 +31,7 @@ var Subscribes = new Schema(
         timestamp: { type: Date, default: Date.now },
     });
 
-var fansScheme = new Schema(
+var fansSchema = new Schema(
     {
         channel_id:String,
         timestamp: { type: Date, default: Date.now },
@@ -44,9 +44,9 @@ var DeviceSchema   = new Schema(
         pubnub_key: String,
         moments: [MOMENT.schema],
         friends: [FriendScheme],
-        subscribes:[Subscribes]
-        fans: [SubscriberScheme],
-        timestamp       : { type: Date, default: Date.now },
+        subscribes:[Subscribes],
+        fans: [fansSchema],
+        timestamp       : { type: Date, default: Date.now }
     });
 
 /*
@@ -95,11 +95,11 @@ DeviceSchema.statics.addSubscriber = function(target_did, own_device_id, nicknam
                 });
         });
 }
-DeviceSchema.methods.notifySubscriber = function(mo){
+DeviceSchema.statics.notifySubscriber = function(mo){
     console.log('notifySubscriber');
     mongoose.model('Device').find(
     {
-        'device_id':did
+        'device_id':mo.device_id
     },{
         'fans':1
     },function(err, fans){

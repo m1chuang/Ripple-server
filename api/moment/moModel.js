@@ -22,10 +22,7 @@ var MomentSchema   = new Schema(
 
 
 //MomentSchema.ensureIndex({actor_id:1},{unique:true});
-
-var createExplore = function( nearby_moments, next)
-{
-    var generate_explore = function( item, next )
+var generate_like = function( item, next )
     {
         LOG.error(item);
         AUTH.issueActionToken('like',
@@ -48,14 +45,46 @@ var createExplore = function( nearby_moments, next)
                 });
             });
     };
+var generate_explore = function( params )
+    {
+        LOG.error(item);
 
+        var ret = function(item, next){
+            AUTH.issueActionToken('subscribe',
+            {
+                target_info:
+                {
+                    did          : item.device_id,
+                }
+            },
+            function(subscribe_token)
+            {
+                var token=
+                {
+                    action_token: {like: '',subscribe:subscribe_token},
+                    image_url   : item['image_url'],
+                    distance    : item['distance'],
+                    status      : item['status'],
+                    explore_id  : item.actor_id
+                };
+                generate_like(token, (function(like_token){
+                    token.action_token.like=like_token;
+                    next(null,token);
+                }).bind(this));
+
+            });
+        }
+        return ret
+    };
+var createExplore = function( nearby_moments, params, next)
+{
     if( !nearby_moments )
     {
         next(null, null);
     }
     else
     {
-        async.mapSeries( nearby_moments, generate_explore,
+        async.mapSeries( nearby_moments, generate_explore(params),
         function onExploreGenerate( err, explore_list )
         {
             LOG.info(explore_list);
@@ -95,7 +124,7 @@ MomentSchema.statics.getExplore =function( params, next )
                 LOG.error( err);
                 LOG.error( params.lat);
                 if (err) throw err;
-                createExplore(nearby_moments, function (err,explore_list) {
+                createExplore(nearby_moments, {}, function (err,explore_list) {
                     //LOG.error('explore_listssss');
                     //LOG.error(explore_list);
                     next(err, explore_list);

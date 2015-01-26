@@ -245,7 +245,7 @@ function App(params,next){
       auth_token:'new'
     },(function(err,params){
         this.device_info.auth_token = params.auth_token;
-        this.device_info.pubnub_secret_key = params.pubnub_key;
+        this.device_info.pubnub_auth_key = params.pubnub_key;
         this.device_info.channel_uuid = params.uuid;
         this.data.subscribe_list = params.friend_list;
         this.data.login_status = params.relogin;

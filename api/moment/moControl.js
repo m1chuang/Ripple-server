@@ -8,6 +8,7 @@ var async = require('async');
 var time = require('moment');
 var uuid = require('node-uuid');
 var AUTH = require('../service/auth');
+var DEVICE = require('../device/deModel');
 var ACTOR = require('../actor');
 /*
 *   Upload photo and create a temporary moment
@@ -61,7 +62,7 @@ exports.completeMoment = function(params,response)
                 location: [parseFloat(params.lat), parseFloat(params.lon)]
             });
             mo.save(function (err){LOG.error('eruuuuur');LOG.error(err);});
-            DEVICE.notifySubscribers(mo);
+            DEVICE.notifySubscriber(mo);
             // is there duplicates?
             // no
             actor.health = 'completed';
@@ -188,7 +189,7 @@ var actionMenu = {
             var target_did = param.action_token.target_info.did;
             DEVICE.addSubscriber(target_did, params.auth_token.device_id, params.body.nickname,
                 function(err){
-                    next(err);
+                    next(200);
                 });
         }
     };
