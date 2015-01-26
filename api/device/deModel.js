@@ -67,7 +67,7 @@ DeviceSchema.statics.getDevice = function( req, res, next)
                 //LOG.info(typeof device);
                 //LOG.info(device );
                 //LOG.info(device[0] );
-               // LOG.info(err);
+
                 if(err)
                 {
                     res.status(404).json({err:err});
