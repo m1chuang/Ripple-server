@@ -36,7 +36,7 @@ device.route('/')
                     auth_token: token,
                     relogin:require_login,
                     pubnub_key:pubnub_key,
-                    uuid: uuid,//server channel
+                    uuid: uuid,
                     friend_list: friend_list
                 });
         };
