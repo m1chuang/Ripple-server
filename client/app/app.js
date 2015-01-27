@@ -24,8 +24,8 @@ PubnubClient.prototype.sub = function(channel){
     this.pubnub.subscribe({
       channel: channel,
      // windowing: 1000,
-      presence: (m)=>{console.log(m)},
-      callback: (message)=>{
+      presence: function(m){console.log(m)},
+      callback: function(message){
         console.log(message);
         switch(message.type){
           case server:
@@ -36,10 +36,10 @@ PubnubClient.prototype.sub = function(channel){
             break;
         }
       },
-      connect: ()=>{console.log("Connected to "+channel)},
-      disconnect: ()=>{console.log("Disconnected")},
-      reconnect: ()=>{console.log("Reconnected")},
-      error: ()=>{console.log("Network Error")}
+      connect: function(){console.log("Connected to "+channel)},
+      disconnect: function(){console.log("Disconnected")},
+      reconnect: function(){console.log("Reconnected")},
+      error: function(){console.log("Network Error")}
     });
   };
 
@@ -56,29 +56,29 @@ var apiClient = function (device_info,env){
   this.env=env;
   this.pn = new PubnubClient();
 
-  this.post = (endpoint, params, next)=>{
+  this.post = function(endpoint, params, next){
     var url = this.device_info.baseURL[env||'prod']+endpoint;
     params.auth_token = this.device_info.auth_token|| params.auth_token;
     console.log('Sending POST to...'+url+ '\n'+params);
-    unirest.post(url).header('Accept','application/json').send(params).end((response)=>{
+    unirest.post(url).header('Accept','application/json').send(params).end(function(response){
       console.log(response.body);
       next(null,response.body);
     });
   };
 
-  this.postMulti = (endpoint, data, next)=>{
+  this.postMulti = function(endpoint, data, next){
     var url = this.device_info.baseURL[env||'prod']+endpoint;
     console.log('Sending POST Multi to...'+url+ '\n'+data);
-    unirest.post(url).field('lat',this.device_info.location.lat).field('lon',this.device_info.location.lon).field('auth_token',this.device_info.auth_token).attach('file',data.image).end((response)=>{
+    unirest.post(url).field('lat',this.device_info.location.lat).field('lon',this.device_info.location.lon).field('auth_token',this.device_info.auth_token).attach('file',data.image).end(function(response){
       console.log(response.body);
       next(null,response.body)
     });
   };
 
-  this.put = (endpoint, data, next)=>{
+  this.put = function(endpoint, data, next){
     var url = this.device_info.baseURL[env||'prod']+endpoint;
     data.auth_token = this.device_info.auth_token|| data.auth_token;
-    unirest.put(url).header('Accept','application/json').send(data).end((response)=>{
+    unirest.put(url).header('Accept','application/json').send(data).end(function(response){
       console.log('api put...'+ '\n'+response.body);
       next(null,response.body);
     })
@@ -111,7 +111,7 @@ function LoginUI (apiClient,data){
     console.log('init_moment...');
     this.photo=photo;
     this.api.postMulti('/moment',{image:photo||'./img.jpg'},
-      (err, response)=>{
+      (function(err, response){
         console.log(response);
         console.log('Update device info.');
         this.api.device_info.auth_token=response.new_auth_token;
@@ -122,13 +122,14 @@ function LoginUI (apiClient,data){
           console.log('Subscribing to server...');
           this.api.pn.sub(response.uuid);
         }
-      });
+      }).bind(this)
+    );
   };
 
   this.submit_moment = function(status,next){
 
     this.status=status || 'yo';
-    this.api.put('/moment', {status:status},(err, response)=>{
+    this.api.put('/moment', {status:status},(function(err, response){
       console.log('submit_moment...');
       if(!next){
         console.log(response);
@@ -137,13 +138,13 @@ function LoginUI (apiClient,data){
         if(next)next('err');
       }else{
 
-        this.data.explore_list.rePopulate(response.explore_list,()=>{
+        this.data.explore_list.rePopulate(response.explore_list,function(){
           console.log('populating explore...');
           if(next)next();
         });
       }
 
-    });
+    }).bind(this));
   };
 
 };
@@ -157,17 +158,14 @@ moment_list.prototype.rePopulate = function(info_list,next){
   console.log('populate list itmes...');
   //console.log(info_list);
   this.items = array();
-  async.eachSeries(info_list,(i,next)=>{
-    this.items.push({
-      image_url:i.image_url,
-      distance:i.distance,
-      status:i.status,
-      action_token:i.action_token
+  async.eachSeries(info_list,(function(i,next){
+    this.items.push({image_url:i.image_url,distance:i.distance,status:i.status,action_token:i.action_token
     });
     next();
-  },
-  (err)=>{next();}
-  );
+  }).bind(this),
+  (function(err){
+    next();
+  }).bind(this));
 }
 
 
@@ -178,27 +176,26 @@ function ExploreUI (apiClient, data){
   this.data.explore_list.subscribe = function(index, next){
     console.log('substribing to explore item: '+index);
     var item = this.items[index];
-    this.api.post('/moment/action', {action_token:item.action_token.subscribe},(response)=>{
+    this.api.post('/moment/action', {action_token:item.action_token.subscribe},(function(response){
       console.log(response);
       this.data.subscribe_list.add(item);
-    });
+    }).bind(this));
   }
   this.nextPage = function(){
     console.log('[POST api/explore/nextPage]');
     return this
   }
   this.refresh = function(next){
-    this.api.post('/moment/explore', {auth_token:''},(err,response)=>
-      {
-        this.data.explore_list.rePopulate(response.explore_list,()=>
-        {
+    this.api.post('/moment/explore', {auth_token:''},(function(err,response){
+        this.data.explore_list.rePopulate(response.explore_list,(function(){
           console.log('Refresh explore list...');
           console.log(this.data)
           next();
-        });
-      });
-  };
-};//eof
+        }).bind(this));
+      }).bind(this)
+    );
+  }
+};
 
 function SubscribeUI(apiClient, data){
   this.data = data;
@@ -221,7 +218,7 @@ function SubscribeUI(apiClient, data){
     console.log('api call to subscriber refresh');
     return tihs
   }
-};//eof
+};
 
 function App(params,next){
   this.device_info =
@@ -255,8 +252,7 @@ function App(params,next){
 
     this.api.post('/device',{
       auth_token:'new'
-    },(err,params)=>
-      {
+    },(function(err,params){
         this.device_info.auth_token = params.auth_token;
         this.device_info.pubnub_auth_key = params.pubnub_key;
         this.device_info.channel_uuid = params.uuid;
@@ -264,7 +260,7 @@ function App(params,next){
         this.data.login_status = params.relogin;
         this.api.initPubnub();
         next.call(this);
-      }
+      }).bind(this)
     );
   };
   this.init(next);
@@ -276,22 +272,23 @@ App.prototype.move = function(){
 };
 App.prototype.login = function(status, image, location){
   this.data.location = location || this.data.location;
-  this.content.login.init_moment(image,()=>
-  {
-    setTimeout(()=>
-    {
-      this.content.login.submit_moment(status,()=>console.log(this));
-    },1000);
-  });
+  this.content.login.init_moment(image,(function(){
+    setTimeout((function(){
+      this.content.login.submit_moment(status,
+      (function(){
+        console.log(this);
+      }).bind(this));
+    }).bind(this),1000);
+  }).bind(this));
 };
 App.prototype.view_explore = function(){
-  this.content.explore.refresh(()=>
-    console.log(this.data.explore_list.items)
-  );
-
+  this.content.explore.refresh((function(){
+    console.log(this.data.explore_list.items);
+  }).bind(this));
 };
 App.prototype.subscribe = function(index){
-  this.data.explore_list.subscribe(index,(item)=>{
+  this.data.explore_list.subscribe(index,function(item){
+
     console.log(response);
   })
 };
