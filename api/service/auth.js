@@ -146,6 +146,14 @@ module.exports.issueActionToken = function( action, secrets, next)
 
             next( token );
         },
+        subscribe: function(next)
+        {
+            secrets.action = 'subscribe';
+            var token = encrypt(JSON.stringify(JSON.stringify(secrets)));
+
+
+            next( token );
+        },
         connect: function(next)
         {
             var secret = encrypt(JSON.stringify(JSON.stringify(secrets)));

@@ -24,7 +24,8 @@ var MomentSchema   = new Schema(
 //MomentSchema.ensureIndex({actor_id:1},{unique:true});
 var generate_like = function( item, next )
     {
-        LOG.error(item);
+        LOG.error('gun like');
+        LOG.error(item.device_id);
         AUTH.issueActionToken('like',
             {
                 target_info:
@@ -33,50 +34,43 @@ var generate_like = function( item, next )
                     distance     : item.distance
                 }
             },
-            function(action_token)
+            (function(action_token)
             {
-                LOG.error(action_token);
-                next( null,{
-                    action_token: {like: action_token.like,subscribe:action_token.subscribe},
+                //LOG.error(action_token);
+                //token.action_token.like=action_token;
+                generate_subscribe({
+                    action_token: {like:action_token},
+                    image_url   : item['image_url'],
+                    distance    : item['distance'],
+                    status      : item['status'],
+                    explore_id  : item.actor_id
+                }, item.device_id,next);
+            }).bind(this));
+    };
+
+var generate_subscribe = function(item, target_did, next){
+    LOG.error('gen sub');
+        LOG.error(target_did);
+            AUTH.issueActionToken('subscribe',
+            {
+                target_info:
+                {
+                    did          : target_did,
+                }
+            },
+            (function(subscribe_token)
+            {
+                console.log('gen seb done');
+                next(null,{
+                    action_token: {like: item.action_token.like,subscribe:subscribe_token},
                     image_url   : item['image_url'],
                     distance    : item['distance'],
                     status      : item['status'],
                     explore_id  : item.actor_id
                 });
-            });
-    };
-var generate_explore = function( params )
-    {
-        LOG.error(item);
-
-        var ret = function(item, next){
-            AUTH.issueActionToken('subscribe',
-            {
-                target_info:
-                {
-                    did          : item.device_id,
-                }
-            },
-            function(subscribe_token)
-            {
-                var token=
-                {
-                    action_token: {like: '',subscribe:subscribe_token},
-                    image_url   : item['image_url'],
-                    distance    : item['distance'],
-                    status      : item['status'],
-                    explore_id  : item.actor_id
-                };
-                generate_like(token, (function(like_token){
-                    token.action_token.like=like_token;
-                    next(null,token);
-                }).bind(this));
-
-            });
-        }
-        return ret
-    };
-var createExplore = function( nearby_moments, params, next)
+            }).bind(this));
+        };
+var createExplore = function( nearby_moments, next)
 {
     if( !nearby_moments )
     {
@@ -84,7 +78,7 @@ var createExplore = function( nearby_moments, params, next)
     }
     else
     {
-        async.mapSeries( nearby_moments, generate_explore(params),
+        async.mapSeries( nearby_moments, generate_like,
         function onExploreGenerate( err, explore_list )
         {
             LOG.info(explore_list);
@@ -120,11 +114,12 @@ MomentSchema.statics.getExplore =function( params, next )
             }},
         function( err, nearby_moments )
             {
-                //LOG.error( nearby_moments);
+                LOG.error( 'nearby_moments');
+                LOG.error( nearby_moments);
                 LOG.error( err);
                 LOG.error( params.lat);
                 if (err) throw err;
-                createExplore(nearby_moments, {}, function (err,explore_list) {
+                createExplore(nearby_moments, function (err,explore_list) {
                     //LOG.error('explore_listssss');
                     //LOG.error(explore_list);
                     next(err, explore_list);

@@ -60,7 +60,7 @@ DeviceSchema.statics.getDevice = function( req, res, next)
 
     mongoose.model('Device').findOne(
         {
-           'device_id' : req.body.auth_token.device_id,
+           'device_id' : req.body.auth_token.device_id
         },
         function ( err, device )
             {
