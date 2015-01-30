@@ -186,10 +186,10 @@ var actionMenu = {
         },
 
         subscribe: function(params, next){
-            var target_did = param.action_token.target_info.did;
-            DEVICE.addSubscriber(target_did, params.auth_token.device_id, params.body.nickname,
+            var target_did = params.action_token.target_info.did;
+            DEVICE.addSubscriber(target_did, params.auth_token.device_id, params.body.nickname || '',
                 function(err){
-                    next(200);
+                    next(200,{});
                 });
         }
     };

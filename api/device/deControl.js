@@ -21,16 +21,14 @@ exports.register = function( params, res, next )
         });
     new_device.save();
     PUBNUB.createServerConnection( channel_uuid, pubnub_auth_key,
-        function()
-        {
+        ()=>{
             var token = {
                 device_id:device_id,
             };
 
             AUTH.newAuthToken( token, true,
-                function( newToken )
-                {
-                    next( newToken, true, channel_uuid, pubnub_auth_key, [], 201 );
+                ( newToken )=>{
+                    next( newToken, true, device_id/*channel_uuid*/, pubnub_auth_key, [], 201 );
                 });
         });
 };

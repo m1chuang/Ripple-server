@@ -121,7 +121,8 @@ moment.route('/action')
         var params =
         {
             auth_token : req.body.auth_token,
-            action_token : req.body.action_token
+            action_token : req.body.action_token,
+            body: req.body
         };
         LOG.info( 'body');
         LOG.info( req.body);

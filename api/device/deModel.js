@@ -1,6 +1,7 @@
 var mongoose        = require('mongoose');
 var async = require('async');
 var MOMENT    = require('../moment/moModel');
+var PUBNUB = require('../service/pubnub');
 var LOG = require('../service/util').logger;;
 
 var Schema          = mongoose.Schema;
@@ -17,7 +18,7 @@ var FriendScheme = new Schema(
             timestamp: { type: Date, default: Date.now },
         }],
         timestamp: { type: Date, default: Date.now },
-    });
+    }, { _id: false});
 
 var Subscribes = new Schema(
     {
@@ -29,13 +30,13 @@ var Subscribes = new Schema(
             timestamp: { type: Date, default: Date.now },
         }],
         timestamp: { type: Date, default: Date.now },
-    });
+    }, { _id: false});
 
 var fansSchema = new Schema(
     {
         channel_id:String,
         timestamp: { type: Date, default: Date.now },
-    });
+    }, { _id: false});
 
 var DeviceSchema   = new Schema(
     {
@@ -64,11 +65,6 @@ DeviceSchema.statics.getDevice = function( req, res, next)
         },
         function ( err, device )
             {
-                LOG.info('device in get device');
-                //LOG.info(typeof device);
-                //LOG.info(device );
-                //LOG.info(device[0] );
-
                 if(err)
                 {
                     res.status(404).json({err:err});
@@ -79,21 +75,29 @@ DeviceSchema.statics.getDevice = function( req, res, next)
 
             });
 };
-DeviceSchema.statics.addSubscriber = function(target_did, own_device_id, nickname){
-        mongoose.model('Device').findOne(
-        {
-           'device_id' : target_did,
-        },
-        function ( err, device )
-        {
-            device.update(
+DeviceSchema.statics.addSubscriber = function(target_did, own_server_channel_id, nickname,next){
+        LOG.info(target_did );
+
+         mongoose.model( 'Device' ).update(
+            {
+               'device_id' :target_did
+            },
+            {
+                $addToSet :
                 {
-                    $addToSet :
+                    fans :
                     {
-                        fans : {channel_id:own_device_id}
+                        'channel_id' : own_server_channel_id,
                     }
-                });
-        });
+                }
+            },
+            function(err,num, obj){
+                if(next) next( err, num, obj );
+                LOG.error('#######################################################################');
+                            LOG.info(err);
+                            LOG.info(num);
+                            LOG.info(obj);
+            });
 }
 DeviceSchema.statics.notifySubscriber = function(mo){
     console.log('notifySubscriber');
@@ -102,9 +106,23 @@ DeviceSchema.statics.notifySubscriber = function(mo){
         'device_id':mo.device_id
     },{
         'fans':1
-    },function(err, fans){
-        console.log('notifySubscriber--friends');
-        console.log(fans);
+    },(err, fans)=>{
+        console.log('notifyremote');
+        console.log(mo);
+        console.log(fans[0]);
+        console.log(fans[0].fans);
+
+        async.each(fans[0].fans,(f, callback)=>{
+            console.log('f@@@@@@@@@@@@@@@@@@@');
+            console.log(f);
+            PUBNUB.notifyRemote({
+                type:'subscription',
+                server_channel_id:f.channel_id,
+                image_url:mo.image_url,
+                status: mo.status
+            });
+
+        });
 
     });
 }

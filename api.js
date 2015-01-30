@@ -21,9 +21,9 @@ var mongoose   = require('mongoose');
 mongoose.connect( nconf.get('database')[ENV] );
 
 
-var moment     = require('./api/moment/moRoute');
-var device     = require('./api/device/deRoute');
-var test     = require('./api/testRoute');
+var moment     = require('./dist/api/moment/moRoute');
+var device     = require('./dist/api/device/deRoute');
+var test     = require('./dist/api/testRoute');
 
 
 app.use('/api/moment', moment);

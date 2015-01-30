@@ -57,6 +57,11 @@ device.route('/')
 
 
 device.use(AUTH.authenticate);
+device.route('/info')
+    .all(DEVICE.getDevice)
+    .post(function(req, res){
+        res.json(req.body.resource_device)
+    });
 device.route('/friend')
     .all(DEVICE.getDevice)
     .post( function( req, res)

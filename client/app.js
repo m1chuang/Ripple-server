@@ -26,15 +26,18 @@ PubnubClient.prototype.sub = function(channel){
      // windowing: 1000,
       presence: (m)=>{console.log(m)},
       callback: (message)=>{
+        console.log('message');
         console.log(message);
         switch(message.type){
-          case server:
+          case 'server':
             break;
-          case message:
+          case 'message':
             break;
-          case update:
+          case 'update':
+            console.log('recieve update');
             break;
         }
+        console.log(message);
       },
       connect: ()=>{console.log("Connected to "+channel)},
       disconnect: ()=>{console.log("Disconnected")},
@@ -42,6 +45,7 @@ PubnubClient.prototype.sub = function(channel){
       error: ()=>{console.log("Network Error")}
     });
   };
+
 
 PubnubClient.prototype.pub = function(channel){
     this.pubnub.publish({
@@ -148,7 +152,7 @@ function LoginUI (apiClient,data){
 
 };
 
-var moment_list = function(api){
+function moment_list(api){
   this.api = api;
   this.items = array();
 }
@@ -175,12 +179,19 @@ moment_list.prototype.rePopulate = function(info_list,next){
 function ExploreUI (apiClient, data){
   this.data = data;
   this.api=apiClient;
-  this.data.explore_list.subscribe = function(index, next){
+  this.data.explore_list.subscribe = (index, next)=>{
     console.log('substribing to explore item: '+index);
-    var item = this.items[index];
-    this.api.post('/moment/action', {action_token:item.action_token.subscribe},(response)=>{
+    var item = this.data.explore_list.items[index];
+    console.log('this.data.explore_list');
+    console.log(this.data.explore_list);
+    console.log(item);
+    this.data.explore_list.api.post('/moment/action', {action_token:item.action_token.subscribe},(response)=>{
       console.log(response);
-      this.data.subscribe_list.add(item);
+      console.log('@@@@@@@');
+      console.log(this.data);
+      console.log(this);
+      console.log(this.subscribe_list);
+      this.data.subscribe_list.addItem(item);
     });
   }
   this.nextPage = function(){
@@ -203,16 +214,18 @@ function ExploreUI (apiClient, data){
 function SubscribeUI(apiClient, data){
   this.data = data;
   this.api=apiClient;
-  this.data.subscribe_list.add = function(item){
+  this.data.subscribe_list.addItem = (item)=>{
     console.log('Adding '+item.status+ ' to subscribe list...');
-    this.data.subscribe_list.push({
+    this.data.subscribe_list.items.push({
       image_url:item.image_url,
-      distance:itme.distance,
+      distance:item.distance,
       status:item.status,
       nickname:'',
       moments:[]
     })
   };
+
+
   this.nextPage = function(data){
     console.log('api call to subscriber nextPage');
     return this
@@ -221,6 +234,7 @@ function SubscribeUI(apiClient, data){
     console.log('api call to subscriber refresh');
     return tihs
   }
+
 };//eof
 
 function App(params,next){
@@ -241,8 +255,8 @@ function App(params,next){
   this.api = new apiClient(this.device_info, params.env || 'prod');
   this.data =
   {
-    explore_list:new moment_list(this.api),
     subscribe_list:new moment_list(this.api),
+    explore_list:new moment_list(this.api),
     chat_list:[],
     self_list:[]
   }
@@ -260,7 +274,6 @@ function App(params,next){
         this.device_info.auth_token = params.auth_token;
         this.device_info.pubnub_auth_key = params.pubnub_key;
         this.device_info.channel_uuid = params.uuid;
-        this.data.subscribe_list = params.friend_list;
         this.data.login_status = params.relogin;
         this.api.initPubnub();
         next.call(this);
@@ -284,19 +297,24 @@ App.prototype.login = function(status, image, location){
     },1000);
   });
 };
-App.prototype.view_explore = function(){
+App.prototype.v_exp = function(){
   this.content.explore.refresh(()=>
     console.log(this.data.explore_list.items)
   );
 
 };
-App.prototype.subscribe = function(index){
+App.prototype.sub = function(index){
   this.data.explore_list.subscribe(index,(item)=>{
     console.log(response);
   })
 };
-App.prototype.view_subscriber = function(){
+App.prototype.v_sub = function(){
   this.content.subscriber.refresh();
+};
+App.prototype.g_info = function(){
+  this.api.post('/device/info',{},(device)=>{
+    console.log(device);
+  });
 };
 
 

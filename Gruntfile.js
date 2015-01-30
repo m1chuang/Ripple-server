@@ -14,8 +14,8 @@ module.exports = function(grunt) {
 
             scripts:
             {
-                files: ['app/**/*.*'],
-                tasks: ['jshint'],
+                files: ['api/**/*.*','client/*.js'],
+                tasks: ['jshint','6to5:client','6to5:build'],
             }
         },
         jshint: {
@@ -27,7 +27,7 @@ module.exports = function(grunt) {
                     undef:true,
                     node:true
                 },
-                build: ['Grunfile.js', 'app/**/*.*']
+                build: ['Grunfile.js', 'api/**/*.*']
 
         },
         mochaTest:
@@ -46,7 +46,7 @@ module.exports = function(grunt) {
         {
             dev:
             {
-                script: 'main.js',
+                script: 'api.js',
                 options:
                 {
                     ignore: ['node_modules/**']
@@ -70,6 +70,25 @@ module.exports = function(grunt) {
                     logConcurrentOutput: true
                 }
             }
+        },
+        '6to5': {
+            //options: {
+                //modules: 'common'
+            //},
+            client: {
+                files: [{
+                    expand: true,
+                    src: ['client/app.js'],
+                    dest: 'dist',
+                }],
+            },
+            build: {
+                files: [{
+                    expand: true,
+                    src: ['api/**/*.js'],
+                    dest: 'dist/',
+                }],
+            }
         }
     });
 
@@ -79,9 +98,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-nodemon');
     grunt.loadNpmTasks('grunt-concurrent');
+    grunt.loadNpmTasks('grunt-6to5');
 
     // Run tests
     grunt.registerTask('test', [ 'mochaTest' ] );
+    grunt.registerTask('to5', [ '6to5' ] );
 
 
     grunt.registerTask('dev', '', function()
@@ -89,7 +110,8 @@ module.exports = function(grunt) {
         var taskList = [
 
             'concurrent',
-            'jshint:dev',
+            '6to5:client',
+            '6to5:build',
             'nodemon',
             'watch'
         ];

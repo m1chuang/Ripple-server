@@ -36,6 +36,14 @@ var pnMessage =
             'chat_channel_id'   :   params['chat_channel_id'],
 
         }
+    },
+    subscription:function(params){
+        return {
+            'type':         'update',
+            'channel_id' :  params.server_channel_id || '',
+            'img_url'  :    params.image_url || '',
+            'status'    :   params.status || '',
+        }
     }
 
 }
@@ -43,19 +51,17 @@ var pnMessage =
 /*
 *   Notify a client
 */
-exports.notifyRemote = function( params, next)
+exports.notifyRemote = function( params)
 {
-    LOG.info('eeeeepnMessage');
+    LOG.info(pnMessage[ params['type'] ]( params ));
     PUBNUB.publish(
         {
             channel   : params['server_channel_id'],
-            auth_key  : server_master_key,
+            //auth_key  : server_master_key,
             message   : pnMessage[ params['type'] ]( params ),
             callback  : function(e) { LOG.info( "SUCCESS!", e ); },
             error     : function(e) { LOG.info( "FAILED! RETRY PUBLISH!", e ); }
         });
-
-     next();
 }
 
 
