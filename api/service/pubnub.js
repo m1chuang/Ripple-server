@@ -39,9 +39,9 @@ var pnMessage =
     },
     subscription:function(params){
         return {
-            'type':         'update',
-            'channel_id' :  params.server_channel_id || '',
-            'img_url'  :    params.image_url || '',
+            'type':         '001',
+            'uuid' :  params.uuid || '',
+            'image_url'  :    params.image_url || '',
             'status'    :   params.status || '',
         }
     }

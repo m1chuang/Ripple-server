@@ -186,8 +186,11 @@ var actionMenu = {
         },
 
         subscribe: function(params, next){
-            var target_did = params.action_token.target_info.did;
-            DEVICE.addSubscriber(target_did, params.auth_token.device_id, params.body.nickname || '',
+
+            DEVICE.addSubscriber(
+                params.action_token.target_info,
+                params.auth_token.device_id,
+                params.body.nickname || '',
                 function(err){
                     next(200,{});
                 });

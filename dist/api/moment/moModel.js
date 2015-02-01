@@ -7,7 +7,7 @@ var PUBNUB = require("../service/pubnub");
 var async = require("async");
 var CHALK = require("chalk");
 var LOG = require("../service/util").logger;
-
+var uuid = require("node-uuid");
 
 
 var MomentSchema = new Schema({
@@ -30,35 +30,37 @@ var generate_like = function (item, next) {
             aid: item.actor_id,
             distance: item.distance
         }
-    }, (function (action_token) {
+    }, function (action_token) {
         //LOG.error(action_token);
         //token.action_token.like=action_token;
+
         generate_subscribe({
             action_token: { like: action_token },
             image_url: item.image_url,
             distance: item.distance,
             status: item.status,
-            explore_id: item.actor_id
-        }, item.device_id, next);
-    }).bind(this));
+            uuid: item.actor_id }, item.device_id, next);
+    });
 };
 
 var generate_subscribe = function (item, target_did, next) {
     LOG.error("gen sub");
-    LOG.error(target_did);
+    var id = uuid.v4();
     AUTH.issueActionToken("subscribe", {
         target_info: {
-            did: target_did }
-    }, (function (subscribe_token) {
+            did: target_did,
+            uuid: id
+        }
+    }, function (subscribe_token) {
         console.log("gen seb done");
         next(null, {
             action_token: { like: item.action_token.like, subscribe: subscribe_token },
             image_url: item.image_url,
             distance: item.distance,
             status: item.status,
-            explore_id: item.actor_id
+            uuid: id
         });
-    }).bind(this));
+    });
 };
 var createExplore = function (nearby_moments, next) {
     if (!nearby_moments) {
@@ -97,8 +99,8 @@ MomentSchema.statics.getExplore = function (params, next) {
         LOG.error(params.lat);
         if (err) throw err;
         createExplore(nearby_moments, function (err, explore_list) {
-            //LOG.error('explore_listssss');
-            //LOG.error(explore_list);
+            LOG.error("explore_listssss");
+            LOG.error(explore_list);
             next(err, explore_list);
             // body...
         });

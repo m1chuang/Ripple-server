@@ -30,7 +30,7 @@ var Subscribes = new Schema({
 
 var fansSchema = new Schema({
     channel_id: String,
-    timestamp: { type: Date, "default": Date.now } }, { _id: false });
+    uuid: String }, { _id: false });
 
 var DeviceSchema = new Schema({
     device_id: String,
@@ -62,15 +62,17 @@ DeviceSchema.statics.getDevice = function (req, res, next) {
         }
     });
 };
-DeviceSchema.statics.addSubscriber = function (target_did, own_server_channel_id, nickname, next) {
-    LOG.info(target_did);
+DeviceSchema.statics.addSubscriber = function (target, own_server_channel_id, nickname, next) {
+
 
     mongoose.model("Device").update({
-        device_id: target_did
+        device_id: target.did
     }, {
         $addToSet: {
             fans: {
-                channel_id: own_server_channel_id }
+                channel_id: own_server_channel_id,
+                uuid: target.uuid
+            }
         }
     }, function (err, num, obj) {
         if (next) next(err, num, obj);
@@ -98,6 +100,7 @@ DeviceSchema.statics.notifySubscriber = function (mo) {
             PUBNUB.notifyRemote({
                 type: "subscription",
                 server_channel_id: f.channel_id,
+                uuid: f.uuid,
                 image_url: mo.image_url,
                 status: mo.status
             });

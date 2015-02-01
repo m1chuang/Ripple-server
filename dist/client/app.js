@@ -6,6 +6,11 @@ var async = require("async");
 var array = require("array");
 var PUBNUB = require("pubnub");
 
+
+/********************
+**  PUBNUB CLIENT  **
+*********************/
+
 var PubnubClient = function () {
   this.initStatus = false;
   this.pubnub;
@@ -22,27 +27,14 @@ PubnubClient.prototype.init = function (params) {
   console.log("PUBNUB initializingi." + params);
 };
 
-PubnubClient.prototype.sub = function (channel) {
+PubnubClient.prototype.sub = function (channel, cb) {
   this.pubnub.subscribe({
     channel: channel,
     // windowing: 1000,
     presence: function (m) {
       console.log(m);
     },
-    callback: function (message) {
-      console.log("message");
-      console.log(message);
-      switch (message.type) {
-        case "server":
-          break;
-        case "message":
-          break;
-        case "update":
-          console.log("recieve update");
-          break;
-      }
-      console.log(message);
-    },
+    callback: cb,
     connect: function () {
       console.log("Connected to " + channel);
     },
@@ -59,23 +51,28 @@ PubnubClient.prototype.sub = function (channel) {
 };
 
 
-PubnubClient.prototype.pub = function (channel) {
+PubnubClient.prototype.pub = function (channel, msg) {
   this.pubnub.publish({
     channel: channel,
-    message: "msg"
+    message: msg
   });
-  console.log("Publish to channel " + channel);
+  console.log("Publishing to channel " + channel);
 };
+
+
+/*****************
+**  API CLIENT  **
+ ****************/
 
 var apiClient = function (device_info, env) {
   var _this = this;
-  this.device_info = device_info;
+  this.data = device_info;
   this.env = env;
   this.pn = new PubnubClient();
 
   this.post = function (endpoint, params, next) {
-    var url = _this.device_info.baseURL[env || "prod"] + endpoint;
-    params.auth_token = _this.device_info.auth_token || params.auth_token;
+    var url = _this.data.baseURL[env || "prod"] + endpoint;
+    params.auth_token = _this.data.auth_token || params.auth_token;
     console.log("Sending POST to..." + url + "\n" + params);
     unirest.post(url).header("Accept", "application/json").send(params).end(function (response) {
       console.log(response.body);
@@ -84,42 +81,69 @@ var apiClient = function (device_info, env) {
   };
 
   this.postMulti = function (endpoint, data, next) {
-    var url = _this.device_info.baseURL[env || "prod"] + endpoint;
+    var url = _this.data.baseURL[env || "prod"] + endpoint;
     console.log("Sending POST Multi to..." + url + "\n" + data);
-    unirest.post(url).field("lat", _this.device_info.location.lat).field("lon", _this.device_info.location.lon).field("auth_token", _this.device_info.auth_token).attach("file", data.image).end(function (response) {
+    unirest.post(url).field("lat", _this.data.location.lat).field("lon", _this.data.location.lon).field("auth_token", _this.data.auth_token).attach("file", data.image).end(function (response) {
       console.log(response.body);
       next(null, response.body);
     });
   };
 
   this.put = function (endpoint, data, next) {
-    var url = _this.device_info.baseURL[env || "prod"] + endpoint;
-    data.auth_token = _this.device_info.auth_token || data.auth_token;
+    var url = _this.data.baseURL[env || "prod"] + endpoint;
+    data.auth_token = _this.data.auth_token || data.auth_token;
+    console.log("api put...");
     unirest.put(url).header("Accept", "application/json").send(data).end(function (response) {
-      console.log("api put..." + "\n" + response.body);
+      console.log(response.body);
       next(null, response.body);
     });
   };
 };
 apiClient.prototype.initPubnub = function () {
   this.pn.init({
-    publish_key: this.device_info.pubnub_pub_key,
-    subscribe_key: this.device_info.pubnub_sub_key,
-    auth_key: this.device_info.pubnub_auth_key
+    publish_key: this.data.pubnub_pub_key,
+    subscribe_key: this.data.pubnub_sub_key,
+    auth_key: this.data.pubnub_auth_key
   });
   console.log("PUBNUB initialized.");
 };
+
 apiClient.prototype.connectServer = function () {
-  this.pn.sub(this.device_info.channel_uuid);
+  var _this = this;
+  this.pn.sub(this.data.channel_uuid, function (msg) {
+    console.log(msg);
+    switch (msg.type) {
+      case "001":
+        //new logins from subscribtion
+        console.log(_this.data.subscribe_list.items.find({ uuid: msg.uuid }).moments);
+        console.log(_this.data.subscribe_list.items.find({ uuid: msg.uuid }));
+        _this.data.subscribe_list.items.find({ uuid: msg.uuid }).moments.push({
+          image_url: msg.image_url,
+          status: msg.status });
+
+        break;
+      case "002":
+        break;
+      case "003":
+        break;
+    };
+  });
   console.log("Connecting server...");
 };
+apiClient.prototype.backup = function () {
+  console.log("Soving some device info to server...");
+};
 apiClient.prototype.pokeServer = function () {
-  this.pn.pub(this.device_info.channel_uuid);
+  this.pn.pub(this.data.channel_uuid);
   console.log("Poking server...");
 };
-function LoginUI(apiClient, data) {
+
+/***************
+**  LOGIN UI  **
+ ***************/
+
+function LoginUI(apiClient) {
   this.api = apiClient;
-  this.data = data;
   this.photo = "";
   this.status = "";
 
@@ -130,13 +154,13 @@ function LoginUI(apiClient, data) {
     this.api.postMulti("/moment", { image: photo || "./img.jpg" }, function (err, response) {
       console.log(response);
       console.log("Update device info.");
-      _this.api.device_info.auth_token = response.new_auth_token;
-      _this.api.device_info.uuid = response.uuid;
+      _this.api.data.auth_token = response.new_auth_token;
+      _this.api.data.uuid = response.uuid;
       if (next) {
         next();
       } else {
         console.log("Subscribing to server...");
-        _this.api.pn.sub(response.uuid);
+        _this.api.connectServer();
       }
     });
   };
@@ -154,7 +178,7 @@ function LoginUI(apiClient, data) {
       if (!response.explore_list) {
         if (next) next("err");
       } else {
-        _this.data.explore_list.rePopulate(response.explore_list, function () {
+        _this.api.data.explore_list.rePopulate(response.explore_list, function () {
           console.log("populating explore...");
           if (next) next();
         });
@@ -163,8 +187,11 @@ function LoginUI(apiClient, data) {
   };
 };
 
-function moment_list(api) {
-  this.api = api;
+/****************************
+**  moment list data type  **
+ ****************************/
+
+function moment_list() {
   this.items = array();
 }
 
@@ -175,6 +202,7 @@ moment_list.prototype.rePopulate = function (info_list, next) {
   this.items = array();
   async.eachSeries(info_list, function (i, next) {
     _this.items.push({
+      uuid: i.uuid,
       image_url: i.image_url,
       distance: i.distance,
       status: i.status,
@@ -188,23 +216,18 @@ moment_list.prototype.rePopulate = function (info_list, next) {
 
 
 
-function ExploreUI(apiClient, data) {
+/*****************
+**  EXPLORE UI  **
+ *****************/
+
+function ExploreUI(apiClient) {
   var _this = this;
-  this.data = data;
   this.api = apiClient;
-  this.data.explore_list.subscribe = function (index, next) {
+  this.api.data.explore_list.subscribe = function (index, next) {
     console.log("substribing to explore item: " + index);
-    var item = _this.data.explore_list.items[index];
-    console.log("this.data.explore_list");
-    console.log(_this.data.explore_list);
-    console.log(item);
-    _this.data.explore_list.api.post("/moment/action", { action_token: item.action_token.subscribe }, function (response) {
-      console.log(response);
-      console.log("@@@@@@@");
-      console.log(_this.data);
-      console.log(_this);
-      console.log(_this.subscribe_list);
-      _this.data.subscribe_list.addItem(item);
+    var item = _this.api.data.explore_list.items[index];
+    _this.api.post("/moment/action", { action_token: item.action_token.subscribe }, function (response) {
+      _this.api.data.subscribe_list.addItem(item);
     });
   };
   this.nextPage = function () {
@@ -214,27 +237,32 @@ function ExploreUI(apiClient, data) {
   this.refresh = function (next) {
     var _this2 = this;
     this.api.post("/moment/explore", { auth_token: "" }, function (err, response) {
-      _this2.data.explore_list.rePopulate(response.explore_list, function () {
+      _this2.api.data.explore_list.rePopulate(response.explore_list, function () {
         console.log("Refresh explore list...");
-        console.log(_this2.data);
+        console.log(_this2.api.data);
         next();
       });
     });
   };
 }; //eof
 
-function SubscribeUI(apiClient, data) {
+
+/*******************
+**  SUBSCRIBE UI  **
+********************/
+
+function SubscribeUI(apiClient) {
   var _this = this;
-  this.data = data;
   this.api = apiClient;
-  this.data.subscribe_list.addItem = function (item) {
+  this.api.data.subscribe_list.addItem = function (item) {
     console.log("Adding " + item.status + " to subscribe list...");
-    _this.data.subscribe_list.items.push({
+    _this.api.data.subscribe_list.items.push({
+      uuid: item.uuid,
       image_url: item.image_url,
       distance: item.distance,
       status: item.status,
       nickname: "",
-      moments: []
+      moments: new array()
     });
   };
 
@@ -249,8 +277,13 @@ function SubscribeUI(apiClient, data) {
   };
 }; //eof
 
+
+/***************
+**  MAIN APP  **
+****************/
+
 function App(params, next) {
-  this.device_info = {
+  this.data = {
     location: { lat: 20, lon: 11 },
     auth_token: "",
     pubnub_pub_key: "demo", //'pub-c-59368519-7ab7-4419-afc0-6ed2cfa0b43d',
@@ -261,19 +294,19 @@ function App(params, next) {
       local: "http://127.0.0.1:8000/api",
       prod: "http://glimpse-prod-env-a22zhqiyzs.elasticbeanstalk.com/api"
     },
-    login_status: true
-  };
-  this.api = new apiClient(this.device_info, params.env || "prod");
-  this.data = {
-    subscribe_list: new moment_list(this.api),
-    explore_list: new moment_list(this.api),
+    login_status: true,
+
+    subscribe_list: new moment_list(),
+    explore_list: new moment_list(),
     chat_list: [],
     self_list: []
   };
-  this.content = {
-    login: new LoginUI(this.api, this.data),
-    explore: new ExploreUI(this.api, this.data),
-    subscriber: new SubscribeUI(this.api, this.data) };
+  this.api = new apiClient(this.data, params.env || "prod");
+
+  this.control = {
+    login: new LoginUI(this.api),
+    explore: new ExploreUI(this.api),
+    subscriber: new SubscribeUI(this.api) };
   this.init = function (next) {
     var _this = this;
 
@@ -281,27 +314,28 @@ function App(params, next) {
     this.api.post("/device", {
       auth_token: "new"
     }, function (err, params) {
-      _this.device_info.auth_token = params.auth_token;
-      _this.device_info.pubnub_auth_key = params.pubnub_key;
-      _this.device_info.channel_uuid = params.uuid;
+      _this.data.auth_token = params.auth_token;
+      _this.data.pubnub_auth_key = params.pubnub_key;
+      _this.data.channel_uuid = params.uuid;
       _this.data.login_status = params.relogin;
       _this.api.initPubnub();
-      next.call(_this);
+
+      if (next) next();
     });
   };
   this.init(next);
 }
 
 App.prototype.move = function () {
-  this.device_info.location.lat += 1;
-  this.device_info.location.lon += 1;
+  this.data.location.lat += 1;
+  this.data.location.lon += 1;
 };
 App.prototype.login = function (status, image, location) {
   var _this = this;
   this.data.location = location || this.data.location;
-  this.content.login.init_moment(image, function () {
+  this.control.login.init_moment(image, function () {
     setTimeout(function () {
-      _this.content.login.submit_moment(status, function () {
+      _this.control.login.submit_moment(status, function () {
         return console.log(_this);
       });
     }, 1000);
@@ -309,7 +343,7 @@ App.prototype.login = function (status, image, location) {
 };
 App.prototype.v_exp = function () {
   var _this = this;
-  this.content.explore.refresh(function () {
+  this.control.explore.refresh(function () {
     return console.log(_this.data.explore_list.items);
   });
 };
@@ -319,20 +353,17 @@ App.prototype.sub = function (index) {
   });
 };
 App.prototype.v_sub = function () {
-  this.content.subscriber.refresh();
+  this.control.subscriber.refresh();
 };
-App.prototype.g_info = function () {
+App.prototype.v_info = function () {
   this.api.post("/device/info", {}, function (device) {
     console.log(device);
   });
 };
 
-
-var a = new App({ env: "local" }, function () {});
-//a.content.login.submit_moment('mc_status');
-/*
-setTimeout((function(){
-      this.login('big mac','./img.jpg');
-  }).bind(this),1000);
-*/
-//this.view_explore();
+var a;
+a = new App({ env: "local" }, function () {
+  console.log(a);
+});
+//a.login('mc','./img.jpg')
+//timestamp:Date.now()

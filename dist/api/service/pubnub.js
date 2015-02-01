@@ -35,7 +35,7 @@ var pnMessage = {
         return {
             type: "001",
             uuid: params.uuid || "",
-            img_url: params.image_url || "",
+            image_url: params.image_url || "",
             status: params.status || "" };
     }
 

@@ -98,12 +98,14 @@ apiClient.prototype.initPubnub = function(){
 apiClient.prototype.connectServer = function(){
   this.pn.sub(this.data.channel_uuid,(msg)=>{
         console.log(msg);
-        switch(message.type){
+        switch(msg.type){
           case '001'://new logins from subscribtion
+            console.log(this.data.subscribe_list.items.find({uuid:msg.uuid}).moments);
+            console.log(this.data.subscribe_list.items.find({uuid:msg.uuid}));
             this.data.subscribe_list.items.find({uuid:msg.uuid}).moments.push({
               image_url:msg.image_url,
               status:msg.status,
-              timestamp:Date.now()
+              //timestamp:Date.now()
             });
 
             break;
@@ -188,6 +190,7 @@ moment_list.prototype.rePopulate = function(info_list,next){
   this.items = array();
   async.eachSeries(info_list,(i,next)=>{
     this.items.push({
+      uuid:i.uuid,
       image_url:i.image_url,
       distance:i.distance,
       status:i.status,
@@ -289,7 +292,7 @@ function App(params,next){
   }
   this.api = new apiClient(this.data, params.env || 'prod');
 
-  this.content = {
+  this.control = {
     login:new LoginUI(this.api),
     explore:new ExploreUI(this.api),
     subscriber:new SubscribeUI(this.api),
@@ -319,16 +322,16 @@ App.prototype.move = function(){
 };
 App.prototype.login = function(status, image, location){
   this.data.location = location || this.data.location;
-  this.content.login.init_moment(image,()=>
+  this.control.login.init_moment(image,()=>
   {
     setTimeout(()=>
     {
-      this.content.login.submit_moment(status,()=>console.log(this));
+      this.control.login.submit_moment(status,()=>console.log(this));
     },1000);
   });
 };
 App.prototype.v_exp = function(){
-  this.content.explore.refresh(()=>
+  this.control.explore.refresh(()=>
     console.log(this.data.explore_list.items)
   );
 
@@ -339,7 +342,7 @@ App.prototype.sub = function(index){
   })
 };
 App.prototype.v_sub = function(){
-  this.content.subscriber.refresh();
+  this.control.subscriber.refresh();
 };
 App.prototype.v_info = function(){
   this.api.post('/device/info',{},(device)=>{
@@ -351,4 +354,4 @@ var a;
 a= new App({env:'local'},()=>{
   console.log(a);
 });
-
+//a.login('mc','./img.jpg')
