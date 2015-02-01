@@ -33,8 +33,8 @@ var pnMessage = {
     },
     subscription: function (params) {
         return {
-            type: "update",
-            channel_id: params.server_channel_id || "",
+            type: "001",
+            uuid: params.uuid || "",
             img_url: params.image_url || "",
             status: params.status || "" };
     }
