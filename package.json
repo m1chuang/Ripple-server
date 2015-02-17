@@ -8,7 +8,7 @@
   },
   "private": true,
   "scripts": {
-    "start":  "grunt dev",
+    "start": "grunt dev",
     "server": "nodemon api.js",
     "test": "grunt test"
   },
@@ -30,7 +30,9 @@
     "winston": "^0.8.1",
     "winston-logentries": "^1.0.1",
     "winston-loggly": "^1.0.2",
-    "nodemon": "^1.3.5"
+    "nodemon": "^1.3.7",
+    "array": "^0.4.3",
+    "unirest": "^0.4.0"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

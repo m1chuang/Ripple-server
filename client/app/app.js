@@ -1,3 +1,4 @@
+
 var unirest = require('unirest');
 var uuid = require('node-uuid');
 var async = require('async');
@@ -260,7 +261,7 @@ function SubscribeUI(apiClient){
   }
   this.refresh = function(data){
     console.log('api call to subscriber refresh');
-    return tihs
+    return this
   }
 
 };//eof
@@ -330,20 +331,24 @@ App.prototype.login = function(status, image, location){
     },1000);
   });
 };
+
 App.prototype.v_exp = function(){
   this.control.explore.refresh(()=>
     console.log(this.data.explore_list.items)
   );
 
 };
+
 App.prototype.sub = function(index){
   this.data.explore_list.subscribe(index,(item)=>{
     console.log(response);
   })
 };
+
 App.prototype.v_sub = function(){
   this.control.subscriber.refresh();
 };
+
 App.prototype.v_info = function(){
   this.api.post('/device/info',{},(device)=>{
     console.log(device);
