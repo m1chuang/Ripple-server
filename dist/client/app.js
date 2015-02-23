@@ -319,6 +319,7 @@ function App(params, next) {
       _this.data.channel_uuid = params.uuid;
       _this.data.login_status = params.relogin;
       _this.api.initPubnub();
+      _this.api.connectServer();
 
       if (next) next();
     });
@@ -365,5 +366,7 @@ var a;
 a = new App({ env: "local" }, function () {
   console.log(a);
 });
+
+return App;
 //a.login('mc','./img.jpg')
 //timestamp:Date.now()

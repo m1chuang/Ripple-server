@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "t":"6to5 app.js --out-file app.es5.js",
+    "t": "6to5 app.js --out-file app.es5.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

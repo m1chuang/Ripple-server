@@ -8,16 +8,18 @@ var nconf = require('nconf');
 var express = require('express');
 var device = express.Router();
 
-/**
+/*
 **  Middleware
-**/
+**
+*/
 device.use(routeValidator('device','all'));
 
 
 
-/**
+/*
 **  Routes
-**/
+**
+*/
 device.route('/')
 
    /*
@@ -44,7 +46,6 @@ device.route('/')
         if(params.auth_token === 'new')// For now, all clients requesting token will be granted
         {
             DeviceCtr.register( params, res, response);
-
         }
         else
         {
@@ -55,13 +56,13 @@ device.route('/')
         }
     });
 
-
 device.use(AUTH.authenticate);
 device.route('/info')
     .all(DEVICE.getDevice)
     .post(function(req, res){
         res.json(req.body.resource_device)
     });
+
 device.route('/friend')
     .all(DEVICE.getDevice)
     .post( function( req, res)

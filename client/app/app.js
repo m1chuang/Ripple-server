@@ -307,8 +307,8 @@ function App(params,next){
         this.data.pubnub_auth_key = params.pubnub_key;
         this.data.channel_uuid = params.uuid;
         this.data.login_status = params.relogin;
+        this.api.connectServer();
         this.api.initPubnub();
-
         if(next)next();
       }
     );
@@ -354,4 +354,6 @@ var a;
 a= new App({env:'local'},()=>{
   console.log(a);
 });
+return App
 //a.login('mc','./img.jpg')
+//
