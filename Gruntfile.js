@@ -6,18 +6,7 @@ module.exports = function(grunt) {
     grunt.initConfig(
     {
         pkg: grunt.file.readJSON('package.json'),
-        watch:
-        {
-            options: {
-                spawn: false,
-            },
 
-            scripts:
-            {
-                files: ['api/**/*.*','client/*.js'],
-                tasks: ['jshint','6to5:client','6to5:build'],
-            }
-        },
         jshint: {
 
                 options:
@@ -27,7 +16,7 @@ module.exports = function(grunt) {
                     undef:true,
                     node:true
                 },
-                build: ['Grunfile.js', 'api/**/*.*']
+                build: ['Grunfile.js', 'src/api/**/*.*']
 
         },
         mochaTest:
@@ -49,45 +38,45 @@ module.exports = function(grunt) {
                 script: 'api.js',
                 options:
                 {
-                    ignore: ['node_modules/**']
+                    callback: function (nodemon) {
+                        nodemon.on('log', function (event) {
+                          console.log(event.colour);
+                        });
+                      },
+                    delay: 500,
+                    ignore: ['node_modules/**','src/**'],
+                    watch: ['dist/**','api.js','api-config.json']
                 }
             }
         },
         concurrent: {
-            dev:
-            {
-                tasks: ['jshint', 'nodemon', 'watch'],
-                options:
-                {
-                    logConcurrentOutput: true
-                }
+            dev:{
+                tasks:[ 'nodemon', 'watch'],
+                options:{ logConcurrentOutput: true}
             },
-            test:
-            {
-                tasks: ['mochaTest', 'nodemon', 'watch'],
-                options:
-                {
-                    logConcurrentOutput: true
+            test:{
+                tasks:[ 'mochaTest', 'nodemon', 'watch'],
+                options:{ logConcurrentOutput: true}
+            }
+        },
+       'babel': {
+            options: {
+                sourceMap: true
+            },
+            dist: {
+                files: {
+                    'dist/api/**/*.*': 'src/api/**/*.*',
+                    'dist/client/*.js':'src/client/*.js',
+                    'dist/client/img.jpg':'src/client/img.jpg'
                 }
             }
         },
-        '6to5': {
-            //options: {
-                //modules: 'common'
-            //},
-            client: {
-                files: [{
-                    expand: true,
-                    src: ['client/app.js'],
-                    dest: 'dist',
-                }],
-            },
-            build: {
-                files: [{
-                    expand: true,
-                    src: ['api/**/*.js'],
-                    dest: 'dist/',
-                }],
+         watch:
+        {
+            options: {spawn: false},
+            scripts:{
+                files: ['src/**/*.js'],
+                tasks: ['jshint','babel']
             }
         }
     });
@@ -98,23 +87,18 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-nodemon');
     grunt.loadNpmTasks('grunt-concurrent');
-    grunt.loadNpmTasks('grunt-6to5');
+    grunt.loadNpmTasks('grunt-babel');
 
     // Run tests
     grunt.registerTask('test', [ 'mochaTest' ] );
-    grunt.registerTask('to5', [ '6to5' ] );
 
 
     grunt.registerTask('dev', '', function()
     {
-        var taskList = [
-
-            'concurrent',
-            '6to5:client',
-            '6to5:build',
-            'nodemon',
-            'watch'
-        ];
-        grunt.task.run(taskList);
+        grunt.task.run([
+            'jshint',
+            'babel',
+            'concurrent:dev'
+        ]);
     });
 };

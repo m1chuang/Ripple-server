@@ -9,8 +9,6 @@ var LOG = require("./service/util").logger;;
 var uuid = require("node-uuid");
 var Schema = mongoose.Schema;
 
-
-
 var connectionSchema = new Schema({
     actor_id: String,
     device_id: String,
@@ -270,4 +268,3 @@ actorModel.createPending = function (params, next) {
 
 
 module.exports = actorModel;
-//connect : false,

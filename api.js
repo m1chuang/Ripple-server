@@ -11,10 +11,10 @@ app.use(bodyParser.urlencoded({
 }));
 
 var nconf = require('nconf');
-nconf.argv().env().file({ file: __dirname + '/api/config.json' });
+nconf.argv().env().file({ file: __dirname + '/api-config.json' });
 var ENV = nconf.get('NODE_ENV');
 
-var LOG     = require('./api/service/util').logger;
+var LOG     = require('./dist/api/service/util').logger;
 LOG.info(ENV);
 
 var mongoose   = require('mongoose');
@@ -26,9 +26,9 @@ var device     = require('./dist/api/device/deRoute');
 var test     = require('./dist/api/testRoute');
 
 
-app.use('/api/moment', moment);
-app.use('/api/device', device);
-app.use('/api/test', test);
+app.use('/dist/api/moment', moment);
+app.use('/dist/api/device', device);
+app.use('/dist/api/test', test);
 
 
 
