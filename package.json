@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node api.js",
     "server": "nodemon api.js --watch src",
-    "test": "grunt test",
+    "test": "grunt test"
   },
   "dependencies": {
     "async": "0.9.0",
