@@ -26,9 +26,9 @@ var device     = require('./dist/api/device/deRoute');
 var test     = require('./dist/api/testRoute');
 
 
-app.use('/dist/api/moment', moment);
-app.use('/dist/api/device', device);
-app.use('/dist/api/test', test);
+app.use('/api/moment', moment);
+app.use('/api/device', device);
+app.use('/api/test', test);
 
 
 

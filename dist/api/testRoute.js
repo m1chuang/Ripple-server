@@ -33,10 +33,10 @@ test.route("/cleardb").post(function (req, res) {
             console.log("Index ensured");
         });
     });
-
 });
 
 test.route("/5frds").post(function (req, res) {
+
     Pubnub.fivefrds(req.body.channel, function (auth_key, deny1, deny2, allow1, allow2, allow3) {
         res.json({
             auth_key: auth_key,
@@ -68,7 +68,6 @@ test.route("/pub").post(function (req, res) {
     });
 });
 
-
 test.route("/grant").post(function (req, res) {
     console.log("pubb");
     console.log(req.body.channel);
@@ -98,8 +97,6 @@ test.route("/").get(function (req, res) {
         lname: req.body.lname });
 });
 
-
-
 test.route("/image").post(function (req, res) {
     S3.upload(req.body.image, { key: req.body.key });
 
@@ -110,9 +107,8 @@ test.route("/image").post(function (req, res) {
 test.post("/imagem", S3.multipart);
 test.route("/imagem").post(function (req, res) {
 
-
     res.json(req.body);
-
 });
 
 module.exports = test;
+//# sourceMappingURL=testRoute.js.map

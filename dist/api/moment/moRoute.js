@@ -13,10 +13,7 @@ var nconf = require("nconf");
 var express = require("express");
 var uuid = require("node-uuid");
 
-
 var moment = express.Router();
-
-
 
 /**
 **  Input Validation & Authentication
@@ -27,7 +24,6 @@ moment.post("/action", routeValidator("moment", "action"));
 
 moment.use(AUTH.authenticate);
 
-
 /**
 **  Routes
 **/
@@ -36,6 +32,7 @@ moment.route("/")
    Initiate a moment, request when photo taken
 */
 .post(DEVICE.getDevice, function (req, res) {
+
     var params = {
         device_id: req.body.auth_token.device_id,
         resource_device: req.body.resource_device,
@@ -45,7 +42,7 @@ moment.route("/")
         actor_id: req.body.auth_token.actor_id
     };
 
-    var response = function (status, msg, newToken) {
+    var response = function response(status, msg, newToken) {
         res.status(status).json({
             new_auth_token: newToken
         });
@@ -54,11 +51,11 @@ moment.route("/")
     MomentCtr.initMoment(params, response);
 })
 
-
 /*
    Complete a moment and login
 */
 .put(ACTOR.getActor, function (req, res) {
+
     var params = {
         resource_actor: req.body.resource_actor,
         auth_token: req.body.auth_token,
@@ -69,15 +66,13 @@ moment.route("/")
         offset: 0
     };
 
-    var response = function (status, msg, explore_list) {
+    var response = function response(status, msg, explore_list) {
         res.status(status).json({
             msg: msg,
             explore_list: explore_list || [] });
     };
     MomentCtr.completeMoment(params, response);
 });
-
-
 
 moment.route("/explore")
 /*
@@ -99,7 +94,6 @@ moment.route("/explore")
     });
 });
 
-
 moment.route("/action").all(AUTH.parseAction) //,tokenValidator('action'))
 .post(function (req, res) {
     var params = {
@@ -109,7 +103,8 @@ moment.route("/action").all(AUTH.parseAction) //,tokenValidator('action'))
     };
     LOG.info("body");
     LOG.info(req.body);
-    var response = function (status, payload) {
+    var response = function response(status, payload) {
+
         res.status(status).json({
             payload: payload
         });
@@ -117,6 +112,5 @@ moment.route("/action").all(AUTH.parseAction) //,tokenValidator('action'))
     MomentCtr.doAction(params, response);
 });
 
-
-
 module.exports = moment;
+//# sourceMappingURL=moRoute.js.map

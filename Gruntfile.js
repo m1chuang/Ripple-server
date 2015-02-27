@@ -64,11 +64,11 @@ module.exports = function(grunt) {
                 sourceMap: true
             },
             dist: {
-                files: {
-                    'dist/api/**/*.*': 'src/api/**/*.*',
-                    'dist/client/*.js':'src/client/*.js',
-                    'dist/client/img.jpg':'src/client/img.jpg'
-                }
+                expand:true,
+                cwd:'src',
+                src: ['api/**/*.js','client/*.js'],
+                dest: 'dist',
+                ext:'.js'
             }
         },
          watch:

@@ -73,6 +73,7 @@ ActorSchema.statics.getConnection = function (target_aid, owner_aid, next) {
         actor_id: owner_aid }, {
         connection: 1
     }).sort({ timestamp: -1 }).limit(1).exec(function (err, obj) {
+
         if (err) LOG.error(err);
 
         next(err, obj);
@@ -100,14 +101,15 @@ ActorSchema.statics.getRelation = function (target_aid, owner_aid, next) {
         health: 1
 
     }).sort({ timestamp: -1 }).limit(1).exec(function (err, obj) {
+
         if (err) LOG.error(err);
 
         next(err, obj);
     });
 };
 
-
 ActorSchema.methods.addRelation = function (params, next) {
+
     this.update({
         $addToSet: {
             relation: {
@@ -166,9 +168,8 @@ ActorSchema.methods.saveConnection = function (params, next) {
     });
 };
 
-
-
 ActorSchema.statics.saveRemoteConnection = function (params, next) {
+
     mongoose.model("Actor").findOne({
         actor_id: params.target_aid }, function (err, actor) {
         var device_id = actor.device_id;
@@ -219,9 +220,11 @@ ActorSchema.statics.saveRemoteConnection = function (params, next) {
 };
 
 ActorSchema.statics.addRemoteRelation = function (params, next) {
+
     mongoose.model("Actor").findOne({
         actor_id: params.target_aid
     }, function (err, actor) {
+
         if (err) LOG.info(err);
         //LOG.info('actor');
         //LOG.info(actor);
@@ -240,12 +243,12 @@ ActorSchema.statics.addRemoteRelation = function (params, next) {
     });
 };
 
-
 /*
 * Helper
 */
 var actorModel = mongoose.model("Actor", ActorSchema);
 actorModel.createPending = function (params, next) {
+
     LOG.warn("Actor.createPending, actor.health:" + params.resource_actor);
 
     MOMENT.getExplore(params, function (err, explore_list) {
@@ -262,9 +265,8 @@ actorModel.createPending = function (params, next) {
             });
             next(newActor);
         });
-
     });
 };
 
-
 module.exports = actorModel;
+//# sourceMappingURL=actor.js.map

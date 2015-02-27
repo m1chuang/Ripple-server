@@ -15,7 +15,7 @@ var PUBNUB = require("pubnub").init({
 var server_master_key = nconf.get("server-master-key");
 
 var pnMessage = {
-    like: function (params) {
+    like: function like(params) {
         return {
 
             type: "update",
@@ -23,7 +23,7 @@ var pnMessage = {
             explore_id: params.explore_id,
             chat_channel_id: params.chat_channel_id };
     },
-    update: function (params) {
+    update: function update(params) {
         return {
 
             type: "update",
@@ -31,7 +31,7 @@ var pnMessage = {
             explore_id: params.explore_id,
             chat_channel_id: params.chat_channel_id };
     },
-    subscription: function (params) {
+    subscription: function subscription(params) {
         return {
             type: "001",
             uuid: params.uuid || "",
@@ -50,15 +50,14 @@ exports.notifyRemote = function (params) {
         channel: params.server_channel_id,
         //auth_key  : server_master_key,
         message: pnMessage[params.type](params),
-        callback: function (e) {
+        callback: function callback(e) {
             LOG.info("SUCCESS!", e);
         },
-        error: function (e) {
+        error: function error(e) {
             LOG.info("FAILED! RETRY PUBLISH!", e);
         }
     });
 };
-
 
 exports.createServerConnection = function (device_id, server_auth_key, next) {
     var client_auth_key = server_auth_key;
@@ -94,10 +93,10 @@ exports.createConversation = function (initator_auth_key, target_auth_key, next)
         auth_key: initator_auth_key,
         read: true,
         write: true,
-        callback: function (e) {
+        callback: function callback(e) {
             LOG.info("SUCCESS!", e);
         },
-        error: function (e) {
+        error: function error(e) {
             LOG.info("FAILED! RETRY PUBLISH!", e);
         }
     });
@@ -107,42 +106,19 @@ exports.createConversation = function (initator_auth_key, target_auth_key, next)
         auth_key: target_auth_key,
         read: true,
         write: true,
-        callback: function (e) {
+        callback: function callback(e) {
             LOG.info("SUCCESS!", e);
         },
-        error: function (e) {
+        error: function error(e) {
             LOG.info("FAILED! RETRY PUBLISH!", e);
         }
     });
 
     next(channel_id);
-
-
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 var psAction = {
-    subTest: function (channel, message, cb) {
+    subTest: function subTest(channel, message, cb) {
         /* ---------------------------------------------------------------------------
         Listen for Messages
         --------------------------------------------------------------------------- */
@@ -151,7 +127,8 @@ var psAction = {
         var err_count = 0;
         PUBNUB.subscribe({
             channel: channel,
-            connect: function () {
+            connect: function connect() {
+
                 LOG.info("connected");
 
                 // Publish a Message on Connect
@@ -164,10 +141,10 @@ var psAction = {
                         some_key: "Hello World!",
                         message: message
                     },
-                    error: function (info) {
+                    error: function error(info) {
                         LOG.info(info);
                     },
-                    callback: function (info) {
+                    callback: function callback(info) {
                         if (!info[0]) LOG.info("Failed Message Delivery");
 
                         LOG.info(info);
@@ -175,7 +152,7 @@ var psAction = {
                         PUBNUB.history({
                             channel: channel,
                             limit: 1,
-                            callback: function (messages) {
+                            callback: function callback(messages) {
                                 // messages is an array of history.
                                 LOG.info(messages);
                             }
@@ -183,11 +160,11 @@ var psAction = {
                     }
                 });
             },
-            callback: function (message) {
+            callback: function callback(message) {
                 LOG.info(message);
                 LOG.info("MESSAGE RECEIVED!!!");
             },
-            error: function () {
+            error: function error() {
                 err_count += 1;
                 LOG.info("PUBNUB Connection Dropped");
             }
@@ -195,9 +172,6 @@ var psAction = {
         cb();
     }
 };
-
-
-
 
 exports.subTest = function (channel_id, message, cb) {
     psAction.subTest(channel_id, message, cb);
@@ -208,33 +182,32 @@ exports.subscribe_server = function (params, cb) {
     PUBNUB.publish({
         channel: params.mid,
         message: { message: "Hello" },
-        callback: function (m) {
+        callback: function callback(m) {
             LOG.info("SUCCESS!", m);
         },
-        error: function (e) {
+        error: function error(e) {
             LOG.info("FAILED! RETRY PUBLISH!", e);
         }
     });
 };
 exports.grant = function (channel, cb) {
+
     PUBNUB.grant({
         channel: channel,
         auth_key: "nope",
         read: true,
         write: true,
         ttl: 300,
-        callback: function (m) {
+        callback: function callback(m) {
             cb("SUCCESS!", m);
         },
-        error: function (e) {
+        error: function error(e) {
             cb("FAILED! RETRY PUBLISH!" + e);
         }
     });
 };
 
-
 exports.fivefrds = function (channel, next) {
-
 
     var deny1 = channel + "_" + "d1";
     var deny2 = channel + "_" + "d2";
@@ -249,10 +222,10 @@ exports.fivefrds = function (channel, next) {
         read: true,
         write: true,
         ttl: 3000,
-        callback: function (m) {
+        callback: function callback(m) {
             LOG.info("SUCCESS!", m);
         },
-        error: function (e) {
+        error: function error(e) {
             LOG.info("FAILED! RETRY PUBLISH!" + e);
         }
     });
@@ -262,10 +235,10 @@ exports.fivefrds = function (channel, next) {
         read: true,
         write: true,
         ttl: 3000,
-        callback: function (m) {
+        callback: function callback(m) {
             LOG.info("SUCCESS!", m);
         },
-        error: function (e) {
+        error: function error(e) {
             LOG.info("FAILED! RETRY PUBLISH!" + e);
         }
     });
@@ -275,10 +248,10 @@ exports.fivefrds = function (channel, next) {
         read: true,
         write: true,
         ttl: 3000,
-        callback: function (m) {
+        callback: function callback(m) {
             LOG.info("SUCCESS!", m);
         },
-        error: function (e) {
+        error: function error(e) {
             LOG.info("FAILED! RETRY PUBLISH!" + e);
         }
     });
@@ -288,10 +261,10 @@ exports.fivefrds = function (channel, next) {
         read: true,
         write: true,
         ttl: 3000,
-        callback: function (m) {
+        callback: function callback(m) {
             LOG.info("SUCCESS!", m);
         },
-        error: function (e) {
+        error: function error(e) {
             LOG.info("FAILED! RETRY PUBLISH!" + e);
         }
     });
@@ -301,16 +274,17 @@ exports.fivefrds = function (channel, next) {
         read: true,
         write: true,
         ttl: 3000,
-        callback: function (m) {
+        callback: function callback(m) {
             LOG.info("SUCCESS!", m);
         },
-        error: function (e) {
+        error: function error(e) {
             LOG.info("FAILED! RETRY PUBLISH!" + e);
         }
     });
     next("key", deny1, deny2, allow1, allow2, allow3);
 };
 exports.group = function (params, next) {
+
     var auth_key = uuid.v4();
     var allow = uuid.v4();
     var deny = uuid.v4();
@@ -324,15 +298,14 @@ exports.group = function (params, next) {
             read: i == 3 || i == 4 ? false : true,
             write: true,
             ttl: 3000,
-            callback: function (m) {
+            callback: function callback(m) {
                 LOG.info("SUCCESS! ", m);
             },
-            error: function (e) {
+            error: function error(e) {
                 LOG.info("FAILED! RETRY PUBLISH!" + e);
             }
         });
     }
-
 
     next(auth_key, allow, deny);
 };
@@ -343,11 +316,12 @@ exports.pub = function (channel, message, cb) {
     PUBNUB.publish({
         channel: channel,
         message: { message: "Hello from glimpse server~~~" },
-        callback: function (e) {
+        callback: function callback(e) {
             LOG.info("SUCCESS!", e);cb();
         },
-        error: function (e) {
+        error: function error(e) {
             LOG.info("FAILED! RETRY PUBLISH!", e);
         }
     });
 };
+//# sourceMappingURL=pubnub.js.map

@@ -16,8 +16,6 @@ var device = express.Router();
 */
 device.use(routeValidator("device", "all"));
 
-
-
 /*
 **  Routes
 **
@@ -31,7 +29,7 @@ device.route("/")
     var params = {
         auth_token: req.body.auth_token
     };
-    var response = function (token, require_login, uuid, pubnub_key, friend_list, status) {
+    var response = function response(token, require_login, uuid, pubnub_key, friend_list, status) {
         res.status(status).json({
             auth_token: token,
             relogin: require_login,
@@ -57,12 +55,13 @@ device.route("/info").all(DEVICE.getDevice).post(function (req, res) {
 });
 
 device.route("/friend").all(DEVICE.getDevice).post(function (req, res) {
+
     var params = {
         resource_device: req.body.resource_device,
         auth_tokne: req.body.auth_tokne
     };
 
-    var response = function (err, friends) {
+    var response = function response(err, friends) {
         res.json({
             friends: friends
         });
@@ -91,7 +90,6 @@ device.route("/friend/add").post(function (req, res) {
     //@@@ add friend using alternative methonds, ex QR
 });
 
-
 device.route("/explore/:page")
 /*
 *   Get pagination on explore list
@@ -111,5 +109,5 @@ device.route("/explore/:page")
     });
 });
 
-
 module.exports = device;
+//# sourceMappingURL=deRoute.js.map

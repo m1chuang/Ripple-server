@@ -38,7 +38,6 @@ exports.initMoment = function (params, response) {
     });
 };
 
-
 exports.completeMoment = function (params, response) {
     var actor = params.resource_actor;
     //actor found, is moment also found and fresh?
@@ -74,9 +73,8 @@ exports.completeMoment = function (params, response) {
     }
 };
 
-
-
 exports.getNewExplore = function (params, next) {
+
     MOMENT.getExplore(params, function (err, explore_list) {
         LOG.info("@@@@@@@@@@@@@@@@@@");
         LOG.info(explore_list);
@@ -84,16 +82,13 @@ exports.getNewExplore = function (params, next) {
     });
 };
 
-
-
-
-
 var actionMenu = {
     /*
     *   Check if a like relation with the target is already place in your relations
     *   if yes, create the connection. Otherwise, place a like relation in the target's relations
     */
-    like: function (params, next) {
+    like: function like(params, next) {
+
         LOG.info(params.action_token);
         var target_aid = params.action_token.target_info.aid;
         ACTOR.getRelation(target_aid, params.auth_token.actor_id, function (err, actor) {
@@ -142,7 +137,8 @@ var actionMenu = {
         });
     },
 
-    subscribe: function (params, next) {
+    subscribe: function subscribe(params, next) {
+
         DEVICE.addSubscriber(params.action_token.target_info, params.auth_token.device_id, params.body.nickname || "", function (err) {
             next(200, {});
         });
@@ -153,3 +149,4 @@ exports.doAction = function (params, next) {
     LOG.info(params);
     actionMenu[params.action_token.action](params, next);
 };
+//# sourceMappingURL=moControl.js.map

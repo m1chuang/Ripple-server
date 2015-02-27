@@ -49,7 +49,6 @@ exports.login = function (params, res, next) {
     });
 };
 
-
 exports.getFriends = function (params, next) {
     LOG.info(CHALK.red("In DEVICE.getFriends"));
     DEVICE.filterFriends(device, function (friends) {
@@ -60,3 +59,4 @@ exports.getFriends = function (params, next) {
 exports.unFriend = function (params, next) {
     next();
 };
+//# sourceMappingURL=deControl.js.map

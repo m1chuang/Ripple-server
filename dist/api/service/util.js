@@ -36,39 +36,29 @@ process.on("uncaughtException", function (err) {});
 
 logger.exitOnError = false;
 
-
-
-
-
-
-
-
-
-
-
-
 /*
     Validation
 */
 
 var validator = require("is-my-json-valid");
 
-var route = function (resource, type) {
+var route = function route(resource, type) {
     return function (req, res, next) {
         var validate = validator(nconf.get("validation")[resource][type]);
         validate(req.body) ? next() : res.status(400).json({ errs: validate.errors });
     };
 };
 
-var action_token = function (req, res, next) {
+var action_token = function action_token(req, res, next) {
     if (!req.body.action_token || !req.body.action_token.action) {
         res.status(400).json({ errs: "invalid action token" });
     } else {
+
         var validate = validator(nconf.get("validation").token.action[req.body.action_token.action]);
         validate(req.body.action_token) ? next() : res.status(400).json({ errs: validate.errors });
     }
 };
-var auth_token = function (req, res, next) {
+var auth_token = function auth_token(req, res, next) {
     if (!req.body.auth_token) {
         //                  console.log( 'res.body');
         //                    console.log( req.body);
@@ -81,12 +71,8 @@ var auth_token = function (req, res, next) {
     }
 };
 
-
-
-
-
-
-
 module.exports = { logger: logger, validator: { route: route, action_token: action_token, auth_token: auth_token } };
+
 //logger.error('uncaughtException', { message : err.message, stack : err.stack }); // logging with MetaData
 //process.exit(1); // exit with failure
+//# sourceMappingURL=util.js.map

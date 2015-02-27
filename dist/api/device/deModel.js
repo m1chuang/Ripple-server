@@ -8,7 +8,6 @@ var LOG = require("../service/util").logger;;
 
 var Schema = mongoose.Schema;
 
-
 var FriendScheme = new Schema({
     device_id: String,
     channel_id: String,
@@ -63,7 +62,6 @@ DeviceSchema.statics.getDevice = function (req, res, next) {
     });
 };
 DeviceSchema.statics.addSubscriber = function (target, own_server_channel_id, nickname, next) {
-
 
     mongoose.model("Device").update({
         device_id: target.did
@@ -126,6 +124,7 @@ DeviceSchema.statics.filterFriends = function (device, next) {
             moments: friend.moments,
             timestamp: friend.timestamp };
     }, function (friend_list) {
+
         next();
     });
 };
@@ -134,10 +133,9 @@ DeviceSchema.methods.getCurrentMoment = function (next) {
     return this.moments[0];
 };
 
-
 DeviceSchema.index({ "moments.mid": 1 });
 DeviceSchema.index({ "moments.mid": 1, "moments.explore.mid": 1 });
 DeviceSchema.index({ device_id: 1 });
 
-
 module.exports = mongoose.model("Device", DeviceSchema);
+//# sourceMappingURL=deModel.js.map

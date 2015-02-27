@@ -10,7 +10,7 @@ var crypto = require("crypto"),
     // update to encryption with GCM later
 key = nconf.get("secret-key").encription;
 
-var encrypt = function (text) {
+var encrypt = function encrypt(text) {
     /*
     //var iv = new Buffer(crypto.randomBytes(12)); // ensure that the IV (initialization vector) is random
     var cipher = crypto.createCipher(algorithm, key);//crypto.createDecipheriv(algorithm, key, iv);
@@ -28,7 +28,7 @@ var encrypt = function (text) {
 };
 module.exports.encrypt = encrypt;
 
-var decrypt = function (encrypted) {
+var decrypt = function decrypt(encrypted) {
     /*
     LOG.info('encrypted');
     LOG.info(encrypted);
@@ -44,12 +44,12 @@ var decrypt = function (encrypted) {
 };
 module.exports.decrypt = decrypt;
 
-var signToken = function (type, payload) {
+var signToken = function signToken(type, payload) {
     var token = jwt.sign(payload, nconf.get("secret-key").token[type]);
     return token;
 };
 module.exports.signToken = signToken;
-var verifyToken = function (type, token, verified) {
+var verifyToken = function verifyToken(type, token, verified) {
     return jwt.verify(token, nconf.get("secret-key").token[type], {}, verified);
 };
 module.exports.verifyToken = verifyToken;
@@ -124,21 +124,19 @@ module.exports.issueActionToken = function (action, secrets, next) {
     LOG.info(secrets);
 
     var tasks = {
-        like: function (next) {
+        like: function like(next) {
             secrets.action = "like";
             var token = encrypt(JSON.stringify(JSON.stringify(secrets)));
 
-
             next(token);
         },
-        subscribe: function (next) {
+        subscribe: function subscribe(next) {
             secrets.action = "subscribe";
             var token = encrypt(JSON.stringify(JSON.stringify(secrets)));
 
-
             next(token);
         },
-        connect: function (next) {
+        connect: function connect(next) {
             var secret = encrypt(JSON.stringify(JSON.stringify(secrets)));
             var token = signToken("action", {
                 action: "connect",
@@ -150,3 +148,4 @@ module.exports.issueActionToken = function (action, secrets, next) {
 
     tasks[action](next);
 };
+//# sourceMappingURL=auth.js.map

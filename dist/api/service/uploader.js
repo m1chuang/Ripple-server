@@ -15,7 +15,7 @@ AWS.config.update({
     region: nconf.get("aws:region") });
 var s3_url = nconf.get("S3").glimpse_test;
 
-var s3_test = function (fieldname, file, filename, enconding, next) {
+var s3_test = function s3_test(fieldname, file, filename, enconding, next) {
     upload = new Uploader({
         // credentials to access AWS
         accessKey: nconf.get("aws:accessKeyId"),
@@ -39,7 +39,9 @@ var s3_test = function (fieldname, file, filename, enconding, next) {
 };
 
 module.exports.multipart = function (req, res, next) {
+
     req.busboy.on("file", function (fieldname, file, filename, encoding) {
+
         filename = uuid.v4();
         req.body.image_url = s3_url + filename;
         LOG.info("on:file: " + req.body.image_url);
@@ -61,6 +63,7 @@ module.exports.multipart = function (req, res, next) {
 };
 
 module.exports.upload = function (fileData, fileInfo) {
+
     var s3 = new AWS.S3();
     var buf = new Buffer(fileData.replace(/^data:image\/\w+;base64,/, ""), "base64");
 
@@ -76,10 +79,10 @@ module.exports.upload = function (fileData, fileInfo) {
         ContentType: "multipart" }, function (resp) {
         resp ? LOG.log(chalk.red(resp)) : LOG.log(chalk.blue("Successfully uploaded."));
     });
-
 };
 var Uploader = require("s3-streaming-upload").Uploader,
     upload = null
 
 // s3Stream = require('s3-upload-stream')(new AWS.S3()),
 ;
+//# sourceMappingURL=uploader.js.map

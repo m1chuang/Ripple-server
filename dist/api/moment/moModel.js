@@ -9,7 +9,6 @@ var CHALK = require("chalk");
 var LOG = require("../service/util").logger;
 var uuid = require("node-uuid");
 
-
 var MomentSchema = new Schema({
     actor_id: String,
     device_id: String,
@@ -20,9 +19,8 @@ var MomentSchema = new Schema({
     location: { type: [Number], index: "2d" },
     expired: { type: Boolean, "default": false } });
 
-
 //MomentSchema.ensureIndex({actor_id:1},{unique:true});
-var generate_like = function (item, next) {
+var generate_like = function generate_like(item, next) {
     LOG.error("gun like");
     LOG.error(item.device_id);
     AUTH.issueActionToken("like", {
@@ -43,7 +41,7 @@ var generate_like = function (item, next) {
     });
 };
 
-var generate_subscribe = function (item, target_did, next) {
+var generate_subscribe = function generate_subscribe(item, target_did, next) {
     LOG.error("gen sub");
     var id = uuid.v4();
     AUTH.issueActionToken("subscribe", {
@@ -62,7 +60,7 @@ var generate_subscribe = function (item, target_did, next) {
         });
     });
 };
-var createExplore = function (nearby_moments, next) {
+var createExplore = function createExplore(nearby_moments, next) {
     if (!nearby_moments) {
         next(null, null);
     } else {
@@ -121,8 +119,6 @@ MomentSchema.statics.isExpired = function (token, next) {
     });
 };
 
-
-
 MomentSchema.methods.getNearWithRelation = function (params, next) {
     LOG.info(CHALK.blue("In getNear: "));
     mongoose.model("Moment").find({
@@ -146,6 +142,5 @@ MomentSchema.methods.getNearWithRelation = function (params, next) {
     });
 };
 
-
-
 module.exports = mongoose.model("Moment", MomentSchema);
+//# sourceMappingURL=moModel.js.map
