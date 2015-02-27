@@ -1,0 +1,13 @@
+{
+  "name": "ripple-ui",
+  "version": "0.0.1",
+  "authors": [
+    "michael chuang"
+  ],
+  "license": "",
+  "dependencies": {
+    "todomvc-common": "~0.1.9",
+    "jquery": "~2.0.3",
+    "riotjs": "~0.9.6"
+  }
+}
