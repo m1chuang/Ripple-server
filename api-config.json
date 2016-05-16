@@ -10,16 +10,16 @@
     "glimpse_test":"https://glimpsetest.s3.amazonaws.com/"
   },
   "aws": {
-    "accessKeyId": "AKIAJD7KI7ZEE5EDJ3IA",
-    "secretAccessKey": "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",
+    "accessKeyId": "",
+    "secretAccessKey": "",
     "region": "us-west-2",
     "test-bucket": "glimpsetest"
   },
-  "server-master-key": "MGZlNTIyN2QtMGUwNy00Mjg0LTMzA0ZmQzZDk2k0MDUtMTA0",
+  "server-master-key": "",
   "pubnub": {
-    "subscribe_key": "sub-c-6f5b3a4a-a4ad-11e4-a9d4-02ee2ddab7fe",
-    "publish_key": "pub-c-59368519-7ab7-4419-afc0-6ed2cfa0b43d",
-    "secret_key": "sec-c-YzYyZTE3MjUtMjY0YS00YzUyLWIxYzEtZjRiOTAyZTlhMTMy"
+    "subscribe_key": "",
+    "publish_key": "",
+    "secret_key": ""
   },
   "secret-key":
   {
